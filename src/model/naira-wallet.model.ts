@@ -1,0 +1,53 @@
+import mongoose from "mongoose";
+import { UserDocument } from "./user.model";
+
+export interface NairaWalletDocument extends mongoose.Document {
+  user: UserDocument["_id"];
+  accountReference: string;
+  reservationReference: string;
+  accountName: string;
+  accountNumber: string;
+  bankCode: string;
+  bankName: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+const NairaWalletSchema = new mongoose.Schema(
+  {
+
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
+    accountReference: {
+        type: String,
+        required: true
+    },
+    reservationReference: {
+        type: String,
+        required: true
+    },
+    accountName: {
+        type: String,
+        required: true
+    },
+    accountNumber: {
+        type: String,
+        required: true
+    },
+    bankCode: {
+        type: String,
+        required: true
+    },
+    bankName: {
+        type: String,
+        required: true
+    }
+  },
+  { timestamps: true }
+);
+
+const NairaWallet = mongoose.model<NairaWalletDocument>("NairaWallet", NairaWalletSchema);
+
+export default NairaWallet;
