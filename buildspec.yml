@@ -5,11 +5,10 @@ phases:
     runtime-versions:
       nodejs: latest
     commands:
-      - npm install -g yarn typescript
-      - yarn install
+      - npm install
   build:
     commands:
-      - yarn build
+      - npm build
 
 artifacts:
   files:
