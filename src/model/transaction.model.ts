@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { generateCode } from "../utils/utils";
-import { SubscriptionPlanDocument } from "./subscription-plan.model";
 import { UserDocument } from "./user.model";
 
 export interface TransactionDocument extends mongoose.Document {
@@ -13,7 +12,6 @@ export interface TransactionDocument extends mongoose.Document {
   processorData?: object
   itemOwners?:object[]
   paymentFor: string,
-  paymentItem?: SubscriptionPlanDocument["_id"]
   createdAt: Date;
   updatedAt: Date;
 }
