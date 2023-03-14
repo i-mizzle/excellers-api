@@ -13,7 +13,5 @@ phases:
 
 artifacts:
   files:
-    - package.json
-    - package-lock.json
-    - "dist/**/*"
+    - '**/*'
   discard-paths: yes
