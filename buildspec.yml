@@ -5,16 +5,15 @@ phases:
     runtime-versions:
       nodejs: latest
     commands:
+      - npm install -g typescript
       - npm install
   build:
     commands:
-      - npm run build
+      - tsc
 
 artifacts:
   files:
-    - yarn.lock
     - package.json
+    - package-lock.json
     - "build/**/*"
-    - ".platform/**/*" # AWS Elastic Beanstalk configuration files
-    - ".ebextensions/**/*" # AWS Elastic Beanstalk configuration files
-  discard-paths: no
+  discard-paths: yes
