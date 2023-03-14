@@ -1,8 +1,12 @@
 import express from 'express';
+import path from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import config from 'config';
+process.env["NODE_CONFIG_DIR"] =  path.join(__dirname, '..', 'config')
+const config = require("config");
+
+// import config from 'config';
 import log from "./logger";
 import connect from './db/connect'
 import routes from './routes'

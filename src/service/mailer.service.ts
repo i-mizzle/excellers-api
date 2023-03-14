@@ -1,10 +1,14 @@
 'use strict';
 const mailgun = require("mailgun-js");
-const config = require("config");
-// const DOMAIN = 'mg.airhaul.com.ng';
+// const config = require("config");
+
+import config from 'config';
+
+const mailgunConfig: any = config.get('mailgun');
+
 const mg = mailgun({
-    apiKey: config.mailgun.API_KEY, 
-    domain: config.mailgun.DOMAIN
+    apiKey: mailgunConfig.API_KEY, 
+    domain: mailgunConfig.DOMAIN
 });
 
 interface MailParams {
