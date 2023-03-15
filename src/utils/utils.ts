@@ -198,9 +198,30 @@ export const formatPhoneNumber = (phoneNumber: string): string => {
 
 }
 
-
 export const addMinutesToDate = (date: Date, minutes: number) => {
   date.setMinutes(date.getMinutes() + minutes);
 
   return date;
+}
+
+export const snakeToCamel = (obj: Record<string, any>): Record<string, any> => {
+  if(!obj) {
+    return {}
+  }
+
+  const camelObj: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    const camelKey = key.replace(/_\w/g, (match) => match[1].toUpperCase());
+    if (Array.isArray(value)) {
+      camelObj[camelKey] = value.map((item) =>
+        typeof item === "object" ? snakeToCamel(item) : item
+      );
+    } else {
+      camelObj[camelKey] =
+        typeof value === "object" ? snakeToCamel(value) : value;
+    }
+  }
+
+  return camelObj;
 }

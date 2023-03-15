@@ -9,6 +9,10 @@ export default {
     resetTokenTtl: process.env.RESET_TOKEN_TTL,
     confirmationTokenTtl: process.env.CONFIRMATION_TOKEN_TLL,
     googleApiKey: process.env.GOOGLE_API_KEY,
+    tiqwa: {
+        accessToken: process.env.TIQWA_ACCESS_TOKEN,
+        baseUrl: process.env.TIQWA_BASE_URL
+    },
     mailgun: {
         API_KEY: process.env.MAILGUN_API_KEY,
         DOMAIN: process.env.MAILGUN_DOMAIN,

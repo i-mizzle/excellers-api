@@ -27,6 +27,10 @@ import { createInvitationSchema, getInvitationSchema } from './schema/invitation
 import { confirmationSchema } from './schema/confirmation-code.schema';
 import { requestPasswordResetHandler, resetPasswordHandler } from './controller/password-reset.controller';
 import { inviteUserHandler } from './controller/invitation.controller';
+import { confirmFlightPriceHandler, flightSearchHandler } from './controller/flight.controller';
+import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
+import { bookingSchema, getBookingSchema } from './schema/booking.schema';
+import { bookFlightHandler, cancelBookingHandler, getBookingHandler, getBookingsHandler } from './controller/booking.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -110,6 +114,42 @@ export default function(app: Express) {
     app.post('/auth/password-reset', 
         resetPasswordHandler
     )
+
+    // FLIGHTS
+    app.post('/flights/search', 
+        validateRequest(searchFlightSchema),
+        flightSearchHandler
+    )
+
+    app.get('/flights/confirm-price/:flightId', 
+        validateRequest(priceConfirmationSchema),
+        confirmFlightPriceHandler
+    )
+
+    app.post('/flights/book-flight/:flightId', 
+        validateRequest(bookingSchema),
+        bookFlightHandler
+    )
+    
+    // Bookings
+    app.get('/bookings/:bookingCode', 
+        validateRequest(getBookingSchema),
+        getBookingHandler
+    )
+
+    app.get('/bookings', 
+        requiresUser,
+        requiresAdministrator,
+        getBookingsHandler
+    )
+
+    app.delete('/bookings/cancel/:bookingCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getBookingSchema),
+        cancelBookingHandler
+    )
+
 
     // UPLOAD FILE
     app.post("/files/new", 
