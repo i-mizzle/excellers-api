@@ -1,3 +1,5 @@
+import { StringDate } from "./types";
+
 export const generateCode = (length: Number, isNumeric: Boolean): string => {
     if (!isNumeric) { isNumeric = false }
     let result = '';
@@ -224,4 +226,16 @@ export const snakeToCamel = (obj: Record<string, any>): Record<string, any> => {
   }
 
   return camelObj;
+}
+
+
+export const getJsDate = (stringDate: StringDate): Date => {
+  if (!stringDate) return new Date()
+
+  var dateParts: any = stringDate.split("-");
+
+  // month is 0-based, that's why we need dataParts[1] - 1
+  var dateObject = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]); 
+
+  return dateObject;
 }

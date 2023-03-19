@@ -51,8 +51,12 @@ const UserSchema = new mongoose.Schema(
         },
         userType: {
             type: String,
-            enum: ['USER', 'AFFILIATE', 'VENDOR', 'ADMIN', 'SUPER_ADMINISTRATOR'],
+            enum: ['USER', 'AFFILIATE', 'AFFILIATE_ADMIN', 'VENDOR', 'ADMIN', 'SUPER_ADMINISTRATOR'],
             default: 'USER'
+        },
+        approved: {
+            type: Boolean,
+            default: false
         },
         avatar: {
             type: String

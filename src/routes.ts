@@ -31,9 +31,24 @@ import { confirmFlightPriceHandler, flightSearchHandler } from './controller/fli
 import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
 import { bookingSchema, getBookingSchema } from './schema/booking.schema';
 import { bookFlightHandler, cancelBookingHandler, getBookingHandler, getBookingsHandler } from './controller/booking.controller';
+import { createTripHandler, deleteTripHandler, getTripHandler, getTripsHandler, updateTripHandler } from './controller/trip.controller';
+import { createTripSchema, getTripSchema, updateTripSchema } from './schema/trip.schema';
+import { createNewsletterSubscriptionHandler, deleteNewsletterSubscriptionHandler, getNewsletterSubscriptionHandler, getNewsletterSubscriptionsHandler, updateNewsletterSubscriptionHandler } from './controller/newsletter-subscription.controller';
+import { createNewsletterSubscriptionSchema, getNewsletterSubscriptionSchema } from './schema/newsletter-subscription.schema';
+import { createPackageSchema, getPackageSchema } from './schema/package.schema';
+import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler } from './controller/package.controller';
+import { createDealSchema, getDealSchema } from './schema/deal.schema';
+import { createDealHandler, deleteDealHandler, getDealHandler, getDealsHandler, updateDealHandler } from './controller/deal.controller';
+import { createEnquirySchema } from './schema/enquiry.schema';
+import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
+
+    // Register
+    app.post('/root/user', 
+        createUserHandler
+    )
 
     // Register
     app.post('/auth/signup', 
@@ -132,24 +147,179 @@ export default function(app: Express) {
     )
     
     // Bookings
-    app.get('/bookings/:bookingCode', 
+    app.get('/flights/bookings/:bookingCode', 
         validateRequest(getBookingSchema),
         getBookingHandler
     )
 
-    app.get('/bookings', 
+    app.get('/flights/bookings', 
         requiresUser,
         requiresAdministrator,
         getBookingsHandler
     )
 
-    app.delete('/bookings/cancel/:bookingCode', 
+    app.delete('/flights/bookings/cancel/:bookingCode', 
         requiresUser,
         requiresAdministrator,
         validateRequest(getBookingSchema),
         cancelBookingHandler
     )
 
+    app.post('/trips', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createTripSchema),
+        createTripHandler
+    )
+
+    app.put('/trips/:tripId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updateTripSchema),
+        updateTripHandler
+    )
+
+    app.delete('/trips/:tripId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getTripSchema),
+        deleteTripHandler
+    )
+
+    app.get('/trips/:tripId', 
+        validateRequest(getTripSchema),
+        getTripHandler
+    )
+
+    app.get('/trips', 
+        getTripsHandler
+    )
+
+    /**
+     * Packages
+     */
+    app.post('/packages', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createPackageSchema),
+        createPackageHandler
+    )
+
+    app.get('/packages', 
+        getPackagesHandler
+    )
+
+    app.get('/packages/:packageId', 
+        validateRequest(getPackageSchema),
+        getPackageHandler
+    )
+
+    app.put('/packages/:packageId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getPackageSchema),
+        updatePackageHandler
+    )
+
+    app.delete('/packages/:packageId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getPackageSchema),
+        deletePackageHandler
+    )
+
+    /**
+     * Deals
+     */
+    app.post('/deals', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createDealSchema),
+        createDealHandler
+    )
+
+    app.get('/deals', 
+        requiresUser,
+        requiresAdministrator,
+        getDealsHandler
+    )
+
+    app.get('/deals/:voucherCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getDealSchema),
+        getDealHandler
+    )
+
+    app.put('/deals/:voucherCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getDealSchema),
+        updateDealHandler
+    )
+        
+    app.delete('/deals/:voucherCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getDealSchema),
+        deleteDealHandler
+    )
+
+    /**
+     * Enquiries
+     */
+    app.post('/enquiries', 
+        validateRequest(createEnquirySchema),
+        createEnquiryHandler
+    )
+
+    app.get('/enquiries', 
+        requiresUser,
+        requiresAdministrator,
+        getEnquiriesHandler
+    )
+
+    app.get('/enquiries/:enquiryId', 
+        requiresUser,
+        requiresAdministrator,
+        getEnquiryHandler
+    )
+
+    app.put('/enquiries/:enquiryId', 
+        requiresUser,
+        requiresAdministrator,
+        updateEnquiryHandler
+    )
+
+    /**
+     * Newsletter Subscriptions
+    */
+    
+    app.post('/newsletter/subscriptions', 
+        validateRequest(createNewsletterSubscriptionSchema),
+        createNewsletterSubscriptionHandler
+    )
+    
+    app.get('/newsletter/subscriptions', 
+        requiresUser,
+        requiresAdministrator,
+        getNewsletterSubscriptionsHandler
+    )
+    
+    app.get('/newsletter/subscriptions/:subscriptionId', 
+        validateRequest(getNewsletterSubscriptionSchema),
+        getNewsletterSubscriptionHandler
+    )
+    
+    app.put('/newsletter/subscriptions/:subscriptionId', 
+        validateRequest(getNewsletterSubscriptionSchema),
+        updateNewsletterSubscriptionHandler
+    )
+    
+    app.delete('/newsletter/subscriptions/:subscriptionId', 
+        validateRequest(getNewsletterSubscriptionSchema),
+        deleteNewsletterSubscriptionHandler
+    )
 
     // UPLOAD FILE
     app.post("/files/new", 

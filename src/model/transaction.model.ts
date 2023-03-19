@@ -21,8 +21,6 @@ const TransactionSchema = new mongoose.Schema(
     transactionReference: { 
         type: String,
         unique: true,
-        // default: nanoid(16),
-        // default: generateCode(16, true),
         required: true
     },
     user: { 

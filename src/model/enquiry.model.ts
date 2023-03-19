@@ -2,38 +2,39 @@ import mongoose from "mongoose";
 import { UserDocument } from "./user.model";
 
 export interface EnquiryDocument extends mongoose.Document {
-  enquiryByGuest: boolean;
   user: UserDocument["_id"];
   guest: {};
   message: string;
-  property: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const EnquirySchema = new mongoose.Schema(
   {
-    guest: {
-      name: { 
-        type: String, 
-      }, 
-      email: { 
-        type: String, 
-      }, 
-      phone: { 
-        type: String, 
-      }, 
+    name: { 
+      type: String, 
+    }, 
+    email: { 
+      type: String, 
+    }, 
+    phone: { 
+      type: String, 
+    }, 
+    enquiryType: {
+      type: String,
+      enum: ['PACKAGE', 'DEAL', 'GENERAL', 'VISA'],
+      default: 'GENERAL'
     },
-    user: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "User" 
+    status: {
+      type: String,
+      enum: ['PENDING', 'IN_PROGRESS', 'RESOLVED'],
+      default: 'PENDING'
     },
-    property: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Property" 
-    },
-    enquiryByGuest: { type: Boolean, required: true },
     message: { type: String, required: true },
+    deleted: {
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );

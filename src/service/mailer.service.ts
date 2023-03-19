@@ -17,12 +17,6 @@ interface MailParams {
 
 interface SubscriptionConfirmationMailParams extends MailParams {
     firstName: String
-    expiryDate: String
-    subscriptionCode: String
-    subscriptionDuration: String,
-    facilityName: string,
-    facilityMapUrl: string
-
 }
 
 interface TicketMailParams extends MailParams {
@@ -118,6 +112,34 @@ export async function sendPasswordResetEmail (mailParams: PasswordResetMailParam
             "h:X-Mailgun-Variables": JSON.stringify({
                 firstName: mailParams.firstName,
                 resetUrl: mailParams.resetUrl
+            })
+        };
+        await mg.messages().send(data);
+        console.log('Sent!');
+        return {
+            error: false,
+            errorType: '',
+            data: {message: `mail sent to ${mailParams.mailTo}`}
+        }
+    } catch (error) {
+        console.log('error in mailer function ', error)
+        return {
+            error: true,
+            errorType: 'error',
+            data: error
+        }
+    }
+}
+
+export async function sendSubscriptionConfirmation (mailParams: SubscriptionConfirmationMailParams) {
+    try {
+        const data = {
+            from: 'GeoTravels <no-reply@geotravels.com>',
+            to: mailParams.mailTo,
+            subject: 'Reset your password',
+            template: 'password_reset',
+            "h:X-Mailgun-Variables": JSON.stringify({
+                firstName: mailParams.firstName,
             })
         };
         await mg.messages().send(data);

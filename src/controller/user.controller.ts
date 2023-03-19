@@ -12,6 +12,22 @@ import config from 'config';
 import { nanoid } from "nanoid";
 const tokenTtl = config.get('resetTokenTtl') as number
 
+export async function createRootUserHandler(req: Request, res: Response) {
+    try {
+        
+        const input = {...req.body, ...{confirmationCode: Object('640c469cdb289fe9f6d6b37b')}}
+
+        const user = await createUser(input)
+
+        return response.created(res, 
+            omit(user.toJSON(), ['_id', 'password', 'confirmationToken'])
+        )
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
 export async function createUserHandler(req: Request, res: Response) {
     try {
         const existingUserByEmail = await findUser({ email: req.body.email })
