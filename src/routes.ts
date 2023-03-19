@@ -46,11 +46,6 @@ export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
 
     // Register
-    app.post('/root/user', 
-        createUserHandler
-    )
-
-    // Register
     app.post('/auth/signup', 
         checkUserType,
         validateRequest(createUserSchema), 
