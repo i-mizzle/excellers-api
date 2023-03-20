@@ -3,6 +3,8 @@ import { confirmFlightPrice, FlightSearch, searchForFlights } from "../service/i
 import * as response from '../responses'
 import { get } from "lodash";
 
+const airports = require('airport-codes');
+
 export const flightSearchHandler = async (req: Request, res: Response) => {
     try {
         const body = req.body
@@ -23,7 +25,66 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
         if(flightSearchResults.error === true) {
             return response.handleErrorResponse(res, {data: flightSearchResults.data})
         }
-        return response.ok(res, flightSearchResults!.data)
+
+        const results = flightSearchResults!.data.map((result: any) => {
+            const outboundFlights: any = []
+            const inboundFlights: any = []
+
+            result.outbound.forEach((flight: any) => {
+                const airportFrom = {
+                    airportCode: flight.airportFrom,
+                    name: airports.findWhere({ iata: flight.airportFrom }).get('name'),
+                    city: airports.findWhere({ iata: flight.airportFrom }).get('city'),
+                    country: airports.findWhere({ iata: flight.airportFrom }).get('country'),
+                }
+                const airportTo = {
+                    airportCode: flight.airportTo,
+                    name: airports.findWhere({ iata: flight.airportTo }).get('name'),
+                    city: airports.findWhere({ iata: flight.airportTo }).get('city'),
+                    country: airports.findWhere({ iata: flight.airportTo }).get('country'),
+                }
+
+                flight.airportFrom = airportFrom
+                flight.airportTo = airportTo
+                
+                flight.departureDate = new Date(flight?.departureTime).toLocaleDateString()
+                flight.departureTime = new Date(flight?.departureTime).toLocaleTimeString()
+                flight.arrivalDate = new Date(flight?.arrivalTime).toLocaleDateString()
+                flight.arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString()
+                outboundFlights.push(flight)
+            })
+            result.outbound = outboundFlights
+
+            result.inbound.forEach((flight: any) => {
+                const airportFrom = {
+                    airportCode: flight.airportFrom,
+                    name: airports.findWhere({ iata: flight.airportFrom }).get('name'),
+                    city: airports.findWhere({ iata: flight.airportFrom }).get('city'),
+                    country: airports.findWhere({ iata: flight.airportFrom }).get('country'),
+                }
+                
+                const airportTo = {
+                    airportCode: flight.airportTo,
+                    name: airports.findWhere({ iata: flight.airportTo }).get('name'),
+                    city: airports.findWhere({ iata: flight.airportTo }).get('city'),
+                    country: airports.findWhere({ iata: flight.airportTo }).get('country'),
+                }
+
+                flight.airportFrom = airportFrom
+                flight.airportTo = airportTo
+                flight.departureDate = new Date(flight?.departureTime).toLocaleDateString()
+                flight.departureTime = new Date(flight?.departureTime).toLocaleTimeString()
+                flight.arrivalDate = new Date(flight?.arrivalTime).toLocaleDateString()
+                flight.arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString()
+                inboundFlights.push(flight)
+            })
+            result.inbound = inboundFlights
+
+            return result
+        })
+
+        return response.ok(res, results)
+        // return response.ok(res, flightSearchResults!.data)
     } catch (error: any) {
         return response.error(res, error)
     }
