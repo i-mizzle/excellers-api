@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
-import { ConfirmationCodeDocument } from "./confirmation-code.model";
 import { UserDocument } from "./user.model";
 
 export interface DealDocument extends mongoose.Document {
     createdBy: UserDocument['_id'];
-    voucherCode: string,
-    type: string,
-    value: number,
+    dealItemType: string,
+    dealItem: mongoose.Document["_id"],
+    discountType: string,
+    discountValue: number,
     title: string
     description: string,
     startDate: Date,
@@ -23,17 +23,26 @@ const DealSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
     },
-    voucherCode: {
-        type: String,
-        required: true,
-        unique: true
+    // voucherCode: {
+    //     type: String,
+    //     required: true,
+    //     unique: true
+    // },
+    dealItemType: {
+      type:String,
+      enum: ['PACKAGE', 'FLIGHT'],
+      default: 'PACKAGE'
     },
-    type: {
+    dealItem: {
+      type: mongoose.Schema.Types.ObjectId, 
+      required: true
+    },
+    discountType: {
         type: String,
         enum: ['PERCENTAGE', 'FIXED'],
         required: true
     },
-    value: {
+    discountValue: {
         type: Number,
         required: true
     },

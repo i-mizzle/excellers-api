@@ -3,8 +3,10 @@ import { object, string, ref, number, boolean } from "yup";
 const payload = {
     body: object({
         title: string().required('title is required'),
-        value: number().required('value is required'),
-        type: string().required('type is required as enum [eg: PERCENTAGE, FIXED]'),
+        dealItemType: string().required('dealItemType is required as enum [eg: PACKAGE, FLIGHT]'),
+        dealItem: string().required('dealItem is required'),
+        discountValue: number().required('discountValue is required'),
+        discountType: string().required('type is required as enum [eg: PERCENTAGE, FIXED]'),
         description: string().required('description is required'),
         startDate: string().required('start date required in the format DD-MM-YYYY'),
         endDate: string().required('end date required in the format DD-MM-YYYY'),
@@ -14,7 +16,7 @@ const payload = {
 
 const params = {
     params: object({
-        voucherCode: string().required('voucher code is required as a path param')
+        dealId: string().required('dealId is required as a path param')
     })
 }
 

@@ -7,7 +7,12 @@ export interface PackageDocument extends mongoose.Document {
     createdBy: UserDocument['_id'];
     name: string
     description: string
-    trips: TripDocument["_id"][]
+    packageType: string
+    features: string[]
+    packagePlan: {
+      title: string
+      description: string
+    }[]
     price: number
     media: {
       type: string
@@ -34,10 +39,23 @@ const PackageSchema = new mongoose.Schema(
         type: String,
         required: true
     },
-    trips: [
+    packageType: {
+      type: String,
+      required: true,
+      enum: ['PACKAGE', 'GROUP'],
+      default: 'GROUP'
+    },
+    features: [
+      {type: String}
+    ],
+    packagePlan: [
       {
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Trip" 
+        title: {
+          type: String
+        }, 
+        description: {
+          type: String
+        }
       }
     ],
     media: [

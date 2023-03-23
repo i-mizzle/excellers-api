@@ -10,15 +10,18 @@ interface CreatePackageInput {
     createdBy: UserDocument['_id'];
     name: string
     description: string
-    trips: TripDocument["_id"][]
+    packageType: string
+    features: string[]
+    packagePlan?: {
+      title: string
+      description: string
+    }[]
     price: number
-    media: {
+    media?: {
       type: string
       url: string
     }[]
     lockDownPrice: number
-    createdAt?: Date;
-    updatedAt?: Date;
 }
 
 export const createPackage = async (

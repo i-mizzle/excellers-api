@@ -41,9 +41,9 @@ export const getDealsHandler = async (req: Request, res: Response) => {
 
 export const getDealHandler = async (req: Request, res: Response) => {
     try {
-        const voucherCode = get(req, 'params.voucherCode');
+        const dealId = get(req, 'params.dealId');
 
-        const deal = await findDeal({voucherCode: voucherCode, deleted: false})
+        const deal = await findDeal({_id: dealId, deleted: false})
         // return res.send(post)
 
         if(!deal) {
@@ -60,7 +60,7 @@ export const getDealHandler = async (req: Request, res: Response) => {
 export const updateDealHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
-        const voucherCode = get(req, 'params.voucherCode');
+        const dealId = get(req, 'params.dealId');
 
         let update = req.body
 
@@ -72,7 +72,7 @@ export const updateDealHandler = async (req: Request, res: Response) => {
             update = {...update, ...{startDate: getJsDate(update.endDate)}}
         }
 
-        const deal = await findDeal({voucherCode: voucherCode})
+        const deal = await findDeal({_id: dealId})
         if(!deal) {
             return response.notFound(res, {message: 'deal not found'})
         }

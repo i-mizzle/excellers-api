@@ -3,12 +3,14 @@ import Deal, { DealDocument } from "../model/deal.model";
 import { UserDocument } from "../model/user.model";
 import { StringDate } from "../utils/types";
 import { generateCode, getJsDate } from "../utils/utils";
+import mongoose from "mongoose";
 
 interface CreateDealInput {
     createdBy: UserDocument['_id'];
-    voucherCode: string,
-    type: string,
-    value: number,
+    dealItemType: string,
+    dealItem: mongoose.Document['_id'],
+    discountValue: number,
+    discountType: string,
     title: string
     description: string,
     startDate: StringDate,
@@ -16,17 +18,18 @@ interface CreateDealInput {
     active?: Boolean
 }
 
+
 export const createDeal = async (
     input: CreateDealInput) => {
         try {
-        const voucherCode = generateCode(12, false).toUpperCase()
         const deal = await Deal.create({
             createdBy: input.createdBy,
             title: input.title,
             description: input.description,
-            voucherCode,
-            type : input.type,
-            value: input.value,
+            dealItemType: input.dealItemType,
+            dealItem:input.dealItem,
+            discountValue: input.discountValue,
+            discountType: input.discountType,
             startDate: getJsDate(input.startDate),
             endDate: getJsDate(input.endDate),
             active: input.active || true

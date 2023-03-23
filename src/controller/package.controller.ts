@@ -3,6 +3,8 @@ import  * as response from "../responses"
 import { get } from 'lodash'
 import { createPackage, findAndUpdatePackage, findPackage, findPackages } from "../service/package.service";
 import { getJsDate } from "../utils/utils";
+import { PackageDocument } from "../model/package.model";
+import { DealDocument } from "../model/deal.model";
 
 export const createPackageHandler = async (req: Request, res: Response) => {
     try {
@@ -14,6 +16,10 @@ export const createPackageHandler = async (req: Request, res: Response) => {
     } catch (error:any) {
         return response.error(res, error)
     }
+}
+
+const applyPackageDeal = (pack: PackageDocument, deal: DealDocument) => {
+
 }
 
 export const getPackagesHandler = async (req: Request, res: Response) => {
@@ -29,8 +35,13 @@ export const getPackagesHandler = async (req: Request, res: Response) => {
         if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
             packagesQuery = {deleted: false}
         }
+
         const packages = await findPackages(packagesQuery, resPerPage, page, expand)
         // return res.send(post)
+
+        const mutatedPackages = await Promise.all(packages.packages.map(async (pack: PackageDocument) => {
+
+        }))
 
         const responseObject = {
             page,
