@@ -9,6 +9,17 @@ export const createDealHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const body = req.body
 
+        // find available and active deals on the dealItem
+        const existingDeals = await findDeals({
+            dealItemId: body.dealItem, 
+            active: true, 
+            deleted: false
+        }, 0, 0) 
+
+        if(existingDeals && existingDeals.deals.length > 0) {
+            return response.conflict(res, {message: `deal item provided already has a running deal, please deactivate it first`})
+        }
+
         const deal = await createDeal({...body, ...{createdBy: userId}})
         return response.created(res, deal)
     } catch (error:any) {

@@ -5,6 +5,7 @@ import { createPackage, findAndUpdatePackage, findPackage, findPackages } from "
 import { getJsDate } from "../utils/utils";
 import { PackageDocument } from "../model/package.model";
 import { DealDocument } from "../model/deal.model";
+import { findDeals } from "../service/deal.service";
 
 export const createPackageHandler = async (req: Request, res: Response) => {
     try {
@@ -18,8 +19,40 @@ export const createPackageHandler = async (req: Request, res: Response) => {
     }
 }
 
-const applyPackageDeal = (pack: PackageDocument, deal: DealDocument) => {
+const applyPackageDeals = async (packages: PackageDocument[]) => {
+    const deals = await findDeals({active: true, deleted: false}, 0, 0)
 
+    const mutatedPackages = await Promise.all(packages.map(async (pack: PackageDocument) => {
+        let existingDeal = {}
+        let currentPrice = pack.price
+        
+        const packageDeal = deals.deals.find((deal) => {
+            return deal.dealItem.toString() === pack._id.toString()
+        })
+
+        if(packageDeal) {
+            existingDeal = packageDeal
+        }
+
+        if(packageDeal && packageDeal.discountType === 'PERCENTAGE') {
+            const discount = pack.price * (packageDeal.discountValue / 100)
+            currentPrice = pack.price - discount
+        }
+
+        if(packageDeal && packageDeal.discountType === 'FIXED') {
+            currentPrice = pack.price - packageDeal.discountValue
+        }
+
+        return {
+            ...pack,
+            ...{
+                deal: existingDeal,
+                discountedPrice: currentPrice
+            }
+        }
+    }))
+
+    return mutatedPackages
 }
 
 export const getPackagesHandler = async (req: Request, res: Response) => {
@@ -39,15 +72,13 @@ export const getPackagesHandler = async (req: Request, res: Response) => {
         const packages = await findPackages(packagesQuery, resPerPage, page, expand)
         // return res.send(post)
 
-        const mutatedPackages = await Promise.all(packages.packages.map(async (pack: PackageDocument) => {
-
-        }))
+        const mutatedPackages = await applyPackageDeals(packages.packages)
 
         const responseObject = {
             page,
             perPage: resPerPage,
             total: packages.total,
-            packages: packages.packages
+            packages: mutatedPackages
         }
 
         return response.ok(res, responseObject)        
