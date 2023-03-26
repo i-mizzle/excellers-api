@@ -1,19 +1,20 @@
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import { generateCode } from "../utils/utils";
+import { InvoiceDocument } from "./invoice.model";
 import { UserDocument } from "./user.model";
 
 export interface TransactionDocument extends mongoose.Document {
   user: UserDocument["_id"];
+  invoice: InvoiceDocument["_id"];
   transactionReference: string;
   amount: number;
   channel: string;
   processor: string;
+  flutterwaveTransactionId?: string
   processorData?: object
-  itemOwners?:object[]
-  paymentFor: string,
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const TransactionSchema = new mongoose.Schema(
@@ -23,9 +24,17 @@ const TransactionSchema = new mongoose.Schema(
         unique: true,
         required: true
     },
+    flutterwaveTransactionId: {
+      type: String
+    },
+    invoice: {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Invoice',
+      required: true
+    },
     user: { 
-        type: mongoose.Schema.Types.ObjectId, ref: 'User',
-        required: true
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User',
     },
     amount: {
       type: Number,
@@ -35,16 +44,6 @@ const TransactionSchema = new mongoose.Schema(
       type: String,
       enum: ['PENDING', 'SUCCESSFUL', 'FAILED'],
       default: 'PENDING',
-      required: true
-    },
-    paymentFor: {
-      type: String,
-      enum: ['TICKET', 'SUBSCRIPTION'],
-      default: 'TICKET',
-      required: true
-    },
-    paymentItem: {
-      type: String,
       required: true
     },
     channel: { 
@@ -58,10 +57,6 @@ const TransactionSchema = new mongoose.Schema(
         default: 'FLUTTERWAVE'
     },
     processorData: {},
-    itemOwners: [],
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId, ref: 'User'
-    }
   },
   { timestamps: true }
 );

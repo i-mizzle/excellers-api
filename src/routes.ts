@@ -41,6 +41,12 @@ import { createDealSchema, getDealSchema } from './schema/deal.schema';
 import { createDealHandler, deleteDealHandler, getDealHandler, getDealsHandler, updateDealHandler } from './controller/deal.controller';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
+import { createPackageBookingSchema } from './schema/package-booking.schema';
+import { createPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controllet';
+import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
+import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
+import { initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
+import { getAllTransactionsHandler, getTransactionHandler } from './controller/transaction.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -221,6 +227,59 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(getPackageSchema),
         deletePackageHandler
+    )
+
+    // Package bookings
+    app.post('/bookings/packages',
+        validateRequest(createPackageBookingSchema),
+        createPackageBookingHandler
+    )
+
+    app.get('/bookings/packages',
+        requiresUser,
+        getPackageBookingsHandler
+    )
+
+    /**
+     * Invoices
+     */
+
+    app.get('/invoices',
+        requiresUser,
+        getInvoicesHandler
+    )
+
+    app.get('/invoices/:invoiceId',
+        // requiresUser,
+        getInvoiceHandler
+    )
+
+    /**
+     * Payments
+     */
+
+    app.post('/payments/initialize-payment',
+        validateRequest(initializePaymentSchema),
+        initializePaymentHandler
+    )
+
+    app.get('/payments/verify-payment/:flwTransactionId',
+        validateRequest(verifyPaymentSchema),
+        verifyTransactionHandler
+    )
+
+    /**
+     * Transactions
+     */
+
+    app.get('/transactions',
+        requiresUser,
+        getAllTransactionsHandler
+    )
+
+    app.get('/transactions/:transactionReference',
+        requiresUser,
+        getTransactionHandler
     )
 
     /**

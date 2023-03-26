@@ -1,4 +1,4 @@
-import { parseResponse } from "../../utils/utils";
+import { parseResponse, snakeToCamel } from "../../utils/utils";
 
 const requestPromise = require("request-promise");
 const config = require('config')
@@ -11,6 +11,7 @@ interface InitializeFlutterwavePurchaseObject  {
     customerName: String;
     customerPhone: String;
     redirectUrl: String;
+    meta: any
 }
 export const initializePurchase = async (input: InitializeFlutterwavePurchaseObject) => {    
     let url = 'https://api.flutterwave.com/v3/payments';
@@ -22,17 +23,22 @@ export const initializePurchase = async (input: InitializeFlutterwavePurchaseObj
         currency: "NGN",
         redirect_url: input.redirectUrl,
         payment_options:"card, ussd, banktransfer, account",
+        meta: {
+            geoTravelReference: input.transactionReference
+        },
         customer:{
            email: input.customerEmail,
            phonenumber: input.customerPhone,
            name: input.customerName
         },
         customizations:{
-           title: "Murtala Square Bill Payment",
-           description: "Pay for your subscriptions or tickets",
-           logo: "https://res.cloudinary.com/dw9mqhupn/image/upload/c_scale,w_107/v1662919532/mmsquare-files/icon_vsb7be.png"
+           title: "GeoTravel",
+           description: "Pay for your flights or travel packages",
+           logo: "https://gowithgeo.com/assets/images/wxhitelogo.png"
         }
-     }
+    }
+
+    console.log('----------------> ', requestPayload)
 
     let initiateTransactionResponse = null;
 
@@ -43,8 +49,6 @@ export const initializePurchase = async (input: InitializeFlutterwavePurchaseObj
 
     let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestPayload) };
 
-    console.log("Headers====>", requestHeaders)
-    console.log("Reaquesters====>", requestOptions)
     try {
         initiateTransactionResponse = await requestPromise(requestOptions);
         console.log('RESPONSE ===> ', initiateTransactionResponse)
@@ -144,7 +148,7 @@ export const initializeTokenizedCharge = async (input: InitializeTokenizedCharge
         first_name: input.customerName.split(' ')[0],
         last_name: input.customerName.split(' ')[1],
         narration: "Sample tokenized charge",
-        tx_ref: input.transactionReference
+        tx_ref: input.transactionReference,
     }
 
     let initiateTransactionResponse = null;
@@ -292,10 +296,12 @@ export const verifyTransaction = async (input: VerifyFlutterwaveTransactionObjec
         verificationResponse = await requestPromise(requestOptions);
         verificationResponse = parseResponse(verificationResponse);
 
+        console.log('________________________ ', verificationResponse)
+
         return {
             error: false,
             errorType: '',
-            data: verificationResponse.data
+            data: snakeToCamel(verificationResponse.data)
         }
     } catch (error: any) {
         return {

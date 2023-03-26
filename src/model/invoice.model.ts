@@ -5,13 +5,15 @@ import { generateCode } from "../utils/utils";
 import { UserDocument } from "./user.model";
 
 export interface InvoiceDocument extends mongoose.Document {
-  user: UserDocument["_id"];
+  user?: UserDocument["_id"];
   invoiceCode: string;
   amount: number;
   invoiceFor: string,
+  status?: string
+  expiry: Date
   invoiceItem: mongoose.Schema.Types.ObjectId,
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const InvoiceSchema = new mongoose.Schema(
@@ -22,8 +24,8 @@ const InvoiceSchema = new mongoose.Schema(
         required: true
     },
     user: { 
-        type: mongoose.Schema.Types.ObjectId, ref: 'User',
-        required: true
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User'
     },
     amount: {
       type: Number,
@@ -37,7 +39,7 @@ const InvoiceSchema = new mongoose.Schema(
     },
     invoiceFor: {
       type: String,
-      enum: ['PACKAGE', 'TRIP', 'FLIGHT'],
+      enum: ['PACKAGE', 'FLIGHT'],
       default: 'PACKAGE',
       required: true
     },
@@ -45,8 +47,9 @@ const InvoiceSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId, ref: 'User'
+    expiry: {
+      type: Date,
+      required: true
     }
   },
   { timestamps: true }

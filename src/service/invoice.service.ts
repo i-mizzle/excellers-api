@@ -2,13 +2,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
 import { UserDocument } from '../model/user.model';
 import Invoice, { InvoiceDocument } from '../model/invoice.model';
-import { PackageDocument } from '../model/package.model';
+import Package, { PackageDocument } from '../model/package.model';
 import { TripDocument } from '../model/trip.model';
 
 interface CreateInvoiceInput {
-    user: UserDocument["_id"];
-    createdBy: UserDocument["_id"];
+    user?: UserDocument["_id"];
     invoiceCode: string;
+    expiry: Date
     amount: number;
     invoiceFor: string,
     invoiceItem: PackageDocument["_id"] | TripDocument["_id"]
@@ -34,13 +34,17 @@ export async function findInvoices(
 ) {
     const total = await Invoice.find(query, {}, options).countDocuments()
     let invoices = null
+    let expandQuery = null
+    if(expand) {
+        expandQuery = { path: expand, model: Package }
+    }
     if(perPage===0&&page===0){
         invoices = await Invoice.find(query, {}, options)
     } else {
-        invoices = await Invoice.find(query, {}, options).populate(expand)
+        invoices = await Invoice.find(query, {}, options).populate(expandQuery)
             .sort({ 'createdAt' : -1 })
             .skip((perPage * page) - perPage)
-            .limit(perPage);
+            .limit(perPage)
     }
 
     return {
@@ -49,13 +53,17 @@ export async function findInvoices(
     }
 }
 
-export async function findPackage(
+export async function findInvoice(
     query: FilterQuery<InvoiceDocument>,
     expand?: string,
     options: QueryOptions = { lean: true }
 ) {
     try {
-        const invoice = await Invoice.findOne(query, {}, options).populate(expand)
+        let expandQuery = null
+        if(expand) {
+            expandQuery = { path: expand, model: Package }
+        }
+        const invoice = await Invoice.findOne(query, {}, options).populate(expandQuery)
         
         return invoice
     } catch (error: any) {
@@ -64,7 +72,7 @@ export async function findPackage(
     }
 }
 
-export async function findAndUpdatePackage(
+export async function findAndUpdateInvoice(
     query: FilterQuery<InvoiceDocument>,
     update: UpdateQuery<InvoiceDocument>,
     options: QueryOptions
