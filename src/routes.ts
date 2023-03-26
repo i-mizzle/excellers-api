@@ -45,7 +45,7 @@ import { createPackageBookingSchema } from './schema/package-booking.schema';
 import { createPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controllet';
 import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
 import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
-import { initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
+import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
 import { getAllTransactionsHandler, getTransactionHandler } from './controller/transaction.controller';
 
 export default function(app: Express) {
@@ -266,6 +266,10 @@ export default function(app: Express) {
     app.get('/payments/verify-payment/:flwTransactionId',
         validateRequest(verifyPaymentSchema),
         verifyTransactionHandler
+    )
+
+    app.post('/flw-webhook',
+        flutterwaveWebhookHandler
     )
 
     /**

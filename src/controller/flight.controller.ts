@@ -8,7 +8,8 @@ const airports = require('airport-codes');
 export const flightSearchHandler = async (req: Request, res: Response) => {
     try {
         const body = req.body
-
+        const queryObject: any = req.query;
+        
         const requestPayload: FlightSearch = {
             adults: body.adults,
             cabin: body.cabin,
