@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { InvoiceDocument } from "./invoice.model";
 
 export interface Passenger {
     passengerType: string
@@ -59,6 +60,7 @@ export interface BookingDocument extends mongoose.Document {
     pricing: any,
     reference: string
     totalDuration: number
+    invoice: InvoiceDocument['_id']
     totalInboundDuration: number | null
     totalOutboundDuration: number | null
     travelersPrice: Array<object>
@@ -70,6 +72,10 @@ const BookingSchema = new mongoose.Schema(
   {
     bookingCode: {type: String},
     flightId: {type: String},
+    invoice: { 
+      type:  mongoose.Schema.Types.ObjectId, 
+      ref: 'Invoice'
+    },
     passengers: [],
     amount: {type: Number},
     ticketed: {type: Boolean, default: false},

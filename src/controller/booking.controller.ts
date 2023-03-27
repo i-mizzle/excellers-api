@@ -2,20 +2,45 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import * as response from '../responses'
 import { createBooking, findAndUpdateBooking, findBooking, findBookings } from "../service/booking.service";
-import { cancelBooking } from "../service/integrations/tiqwa.service";
+import { cancelBooking, confirmFlightPrice, issueTicket } from "../service/integrations/tiqwa.service";
+import { createInvoice, findInvoice } from "../service/invoice.service";
+import { addMinutesToDate, generateCode } from "../utils/utils";
 
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
         const flightId = get(req, 'params.flightId')
+        const userId = get(req, 'user._id');
+        
+        const invoiceItemType = 'FLIGHT'       
+        const invoiceCode = generateCode(18, false).toUpperCase()
+
+        const flightPriceConfirmation = await confirmFlightPrice(flightId)
         const body = req.body
 
         const booking = await createBooking(body, flightId)
-        // return res.send(post)
 
         if(booking.error === true) {
             return response.handleErrorResponse(res, {data: booking.data})
         }
-        return response.created(res, booking.data)
+
+
+        const invoiceInput = {
+            user: userId,
+            invoiceCode: invoiceCode,
+            amount: flightPriceConfirmation.data.amount * 100,
+            expiry: addMinutesToDate(new Date(), 1440), // 1 day
+            invoiceFor: invoiceItemType,
+            invoiceItem: booking.data._id
+        }
+
+        const invoice = await createInvoice(invoiceInput)
+
+        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, {invoice: invoice._id}, {new: true})
+
+        // return res.send(post)
+
+
+        return response.created(res, bookingWithInvoice)
     } catch (error: any) {
         return response.error(res, error)
     }
@@ -26,8 +51,12 @@ export const getBookingsHandler = async (req: Request, res: Response) => {
         const queryObject: any = req.query;
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
+        let expand = queryObject.expand || null
 
-        const bookings = await findBookings({}, resPerPage, page)
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+        const bookings = await findBookings({}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {
@@ -89,8 +118,6 @@ export const cancelBookingHandler = async (req: Request, res: Response) => {
 
             return response.ok(res, {message: 'booking cancelled successfully'})
         }
-
-        return response.ok(res, booking)
     } catch (error: any) {
         return response.error(res, error)
     }
@@ -115,9 +142,21 @@ export const issueTicketForBookingHandler = async (req: Request, res: Response) 
             return response.conflict(res, {message: 'this booking has already been ticketed'})
         }
 
-        
+        const invoice = await findInvoice({_id: booking.invoice})
+        if(!invoice || invoice.status === 'PENDING') {
+            return response.forbidden(res, {message: 'this booking has not been payed for and cannot be ticketed'})
+        }
 
-        return response.ok(res, booking)
+        const ticketing = await issueTicket(booking.reference)
+
+        if(ticketing.error === true) {
+            return response.handleErrorResponse(res, {data: ticketing.data}) 
+        } else {
+            await findAndUpdateBooking({_id: booking._id}, {ticketed: true}, {new: true})
+
+            return response.ok(res, {message: 'ticket successfully issued for booking'})
+        }
+
     } catch (error: any) {
         return response.error(res, error)
     }

@@ -21,7 +21,7 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
             return response.notFound(res, {message: "invoice not found"})
         }
 
-        if(new Date() < new Date(invoice.expiry)) {
+        if(new Date() > new Date(invoice.expiry)) {
             return response.notFound(res, {message: "invoice has expired and can no longer be paid for, please create booking again"})
         }
 

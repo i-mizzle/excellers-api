@@ -4,6 +4,7 @@ import { UserDocument } from '../model/user.model';
 import Invoice, { InvoiceDocument } from '../model/invoice.model';
 import Package, { PackageDocument } from '../model/package.model';
 import { TripDocument } from '../model/trip.model';
+import Booking from '../model/booking.model';
 
 interface CreateInvoiceInput {
     user?: UserDocument["_id"];
@@ -59,9 +60,18 @@ export async function findInvoice(
     options: QueryOptions = { lean: true }
 ) {
     try {
+        
         let expandQuery = null
         if(expand) {
-            expandQuery = { path: expand, model: Package }
+            const testInvoice = await Invoice.findOne(query, {}, options)
+            let model: any = Package
+            if (testInvoice!.invoiceFor === 'FLIGHT') {
+                model = Booking
+            }
+            expandQuery = { 
+                path: expand, 
+                model
+            }
         }
         const invoice = await Invoice.findOne(query, {}, options).populate(expandQuery)
         

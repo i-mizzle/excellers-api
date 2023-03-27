@@ -2,6 +2,7 @@ import Booking, { BookingDocument, Passenger } from "../model/booking.model";
 import { bookFlight } from "./integrations/tiqwa.service";
 import { v4 as uuidv4 } from 'uuid';
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
+import { generateCode } from "../utils/utils";
 
 export const createBooking = async (
     input: {
@@ -9,6 +10,7 @@ export const createBooking = async (
     }, flightId: string) => {
     try {
         const booking = await bookFlight(input, flightId)
+        const bookingCode = generateCode(16, false).toUpperCase()
 
         if(booking.error) {
             return booking
@@ -16,7 +18,7 @@ export const createBooking = async (
         const newBooking = await Booking.create({
             ...input, 
             ...{
-                bookingCode: uuidv4(),
+                bookingCode: bookingCode,
                 flightId: flightId
             }, 
             ...booking.data
@@ -35,14 +37,15 @@ export async function findBookings(
     query: FilterQuery<BookingDocument>,
     perPage: number,
     page: number,
+    expand: string,
     options: QueryOptions = { lean: true }
 ) {
     const total = await Booking.find(query, {}, options).countDocuments()
     let bookings = null
     if(perPage===0&&page===0){
-        bookings = await Booking.find(query, {}, options)
+        bookings = await Booking.find(query, {}, options).populate(expand)
     } else {
-        bookings = await Booking.find(query, {}, options)
+        bookings = await Booking.find(query, {}, options).populate(expand)
             .sort({ 'createdAt' : -1 })
             .skip((perPage * page) - perPage)
             .limit(perPage);
