@@ -239,3 +239,29 @@ export const getJsDate = (stringDate: StringDate): Date => {
 
   return dateObject;
 }
+
+const months = {
+  '01': 'Jan',
+  '02': 'Feb',
+  '03': 'Mar',
+  '04': 'Apr',
+  '05': 'May',
+  '06': 'Jun',
+  '07': 'Jul',
+  '08': 'Aug',
+  '09': 'Sep',
+  '10': 'Oct',
+  '11': 'Nov',
+  '12': 'Dec',
+}
+
+export const parseDateForMonnify = (stringDate: string) => {
+  if(!stringDate || stringDate === '') return ''
+
+  var dateParts: any = stringDate.split("-");
+  const day = dateParts[0]
+  const month = months[dateParts[1] as keyof typeof months]
+  const year = dateParts[2]
+  
+  return `${day}-${month}-${year}`
+} 

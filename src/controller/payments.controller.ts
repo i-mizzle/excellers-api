@@ -2,10 +2,9 @@ import { Request, Response } from "express"
 import { get } from "lodash";
 import { UserDocument } from "../model/user.model";
 import * as response from "../responses"
-import { initializePurchase, initializePurchaseViaTransfer, initializeTokenizedCharge, verifyCharge, verifyTransaction } from "../service/integrations/flutterwave.service";
+import { initializePurchase, verifyTransaction } from "../service/integrations/flutterwave.service";
 
 import { createTransaction, findAndUpdateTransaction, findTransaction } from "../service/transaction.service"
-import { findAndUpdate, findUser, validatePassword } from "../service/user.service";
 import { generateCode, parseResponse } from "../utils/utils";
 import config from 'config';
 import { findAndUpdateInvoice, findInvoice } from "../service/invoice.service";

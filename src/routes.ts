@@ -15,6 +15,7 @@ import {
 } from './schema/user.schema'
 import {
     checkUserType,
+    requiresAffiliate,
     requiresUser,
     validateRequest
 } from './middleware'
@@ -42,11 +43,13 @@ import { createDealHandler, deleteDealHandler, getDealHandler, getDealsHandler, 
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
 import { createPackageBookingSchema } from './schema/package-booking.schema';
-import { createPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controllet';
+import { createPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controller';
 import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
 import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
 import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
 import { getAllTransactionsHandler, getTransactionHandler } from './controller/transaction.controller';
+import { approveAffiliateSchema, validateBvnSchema } from './schema/affiliate.schema';
+import { approveAffiliateHandler, verifyAffiliateBvnHandler } from './controller/affiliate.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -384,6 +387,24 @@ export default function(app: Express) {
     app.delete('/newsletter/subscriptions/:subscriptionId', 
         validateRequest(getNewsletterSubscriptionSchema),
         deleteNewsletterSubscriptionHandler
+    )
+
+    /**
+     * AFFILIATES
+     */
+
+    app.post("/affiliates/approve/:userId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(approveAffiliateSchema),
+        approveAffiliateHandler
+    )
+
+    app.post("/affiliates/validate-bvn/:userId", 
+        requiresUser,
+        requiresAffiliate,
+        validateRequest(validateBvnSchema),
+        verifyAffiliateBvnHandler
     )
 
     // UPLOAD FILE

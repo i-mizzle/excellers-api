@@ -7,6 +7,7 @@ export interface NairaWalletDocument extends mongoose.Document {
   reservationReference: string;
   accountName: string;
   accountNumber: string;
+  flwSubAccountReference: string;
   bankCode: string;
   bankName: string;
   createdAt?: Date;
@@ -19,6 +20,9 @@ const NairaWalletSchema = new mongoose.Schema(
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
+    },
+    flwSubAccountReference: {
+        type: String
     },
     accountReference: {
         type: String,

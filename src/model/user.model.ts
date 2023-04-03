@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import config from 'config';
-import { generateCode } from '../utils/utils';
 import { ConfirmationCodeDocument } from './confirmation-code.model';
+import { AffiliateMarkupDocument } from './affiliate-markup.model';
 
 export interface UserDocument extends mongoose.Document {
     email: string;
@@ -15,6 +15,10 @@ export interface UserDocument extends mongoose.Document {
     userType: string;
     accountPermissions?: [];
     avatar?: string
+    approvedAsAffiliate?: Boolean
+    bvnValidated?: Boolean,
+    bvnValidationData?: {}
+    affiliateMarkup?: AffiliateMarkupDocument["_id"]
     createdAt?: Date;
     updatedAt?: Date;
     comparePassword(candidatePassword: string): Promise<boolean>
@@ -54,12 +58,21 @@ const UserSchema = new mongoose.Schema(
             enum: ['USER', 'AFFILIATE', 'AFFILIATE_ADMIN', 'VENDOR', 'ADMIN', 'SUPER_ADMINISTRATOR'],
             default: 'USER'
         },
-        approved: {
+        avatar: {
+            type: String
+        },
+        approvedAsAffiliate: {
             type: Boolean,
             default: false
         },
-        avatar: {
-            type: String
+        bvnValidated: {
+            type: Boolean,
+            default: false
+        },
+        bvnValidationData: {},
+        affiliateMarkup: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'AffiliateMarkup'
         },
         accountPermissions: [],
     },

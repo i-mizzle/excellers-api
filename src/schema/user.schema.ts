@@ -10,8 +10,9 @@ export const createUserSchema = object({
         phone: string().required('phone number (phone) is required'),
         userType: string().required('user type is required'),
         email: string()
-        .email('must be a valid email')
-        .required('email is required')        
+            .email('must be a valid email')
+            .required('email is required'),
+            
     })
 });
 
@@ -27,3 +28,9 @@ export const createUserSessionSchema = object({
     })
 });
 
+// .when('eventType', {
+//     is: 'VERSUS', 
+//     then: object({
+//         name: string().required('away side name is required'),
+//     })
+// }),

@@ -18,11 +18,6 @@ export default {
         DOMAIN: process.env.MAILGUN_DOMAIN,
         API_BASEURL: process.env.MAILGUN_API_BASEURL
     }, 
-    africasTalking: {
-        API_KEY: process.env.AFRICASTALKING_API_KEY,
-        USERNAME: process.env.AFRICASTALKING_USERNAME,
-        URL: process.env.AFRICASTALKING_BASE_URL
-    },
     flutterwave: {
         SECRET_KEY: process.env.FLUTTERWAVE_SECRET_KEY,
         PUBLIC_KEY: process.env.FLUTTERWAVE_PUBLIC_KEY,
@@ -33,5 +28,11 @@ export default {
         CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
         API_KEY: process.env.CLOUDINARY_API_KEY,
         API_SECRET: process.env.CLOUDINARY_API_SECRET 
-    }
+    },
+    monnify: {
+        API_KEY: process.env.MONNIFY_API_KEY,
+        SECRET: process.env.MONNIFY_SECRET,
+        BASE_URL: process.env.MONNIFY_BASE_URL,
+        CONTRACT_CODE: process.env.MONNIFY_CONTRACT_CODE
+    },
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { changePassword, createUser, deleteUser, findAllUsers, findAndUpdate, findUser } from '../service/user.service'
+import { changePassword, createUser, deleteUser, findAllUsers, findAndUpdateUser, findUser } from '../service/user.service'
 import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
@@ -113,7 +113,7 @@ export async function confirmEmailHandler (req: Request, res: Response) {
         let updateQuery = user
         updateQuery.emailConfirmed = true
 
-        const updatedUser = await findAndUpdate({ _id: userId }, updateQuery, { new: true })
+        const updatedUser = await findAndUpdateUser({ _id: userId }, updateQuery, { new: true })
         await findAndUpdateConfirmation({ _id: confirmationCode._id }, { valid: false }, { new: true })
 
         if(!updatedUser) {
@@ -170,7 +170,7 @@ export async function updateUserHandler (req: Request, res: Response) {
 
         const currentUser = get(req, 'user._id')
         const update = req.body
-        const updatedUser = await findAndUpdate({ _id: currentUser }, update, { new: true })
+        const updatedUser = await findAndUpdateUser({ _id: currentUser }, update, { new: true })
         return response.ok(res, omit(updatedUser, ['_id', 'password', 'confirmationToken']))
     } catch (error: any) {
         log.error(error)

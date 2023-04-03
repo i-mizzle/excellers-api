@@ -17,7 +17,7 @@ export async function createUser(input: DocumentDefinition<UserDocument>) {
 
 export async function findUser( query: FilterQuery<UserDocument>) {
 
-    return User.findOne(query).lean();
+    return User.findOne(query).populate('affiliateMarkup').lean();
 }
 
 export async function findAllUsers(
@@ -37,7 +37,7 @@ export async function findAllUsers(
     }
 }
 
-export async function findAndUpdate(
+export async function findAndUpdateUser(
     query: FilterQuery<UserDocument>,
     update: UpdateQuery<UserDocument>,
     options: QueryOptions

@@ -24,7 +24,12 @@ export interface FlightSearch {
 export const searchForFlights = async (input: FlightSearch ) => {
     try {
         let params = `adults=${input.adults}&cabin=${input.cabin}&departure_date=${input.departure_date}&destination=${input.destination}&origin=${input.origin}`
-        
+        if(input.children && input.children > 0) {
+            params += `&children=${input.children}`
+        }
+        if(input.infants && input.infants > 0) {
+            params += `&infants=${input.infants}`
+        }
         const response = await axios.get(`${tiqwaConfig.baseUrl}/flight/search?${params}`, { headers })
 
         console.log("TIQWA RESPONSE ===> ", response.data)

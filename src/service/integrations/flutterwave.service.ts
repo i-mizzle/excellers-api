@@ -233,6 +233,59 @@ export const initializePayout = async (input: InitializePayoutObject) => {
         }
     }
 }
+
+interface NewSubAccountInterface {
+    bankCode: string
+    accountNumber: string
+    accountName: string
+    phone: string
+    splitType: string
+    splitValue: number
+}
+
+export const createSubAccount = async (input: NewSubAccountInterface) => {    
+    let url = 'https://api.flutterwave.com/v3/payout-subaccounts';
+    let verb = "POST";
+
+    const payload = {
+        account_bank: input.bankCode,
+        account_number: input.accountNumber,
+        business_name: input.accountName,
+        business_mobile: input.phone,
+        country: "NG",
+        split_type: input.splitType.toLowerCase(),
+        split_value: input.splitValue
+    }
+
+    let subAccount = null;
+
+    const requestHeaders = {
+        Authorization: config.flutterwave.SECRET_KEY,
+        "Content-Type": "application/json"
+    }
+
+    let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(payload) };
+
+    console.log("Sub-account Headers====>", requestHeaders)
+    console.log("Sub-account Request options ====>", requestOptions)
+    try {
+        subAccount = await requestPromise(requestOptions);
+        console.log('sub account creation response ===> ', subAccount)
+        subAccount = parseResponse(subAccount);
+        return {
+            error: false,
+            errorType: '',
+            data: subAccount.data
+        }
+    } catch (error: any) {
+        console.log(error);
+        return {
+            error: true,
+            errorType: 'error',
+            data: error.message || error
+        }
+    }
+}
 interface VerifyChargenObject {
     otp: String;
     flutterwaveRef: String;
