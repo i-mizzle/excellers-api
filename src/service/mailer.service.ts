@@ -10,7 +10,7 @@ const mailgunConfig: any = config.get('mailgun');
 const mg = mailgun({
     apiKey: mailgunConfig.API_KEY, 
     domain: mailgunConfig.DOMAIN,
-    host: "https://api.eu.mailgun.net"
+    host: 'api.eu.mailgun.net'
 });
 
 interface MailParams {
@@ -25,16 +25,6 @@ interface WalletCreationMailParams extends MailParams, AffiliateApprovalMailPara
     accountName: String
     accountNumber: String
     bank: String
-}
-
-interface TicketMailParams extends MailParams {
-    firstName: String
-    qrCodeUrl: String
-    ticketCode: String
-    eventName: String
-    eventDate: String
-    facilityName: string
-    facilityMapUrl: string
 }
 
 interface ConfirmationMailParams extends MailParams {
@@ -53,6 +43,7 @@ interface PasswordResetMailParams extends MailParams {
 }
 
 export async function sendEmailConfirmation (mailParams: ConfirmationMailParams) {
+    console.log('MAILGUN --->', mg)
     try {
         const template = `
         <div>
@@ -75,11 +66,12 @@ export async function sendEmailConfirmation (mailParams: ConfirmationMailParams)
         `;
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: 'Welcome to GeoTravels',
             // template: 'email_confirmation',
-            html 
+            text: `Validate your email using this link - ${mailParams.confirmationUrl}`,
+            html: html,
             // "",
             // "h:X-Mailgun-Variables": JSON.stringify({
             //     firstName: mailParams.firstName,

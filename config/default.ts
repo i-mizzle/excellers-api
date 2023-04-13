@@ -15,6 +15,7 @@ export default {
     },
     mailgun: {
         API_KEY: process.env.MAILGUN_API_KEY,
+        PUBLIC_KEY: process.env.MAILGUN_PUBLIC_API_KEY,
         DOMAIN: process.env.MAILGUN_DOMAIN,
         API_BASEURL: process.env.MAILGUN_API_BASEURL
     }, 
