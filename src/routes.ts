@@ -50,6 +50,8 @@ import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionH
 import { getAllTransactionsHandler, getTransactionHandler } from './controller/transaction.controller';
 import { approveAffiliateSchema, validateBvnSchema } from './schema/affiliate.schema';
 import { approveAffiliateHandler, verifyAffiliateBvnHandler } from './controller/affiliate.controller';
+import { createAddonSchema, singleAddonSchema } from './schema/addon.schema';
+import { createAddonHandler, deleteAddonHandler, getAddonHandler, getAddonsHandler, updateAddonHandler } from './controller/addon.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -405,6 +407,39 @@ export default function(app: Express) {
         requiresAffiliate,
         validateRequest(validateBvnSchema),
         verifyAffiliateBvnHandler
+    )
+
+    /**
+     * ADDONS
+     */
+
+    app.post("/addons", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createAddonSchema),
+        createAddonHandler
+    )
+
+    app.get("/addons", 
+        getAddonsHandler
+    )
+
+    app.get("/addons/:addonId", 
+        getAddonHandler
+    )
+
+    app.put("/addons/:addonId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(singleAddonSchema),
+        updateAddonHandler
+    )
+
+    app.delete("/addons/:addonId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(singleAddonSchema),
+        deleteAddonHandler
     )
 
     // UPLOAD FILE

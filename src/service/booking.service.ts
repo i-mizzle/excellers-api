@@ -59,10 +59,11 @@ export async function findBookings(
 
 export async function findBooking(
     query: FilterQuery<BookingDocument>,
-    options: QueryOptions = { lean: true }
+    options: QueryOptions = { lean: true },
+    expand?: string,
 ) {
     try {
-        const booking = await Booking.findOne(query, {}, options)
+        const booking = await Booking.findOne(query, {}, options).populate(expand)
         
         return booking
     } catch (error: any) {
@@ -80,10 +81,6 @@ export async function findAndUpdateBooking(
     try {
         return Booking.findOneAndUpdate(query, update, options)
     } catch (error: any) {
-        return {
-            error: true,
-            errorType: 'error',
-            data: JSON.parse(error.error).message
-        } 
+        throw new Error(error)
     }
 }

@@ -5,6 +5,8 @@ import { createBooking, findAndUpdateBooking, findBooking, findBookings } from "
 import { cancelBooking, confirmFlightPrice, issueTicket } from "../service/integrations/tiqwa.service";
 import { createInvoice, findInvoice } from "../service/invoice.service";
 import { addMinutesToDate, generateCode } from "../utils/utils";
+import { AddonDocument } from "../model/addon.model";
+import { findAddon } from "../service/addon.service";
 
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
@@ -23,11 +25,23 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             return response.handleErrorResponse(res, {data: booking.data})
         }
 
+        if(body.addon && body.addon.length > 0) {
+
+        }
+
+        const bookingWithAddons: any = await findBooking({_id:booking.data._id}, {}, "addons")
+        console.log('bookingWith addons -> ', bookingWithAddons)
+
+        const totalAddonsPrice = bookingWithAddons!.addons.reduce((accumulator: number, currentValue: AddonDocument) => {
+            return accumulator + currentValue.price;
+          }, 0);
+
+        console.log('total addons priceConfirmationSchema -> -> ', totalAddonsPrice)
 
         const invoiceInput = {
             user: userId,
             invoiceCode: invoiceCode,
-            amount: flightPriceConfirmation.data.amount * 100,
+            amount: (flightPriceConfirmation.data.amount * 100) + totalAddonsPrice,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             invoiceItem: booking.data._id
@@ -35,10 +49,16 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
 
         const invoice = await createInvoice(invoiceInput)
 
-        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, {invoice: invoice._id}, {new: true})
+        const updatedPricing = {
+            markup: bookingWithAddons.pricing.markup,
+            payable: bookingWithAddons.pricing.payable + (totalAddonsPrice/100),
+        }
 
-        // return res.send(post)
-
+        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, {
+            invoice: invoice._id,
+            addonsTotal: totalAddonsPrice/100,
+            pricing: updatedPricing
+        }, {new: true})
 
         return response.created(res, bookingWithInvoice)
     } catch (error: any) {
@@ -74,9 +94,15 @@ export const getBookingsHandler = async (req: Request, res: Response) => {
 
 export const getBookingHandler = async (req: Request, res: Response) => {
     try {
+        const queryObject: any = req.query;
         const bookingCode = get(req, 'params.bookingCode');
+        let expand = queryObject.expand || null
 
-        const booking = await findBooking({bookingCode})
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const booking = await findBooking({bookingCode}, {lean: true}, expand)
         // return res.send(post)
 
         if(!booking) {

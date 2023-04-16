@@ -27,7 +27,23 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
             return response.handleErrorResponse(res, {data: flightSearchResults.data})
         }
 
-        const results = flightSearchResults!.data.map((result: any) => {
+        const filteredResults = flightSearchResults!.data.filter((result: any) => {
+            const outboundFlightsFound = result.outbound.filter((flight:any)=> {
+                return flight.operatingAirline === body.airline
+            })
+
+            if (outboundFlightsFound.length > 0 ) {
+                return result
+            }
+        })
+
+        let resultsToParse = flightSearchResults!.data
+
+        if(body.airline && body.airline !== '') {
+            resultsToParse = filteredResults
+        }
+
+        const results = resultsToParse.map((result: any) => {
             const outboundFlights: any = []
             const inboundFlights: any = []
 
@@ -52,6 +68,8 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
                 flight.departureTime = new Date(flight?.departureTime).toLocaleTimeString()
                 flight.arrivalDate = new Date(flight?.arrivalTime).toLocaleDateString()
                 flight.arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString()
+
+                
                 outboundFlights.push(flight)
             })
             result.outbound = outboundFlights
@@ -84,7 +102,7 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
             return result
         })
 
-        return response.ok(res, results)
+        return response.ok(res, {total: results.length, results})
         // return response.ok(res, flightSearchResults!.data)
     } catch (error: any) {
         return response.error(res, error)

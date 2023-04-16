@@ -12,8 +12,8 @@ interface CreatePackageInput {
     name: string
     description: string
     packageType: string
-    features: string[]
-    packagePlan?: {
+    inclusions: string[]
+    itinerary?: {
       title: string
       description: string
     }[]

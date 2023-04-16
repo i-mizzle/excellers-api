@@ -3,9 +3,6 @@ import  * as response from "../responses"
 import { get } from 'lodash'
 import { applyPackageDeals, createPackage, findAndUpdatePackage, findPackage, findPackages } from "../service/package.service";
 import { getJsDate } from "../utils/utils";
-import { PackageDocument } from "../model/package.model";
-import { DealDocument } from "../model/deal.model";
-import { findDeals } from "../service/deal.service";
 
 export const createPackageHandler = async (req: Request, res: Response) => {
     try {

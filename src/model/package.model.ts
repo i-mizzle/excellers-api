@@ -8,8 +8,8 @@ export interface PackageDocument extends mongoose.Document {
     name: string
     description: string
     packageType: string
-    features: string[]
-    packagePlan: {
+    inclusions: string[]
+    itinerary: {
       title: string
       description: string
     }[]
@@ -45,10 +45,10 @@ const PackageSchema = new mongoose.Schema(
       enum: ['PACKAGE', 'GROUP'],
       default: 'GROUP'
     },
-    features: [
+    inclusions: [
       {type: String}
     ],
-    packagePlan: [
+    itinerary: [
       {
         title: {
           type: String

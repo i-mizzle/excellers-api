@@ -7,16 +7,16 @@ const payload = {
         packageType: string().required('package type (packageType) is required as enum [eg: PRIVATE, GROUP]'),
         price: number().required('package price (price) is required'),
         lockDownPrice: number().required('package lock down price (lockDownPrice) (price) is required'),
-        features: array().required('an array of features is required for this package').min(1, 'provide at least one feature'),
+        inclusions: array().required('an array of inclusions is required for this package').min(1, 'provide at least one inclusion'),
         media: array(object({
             type: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),
             url: string().matches(
                 /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
                 'Please use a valid url for media.url').required('media.url is required')
         })),
-        packagePlan: array(object({
-            title: string().required('packagePlan.title is required'),
-            description: string().required('packagePlan.description is required'),
+        itinerary: array(object({
+            title: string().required('itinerary.title is required'),
+            description: string().required('itinerary.description is required'),
         }))
     })
 }

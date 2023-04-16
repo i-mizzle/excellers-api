@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { InvoiceDocument } from "./invoice.model";
+import { AddonDocument } from "./addon.model";
 
 export interface Passenger {
     passengerType: string
@@ -45,6 +46,8 @@ export interface BookingDocument extends mongoose.Document {
     bookingCode: string
     flightId: string
     passengers: Array<Passenger>
+    addons: Array<AddonDocument['_id']>
+    addonsTotal: number,
     ticketed: Boolean
     cancelled: Boolean
     amount: number
@@ -55,7 +58,7 @@ export interface BookingDocument extends mongoose.Document {
     inbound: Array<Flight>
     inboundStops: number
     outbound: Array<Flight>
-    outboundStps: number
+    outboundStops: number
     priceChange: Boolean,
     pricing: any,
     reference: string
@@ -76,6 +79,13 @@ const BookingSchema = new mongoose.Schema(
       type:  mongoose.Schema.Types.ObjectId, 
       ref: 'Invoice'
     },
+    addons: [
+      {
+        type:  mongoose.Schema.Types.ObjectId, 
+        ref: 'Addon'
+      }
+    ],
+    addonsTotal: {type: Number},
     passengers: [],
     amount: {type: Number},
     ticketed: {type: Boolean, default: false},
@@ -87,7 +97,7 @@ const BookingSchema = new mongoose.Schema(
     inbound: [],
     inboundStops: {type: String},
     outbound: [],
-    outboundStps: {type: Number},
+    outboundStops: {type: Number},
     pricing: {},
     priceChange: {type: Boolean},
     reference: {type: String},
