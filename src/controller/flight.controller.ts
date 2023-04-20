@@ -29,7 +29,7 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
 
         const filteredResults = flightSearchResults!.data.filter((result: any) => {
             const outboundFlightsFound = result.outbound.filter((flight:any)=> {
-                return flight.operatingAirline === body.airline
+                return body.airlines?.includes(flight.operatingAirline)
             })
 
             if (outboundFlightsFound.length > 0 ) {
@@ -39,7 +39,7 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
 
         let resultsToParse = flightSearchResults!.data
 
-        if(body.airline && body.airline !== '') {
+        if(body.airlines && body.airlines.length > 0) {
             resultsToParse = filteredResults
         }
 

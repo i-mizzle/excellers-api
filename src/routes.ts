@@ -42,8 +42,8 @@ import { createDealSchema, getDealSchema } from './schema/deal.schema';
 import { createDealHandler, deleteDealHandler, getDealHandler, getDealsHandler, updateDealHandler } from './controller/deal.controller';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
-import { createPackageBookingSchema } from './schema/package-booking.schema';
-import { createPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controller';
+import { createPackageBookingSchema, getPackageBookingSchema } from './schema/package-booking.schema';
+import { createPackageBookingHandler, getPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controller';
 import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
 import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
 import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
@@ -250,6 +250,12 @@ export default function(app: Express) {
     app.get('/bookings/packages',
         requiresUser,
         getPackageBookingsHandler
+    )
+
+    app.get('/bookings/packages/:bookingCode',
+        requiresUser,
+        validateRequest(getPackageBookingSchema),
+        getPackageBookingHandler
     )
 
     /**

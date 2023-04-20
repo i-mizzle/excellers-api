@@ -146,6 +146,7 @@ export const issueTicket = async (reference: string) => {
 }
 
 export const cancelBooking = async (reference: string) => {
+    console.log('booking to be cancelled -> -> ', reference)
     try {
         const response = await axios.post(`${tiqwaConfig.baseUrl}/flight/${reference}`, {}, { headers })
 

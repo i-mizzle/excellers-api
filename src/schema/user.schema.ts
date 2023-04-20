@@ -9,6 +9,14 @@ export const createUserSchema = object({
             // .matches(/^[a-zA-Z0-9_.-]*$/, 'password can only contain latin characters'),
         phone: string().required('phone number (phone) is required'),
         userType: string().required('user type is required'),
+        businessName: string().when('userType', {
+            is: 'AFFILIATE', 
+            then: string().required('Business name (businessName) is required for Affiliates')
+        }),
+        location: string().when('userType', {
+            is: 'AFFILIATE', 
+            then: string().required('Business location (location) is required for Affiliates')
+        }),
         email: string()
             .email('must be a valid email')
             .required('email is required'),

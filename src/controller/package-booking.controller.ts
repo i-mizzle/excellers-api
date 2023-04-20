@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import * as response from '../responses'
 import { createInvoice } from "../service/invoice.service";
-import { createPackageBooking, findPackageBookings } from "../service/package-booking.service";
+import { createPackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
 import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode } from "../utils/utils";
 
@@ -80,25 +80,34 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
     }
 }
 
-// export const getPackageBookingHandler = async (req: Request, res: Response) => {
-//     try {
-//         const packageId = get(req, 'params.packageId');
+export const getPackageBookingHandler = async (req: Request, res: Response) => {
+    try {
+        const bookingCode = get(req, 'params.bookingCode');
 
-//         const queryObject: any = req.query;
-//         const expand = queryObject.expand || null
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+        const ObjectId = require('mongoose').Types.ObjectId;
 
-//         const foundPackage = await findPackage({_id: packageId, deleted: false}, expand)
-//         // return res.send(post)
+        let booking = null
+        if(ObjectId.isValid(bookingCode)) {
+            booking = await findPackageBooking({_id: bookingCode}, {lean: true}, expand)
+        } else {
+            booking = await findPackageBooking({bookingCode: bookingCode}, {lean: true}, expand)
+        }
 
-//         if(!foundPackage) {
-//             return response.notFound(res, {message: 'package not found'})
-//         }
+        // return res.send(post)
 
-//         const mutatedPackage = await applyPackageDeals([foundPackage])
+        if(!booking) {
+            return response.notFound(res, {message: 'package booking not found'})
+        }
 
-//         return response.ok(res, mutatedPackage[0])
+
+        return response.ok(res, booking)
         
-//     } catch (error:any) {
-//         return response.error(res, error)
-//     }
-// }
+    } catch (error:any) {
+        return response.error(res, error)
+    }
+}

@@ -3,6 +3,7 @@ import { InvoiceDocument } from "../model/invoice.model"
 import PackageBooking, { PackageBookingDocument } from "../model/package-booking.model"
 import { PackageDocument } from "../model/package.model"
 import { UserDocument } from "../model/user.model"
+import { generateCode } from "../utils/utils"
 
 interface PackageBookingInput {
     bookedBy: UserDocument['_id']
@@ -18,7 +19,8 @@ interface PackageBookingInput {
 export const createPackageBooking = async (
     input: PackageBookingInput) => {
     try {
-        const newPackage = await PackageBooking.create(input)
+        const bookingCode = generateCode(16, false).toUpperCase()
+        const newPackage = await PackageBooking.create({...input, ...{bookingCode}})
 
         return newPackage
     } catch (error: any) {
@@ -36,7 +38,7 @@ export async function findPackageBookings(
     const total = await PackageBooking.find(query, {}, options).countDocuments()
     let packageBookings = null
     if(perPage===0&&page===0){
-        packageBookings = await PackageBooking.find(query, {}, options)
+        packageBookings = await PackageBooking.find(query, {}, options).populate(expand)
     } else {
         packageBookings = await PackageBooking.find(query, {}, options).populate(expand)
             .sort({ 'createdAt' : -1 })
@@ -52,8 +54,8 @@ export async function findPackageBookings(
 
 export async function findPackageBooking(
     query: FilterQuery<PackageBookingDocument>,
+    options: QueryOptions = { lean: true },
     expand?: string,
-    options: QueryOptions = { lean: true }
 ) {
     try {
         const foundPackage = await PackageBooking.findOne(query, {}, options).populate(expand)

@@ -19,6 +19,8 @@ export interface UserDocument extends mongoose.Document {
     bvnValidated?: Boolean,
     bvnValidationData?: {}
     affiliateMarkup?: AffiliateMarkupDocument["_id"]
+    businessName?: string,
+    location?: string
     createdAt?: Date;
     updatedAt?: Date;
     comparePassword(candidatePassword: string): Promise<boolean>
@@ -73,6 +75,12 @@ const UserSchema = new mongoose.Schema(
         affiliateMarkup: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'AffiliateMarkup'
+        },
+        businessName: {
+            type: String
+        },
+        location: {
+            typ: String
         },
         accountPermissions: [],
     },
