@@ -23,7 +23,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
         const invoiceInput = {
             user: userId,
             invoiceCode: invoiceCode,
-            amount: packagePrice[0].discountedPrice,
+            amount: body.lockDown && body.lockDown == true ? bookingPackage.lockDownPrice : packagePrice[0].discountedPrice,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             invoiceItem: bookingPackage._id
@@ -40,7 +40,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
 
         const packageBooking = await createPackageBooking(bookingInput)
         return response.created(res, packageBooking)
-    } catch (error:any) {
+    } catch (error: any) {
         return response.error(res, error)
     }
 }
@@ -70,7 +70,7 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
         const responseObject = {
             page,
             perPage: resPerPage,
-            total: packagesBookingsQuery.total,
+            total: bookings.total,
             bookings: bookings.packageBookings
         }
 

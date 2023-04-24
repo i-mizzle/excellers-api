@@ -36,6 +36,18 @@ export const createUserSessionSchema = object({
     })
 });
 
+
+const params = {
+    params: object({
+        userId: string().required('user id is required')
+    })
+}
+
+export const getUserDetailsSchema = object({
+    ...params
+})
+
+
 // .when('eventType', {
 //     is: 'VERSUS', 
 //     then: object({

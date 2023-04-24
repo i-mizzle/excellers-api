@@ -1,6 +1,6 @@
 import { StringDate } from "./types";
 
-export const generateCode = (length: Number, isNumeric: Boolean): string => {
+export const generateCode = (length: number, isNumeric: Boolean): string => {
     if (!isNumeric) { isNumeric = false }
     let result = '';
     let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -265,3 +265,21 @@ export const parseDateForMonnify = (stringDate: string) => {
   
   return `${day}-${month}-${year}`
 } 
+
+export const checkIsConsecutive = (array: any, field: string) => {
+  return Boolean(array.reduce((res: any, cur: any) => (res ? (Number(res[field]) + 1 === Number(cur[field]) ? cur : false) : false)));
+}
+
+
+export const foundDuplicateStrings = (stringArray: string[]) => {
+  if(!stringArray) {return true}
+  let duplicateItems = stringArray.filter((item, index) => stringArray.indexOf(item) != index);
+
+  if (duplicateItems) {
+    console.log("Array contains the following duplicate elements");
+    console.log(duplicateItems); // [“a”]
+    return true
+  } else {
+    return false
+  }
+}

@@ -12,7 +12,11 @@ export interface DealDocument extends mongoose.Document {
     startDate: Date,
     endDate: Date,
     active: Boolean
-    deleted: Boolean
+    deleted: Boolean,
+    media?: {
+      type: string
+      url: string
+    }[]
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -69,7 +73,19 @@ const DealSchema = new mongoose.Schema(
     deleted: {
       type: Boolean,
       default: false
-    }
+    },
+    media: [
+      {
+        type: {
+          type: String,
+          enum: ['VIDEO', 'IMAGE', 'DOCUMENT'],
+          default: 'IMAGE'
+        },
+        url: {
+          type: String
+        }
+      }
+    ],
   },
   { timestamps: true }
 );

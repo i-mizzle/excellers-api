@@ -141,6 +141,19 @@ export async function getUserProfileHandler (req: Request, res: Response) {
     }
 }
 
+export async function getUserDetailsHandler (req: Request, res: Response) {
+    try {
+        const userId = get(req, 'params.userId');
+
+        let user = await findUser({_id: userId})
+
+        return response.ok(res, omit(user, ['_id', 'password', 'confirmationToken']))
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
 export const checkExistingUserHandler = async (req: Request, res: Response) => {
     try {
         const field = get(req, 'params.field')

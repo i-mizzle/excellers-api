@@ -1,8 +1,9 @@
-import { object, string, ref, number, array } from "yup";
+import { object, string, ref, number, array, boolean } from "yup";
 
 const payload = {
     body: object({
         package: string().required('package is required'),
+        lockDown: boolean().required('lockDown is required as a boolean'),
         packageOwners: array(object({
             name: string().required('packagePlan.title is required'),
             email: string().required('packagePlan.description is required'),

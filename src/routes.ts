@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { checkExistingUserHandler, confirmEmailHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
+import { checkExistingUserHandler, confirmEmailHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
 import { 
     createUserSessionHandler,
     invalidateUserSessionHandler,
@@ -11,7 +11,8 @@ import {
 } from './controller/session.controller';
 import { 
     createUserSchema,
-    createUserSessionSchema
+    createUserSessionSchema,
+    getUserDetailsSchema
 } from './schema/user.schema'
 import {
     checkUserType,
@@ -52,6 +53,10 @@ import { approveAffiliateSchema, validateBvnSchema } from './schema/affiliate.sc
 import { approveAffiliateHandler, verifyAffiliateBvnHandler } from './controller/affiliate.controller';
 import { createAddonSchema, singleAddonSchema } from './schema/addon.schema';
 import { createAddonHandler, deleteAddonHandler, getAddonHandler, getAddonsHandler, updateAddonHandler } from './controller/addon.controller';
+import { createTimeSlotSchema, getTimeSlotSchema } from './schema/timeslot.schema';
+import { createTimeSlotsHandler, getTimeSlotsHandler, updateTimeSlotHandler } from './controller/time-slot.controller';
+import { createAppointmentSchema, getAppointmentSchema } from './schema/appointment.schema';
+import { cancelAppointmentHandler, createAppointmentHandler, getAppointmentHandler, getAppointmentsHandler, updateAppointmentHandler } from './controller/appointment.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -119,6 +124,14 @@ export default function(app: Express) {
         requiresUser, 
         requiresAdministrator,
         getAllUsersHandler
+    )
+
+    // Delete user account
+    app.get('/users/profile/:userId', 
+        requiresUser, 
+        requiresAdministrator,
+        validateRequest(getUserDetailsSchema),
+        getUserDetailsHandler
     )
 
     // Delete user account
@@ -446,6 +459,59 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(singleAddonSchema),
         deleteAddonHandler
+    )
+
+    // SETTINGS
+
+    app.post("/settings/time-slots", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createTimeSlotSchema),
+        createTimeSlotsHandler
+    )
+
+    app.get("/settings/time-slots", 
+        getTimeSlotsHandler
+    )
+
+    app.put("/settings/time-slots/:timeSlotId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getTimeSlotSchema),
+        updateTimeSlotHandler
+    )
+
+    // CALENDAR?APPOINTMENTS
+    app.post("/appointments", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createAppointmentSchema),
+        createAppointmentHandler
+    )
+
+    app.get("/appointments", 
+        requiresUser,
+        requiresAdministrator,
+        getAppointmentsHandler
+    )
+
+    app.get("/appointments/:appointmentCode", 
+        requiresUser,
+        validateRequest(getAppointmentSchema),
+        getAppointmentHandler
+    )
+
+    app.put("/appointments/:appointmentCode", 
+        requiresUser,
+        validateRequest(getAppointmentSchema),
+        updateAppointmentHandler
+    )
+
+    app.delete("/appointments/:appointmentCode", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getAppointmentSchema),
+        cancelAppointmentHandler
     )
 
     // UPLOAD FILE
