@@ -3,8 +3,7 @@ import { object, string, ref, number, boolean, array } from "yup";
 const payload = {
     body: object({
         title: string().required('title is required'),
-        dealItemType: string().required('dealItemType is required as enum [eg: PACKAGE, FLIGHT]'),
-        dealItem: string().required('dealItem is required'),
+        package: string().required('package is required as the _id of the package this deal is for'),
         discountValue: number().required('discountValue is required'),
         discountType: string().required('type is required as enum [eg: PERCENTAGE, FIXED]'),
         description: string().required('description is required'),
@@ -22,14 +21,14 @@ const payload = {
 
 const params = {
     params: object({
-        dealId: string().required('dealId is required as a path param')
+        dealCode: string().required('dealCode is required as a path param')
     })
 }
 
-export const createDealSchema = object({
+export const createPackageDealSchema = object({
    ...payload
 });
 
-export const getDealSchema = object({
+export const getPackageDealSchema = object({
     ...params
 })

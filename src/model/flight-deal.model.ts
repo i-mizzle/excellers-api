@@ -1,13 +1,16 @@
 import mongoose from "mongoose";
 import { UserDocument } from "./user.model";
 
-export interface DealDocument extends mongoose.Document {
+export interface FlightDealDocument extends mongoose.Document {
     createdBy: UserDocument['_id'];
-    dealItemType: string,
-    dealItem: mongoose.Document["_id"],
+    flight: {
+        origin: string,
+        destination: string
+    },
     discountType: string,
     discountValue: number,
     title: string
+    dealCode: string
     description: string,
     startDate: Date,
     endDate: Date,
@@ -21,24 +24,15 @@ export interface DealDocument extends mongoose.Document {
     updatedAt?: Date;
 }
 
-const DealSchema = new mongoose.Schema(
+const FlightDealSchema = new mongoose.Schema(
   {
     createdBy: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
     },
-    // voucherCode: {
-    //     type: String,
-    //     required: true,
-    //     unique: true
-    // },
-    dealItemType: {
-      type:String,
-      enum: ['PACKAGE', 'FLIGHT'],
-      default: 'PACKAGE'
-    },
-    dealItem: {
+    package: {
       type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Package',
       required: true
     },
     discountType: {
@@ -48,6 +42,10 @@ const DealSchema = new mongoose.Schema(
     },
     discountValue: {
         type: Number,
+        required: true
+    },
+    dealCode: {
+        type: String,
         required: true
     },
     title: {
@@ -90,6 +88,6 @@ const DealSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Deal = mongoose.model<DealDocument>("Deal", DealSchema);
+const FlightDeal = mongoose.model<FlightDealDocument>("FlightDeal", FlightDealSchema);
 
-export default Deal;
+export default FlightDeal;

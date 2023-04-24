@@ -39,8 +39,7 @@ import { createNewsletterSubscriptionHandler, deleteNewsletterSubscriptionHandle
 import { createNewsletterSubscriptionSchema, getNewsletterSubscriptionSchema } from './schema/newsletter-subscription.schema';
 import { createPackageSchema, getPackageSchema } from './schema/package.schema';
 import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler } from './controller/package.controller';
-import { createDealSchema, getDealSchema } from './schema/deal.schema';
-import { createDealHandler, deleteDealHandler, getDealHandler, getDealsHandler, updateDealHandler } from './controller/deal.controller';
+import { createPackageDealSchema, getPackageDealSchema } from './schema/package-deal.schema';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
 import { createPackageBookingSchema, getPackageBookingSchema } from './schema/package-booking.schema';
@@ -59,6 +58,7 @@ import { createAppointmentSchema, getAppointmentSchema } from './schema/appointm
 import { cancelAppointmentHandler, createAppointmentHandler, getAppointmentHandler, getAppointmentsHandler, updateAppointmentHandler } from './controller/appointment.controller';
 import { createPermissionsSchema } from './schema/permission.schema';
 import { createPermissionsHandler, getPermissionsHandler } from './controller/permission.controller';
+import { createPackageDealHandler, deletePackageDealHandler, getPackageDealHandler, getPackageDealsHandler, updatePackageDealHandler } from './controller/package-deal.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -322,38 +322,38 @@ export default function(app: Express) {
     /**
      * Deals
      */
-    app.post('/deals', 
+    app.post('/deals/packages', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(createDealSchema),
-        createDealHandler
+        validateRequest(createPackageDealSchema),
+        createPackageDealHandler
     )
 
-    app.get('/deals', 
+    app.get('/deals/packages', 
         requiresUser,
         requiresAdministrator,
-        getDealsHandler
+        getPackageDealsHandler
     )
 
-    app.get('/deals/:voucherCode', 
+    app.get('/deals/packages/:dealCode', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(getDealSchema),
-        getDealHandler
+        validateRequest(getPackageDealSchema),
+        getPackageDealHandler
     )
 
-    app.put('/deals/:voucherCode', 
+    app.put('/deals/packages/:dealCode', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(getDealSchema),
-        updateDealHandler
+        validateRequest(getPackageDealSchema),
+        updatePackageDealHandler
     )
         
-    app.delete('/deals/:voucherCode', 
+    app.delete('/deals/packages/:dealCode', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(getDealSchema),
-        deleteDealHandler
+        validateRequest(getPackageDealSchema),
+        deletePackageDealHandler
     )
 
     /**

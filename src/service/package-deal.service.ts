@@ -1,14 +1,15 @@
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
-import Deal, { DealDocument } from "../model/deal.model";
 import { UserDocument } from "../model/user.model";
 import { StringDate } from "../utils/types";
-import { generateCode, getJsDate } from "../utils/utils";
-import mongoose from "mongoose";
+import { getJsDate } from "../utils/utils";
+import PackageDeal, { PackageDealDocument } from "../model/package-deal.model";
+import { PackageDocument } from "../model/package.model";
 
 interface CreateDealInput {
     createdBy: UserDocument['_id'];
     dealItemType: string,
-    dealItem: mongoose.Document['_id'],
+    dealCode: string,
+    package: PackageDocument['_id'],
     discountValue: number,
     discountType: string,
     title: string
@@ -19,15 +20,15 @@ interface CreateDealInput {
 }
 
 
-export const createDeal = async (
+export const createPackageDeal = async (
     input: CreateDealInput) => {
         try {
-        const deal = await Deal.create({
+        const deal = await PackageDeal.create({
             createdBy: input.createdBy,
             title: input.title,
             description: input.description,
-            dealItemType: input.dealItemType,
-            dealItem:input.dealItem,
+            package:input.package,
+            dealCode: input.dealCode,
             discountValue: input.discountValue,
             discountType: input.discountType,
             startDate: getJsDate(input.startDate),
@@ -40,22 +41,25 @@ export const createDeal = async (
     }
 }
 
-export async function findDeals(
-    query: FilterQuery<DealDocument>,
+export async function findPackageDeals(
+    query: FilterQuery<PackageDealDocument>,
     perPage: number,
     page: number,
+    expand: string,
     options: QueryOptions = { lean: true }
 ) {
-    const total = await Deal.find(query, {}, options).countDocuments()
+    const total = await PackageDeal.find(query, {}, options).countDocuments()
     let deals = null
     if(perPage===0&&page===0){
-        deals = await Deal.find(query, {}, options)
+        deals = await PackageDeal.find(query, {}, options).populate(expand)
     } else {
-        deals = await Deal.find(query, {}, options)
+        deals = await PackageDeal.find(query, {}, options).populate(expand)
             .sort({ 'createdAt' : -1 })
             .skip((perPage * page) - perPage)
             .limit(perPage);
     }
+
+    console.log(deals)
 
     return {
         total,
@@ -63,12 +67,13 @@ export async function findDeals(
     }
 }
 
-export async function findDeal(
-    query: FilterQuery<DealDocument>,
-    options: QueryOptions = { lean: true }
+export async function findPackageDeal(
+    query: FilterQuery<PackageDealDocument>,
+    expand: string,
+    options: QueryOptions = { lean: true },
 ) {
     try {
-        const deal = await Deal.findOne(query, {}, options)
+        const deal = await PackageDeal.findOne(query, {}, options).populate(expand)
         
         return deal
     } catch (error: any) {
@@ -77,14 +82,14 @@ export async function findDeal(
     }
 }
 
-export async function findAndUpdateDeal(
-    query: FilterQuery<DealDocument>,
-    update: UpdateQuery<DealDocument>,
+export async function findAndUpdatePackageDeal(
+    query: FilterQuery<PackageDealDocument>,
+    update: UpdateQuery<PackageDealDocument>,
     options: QueryOptions
 ) {
 
     try {
-        return Deal.findOneAndUpdate(query, update, options)
+        return PackageDeal.findOneAndUpdate(query, update, options)
     } catch (error: any) {
         return {
             error: true,

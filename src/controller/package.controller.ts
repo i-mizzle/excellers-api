@@ -86,7 +86,7 @@ export const updatePackageHandler = async (req: Request, res: Response) => {
             update = {...update, ...{startDate: getJsDate(update.endDate)}}
         }
 
-        const trip = await findPackage({_id: packageId})
+        const trip = await findPackage({_id: packageId}, '')
         if(!trip) {
             return response.notFound(res, {message: 'package not found'})
         }
@@ -105,7 +105,7 @@ export const deletePackageHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const packageId = get(req, 'params.packageId');
 
-        const foundPackage = await findPackage({_id: packageId})
+        const foundPackage = await findPackage({_id: packageId}, '')
         if(!foundPackage) {
             return response.notFound(res, {message: 'package not found'})
         }

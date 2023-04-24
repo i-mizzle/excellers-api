@@ -5,7 +5,7 @@ import { StringDate } from '../utils/types';
 import { UserDocument } from '../model/user.model';
 import Package, { PackageDocument } from '../model/package.model';
 import { TripDocument } from '../model/trip.model';
-import { findDeals } from './deal.service';
+import { findPackageDeals } from './package-deal.service';
 
 interface CreatePackageInput {
     createdBy: UserDocument['_id'];
@@ -46,7 +46,7 @@ export async function findPackages(
     const total = await Package.find(query, {}, options).countDocuments()
     let packages = null
     if(perPage===0&&page===0){
-        packages = await Package.find(query, {}, options)
+        packages = await Package.find(query, {}, options).populate(expand)
     } else {
         packages = await Package.find(query, {}, options).populate(expand)
             .sort({ 'createdAt' : -1 })
@@ -93,14 +93,13 @@ export async function findAndUpdatePackage(
 }
 
 export const applyPackageDeals = async (packages: PackageDocument[]) => {
-    const deals = await findDeals({active: true, deleted: false}, 0, 0)
+    const deals = await findPackageDeals({active: true, deleted: false}, 0, 0, '')
 
     const mutatedPackages = await Promise.all(packages.map(async (pack: PackageDocument) => {
         let existingDeal = {}
         let currentPrice = pack.price
-        
         const packageDeal = deals.deals.find((deal) => {
-            return deal.dealItem.toString() === pack._id.toString()
+            return deal.package.toString() === pack._id.toString()
         })
 
         if(packageDeal) {
