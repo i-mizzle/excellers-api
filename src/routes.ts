@@ -57,6 +57,8 @@ import { createTimeSlotSchema, getTimeSlotSchema } from './schema/timeslot.schem
 import { createTimeSlotsHandler, getTimeSlotsHandler, updateTimeSlotHandler } from './controller/time-slot.controller';
 import { createAppointmentSchema, getAppointmentSchema } from './schema/appointment.schema';
 import { cancelAppointmentHandler, createAppointmentHandler, getAppointmentHandler, getAppointmentsHandler, updateAppointmentHandler } from './controller/appointment.controller';
+import { createPermissionsSchema } from './schema/permission.schema';
+import { createPermissionsHandler, getPermissionsHandler } from './controller/permission.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -462,7 +464,7 @@ export default function(app: Express) {
     )
 
     // SETTINGS
-
+    // time-slots
     app.post("/settings/time-slots", 
         requiresUser,
         requiresAdministrator,
@@ -479,6 +481,20 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(getTimeSlotSchema),
         updateTimeSlotHandler
+    )
+
+    // permissions
+    app.post("/settings/permissions", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createPermissionsSchema),
+        createPermissionsHandler
+    )
+
+    app.get("/settings/permissions", 
+        requiresUser,
+        requiresAdministrator,
+        getPermissionsHandler
     )
 
     // CALENDAR?APPOINTMENTS

@@ -6,6 +6,11 @@ export async function createPermission (input: DocumentDefinition<PermissionDocu
     return Permission.create(input)
 }
 
+export async function findPermissions(query: FilterQuery<PermissionDocument>) {
+    return Permission.find(query).lean();
+}
+
+
 export async function findPermission(
     query: FilterQuery<PermissionDocument>,
     options: QueryOptions = { lean: true }
