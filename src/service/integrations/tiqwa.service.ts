@@ -32,7 +32,7 @@ export const searchForFlights = async (input: FlightSearch ) => {
         }
         const response = await axios.get(`${tiqwaConfig.baseUrl}/flight/search?${params}`, { headers })
 
-        console.log("TIQWA RESPONSE ===> ", response.data)
+        // console.log("TIQWA RESPONSE ===> ", response.data)
 
         const results = response.data.map((item: any)=>{
             return snakeToCamel(item)

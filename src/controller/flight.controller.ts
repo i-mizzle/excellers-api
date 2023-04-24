@@ -2,13 +2,35 @@ import { Request, Response } from "express";
 import { confirmFlightPrice, FlightSearch, searchForFlights } from "../service/integrations/tiqwa.service";
 import * as response from '../responses'
 import { get } from "lodash";
+import { findFlightDeal } from "../service/flight-deal.service";
 
 const airports = require('airport-codes');
+
+const findExistingDeal = async(origin: string, destination: string, departureDate: string) => {
+    // search for existing deal on the route
+    const existingDeal = await findFlightDeal({
+        flight: {
+            origin: origin,
+            destination: destination
+        }, 
+        active: true, 
+        deleted: false,
+        startDate: {
+            // $lt: new Date(getJsDate(body.endDate))
+            $lte: new Date(departureDate)
+        },
+        endDate: {
+            $gte: new Date(departureDate),
+            // $gte: new Date(getJsDate(body.startDate)),
+        }
+    }, '') 
+
+    return existingDeal
+}
 
 export const flightSearchHandler = async (req: Request, res: Response) => {
     try {
         const body = req.body
-        const queryObject: any = req.query;
         
         const requestPayload: FlightSearch = {
             adults: body.adults,
@@ -20,6 +42,9 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
             infants: body.infants,
             return_date: body.returnDate
         }
+
+        // search for existing deal on the route
+        const existingDeal = await findExistingDeal(body.origin, body.destination, body.departureDate) 
 
         const flightSearchResults = await searchForFlights(requestPayload)
 
@@ -44,6 +69,17 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
         }
 
         const results = resultsToParse.map((result: any) => {
+            let discountedPrice = null
+            if(existingDeal && existingDeal.discountType === 'FIXED') {
+                discountedPrice = result.pricing.payable - existingDeal.discountValue/100
+                result.pricing = {...result.pricing, ...{discountedPrice: discountedPrice}}
+            }
+
+            if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
+                discountedPrice = result.pricing.payable - ((existingDeal.discountValue/100) * result.pricing.payable)
+                result.pricing = {...result.pricing, ...{discountedPrice: discountedPrice}}
+            }
+            result.deal = existingDeal
             const outboundFlights: any = []
             const inboundFlights: any = []
 
@@ -118,7 +154,29 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         if(confirmation.error === true) {
             return response.handleErrorResponse(res, {data: confirmation.data})
         }
-        return response.ok(res, confirmation!.data)
+
+        let confirmationData = confirmation!.data
+
+        const existingDeal = await findExistingDeal(
+            confirmation!.data.outbound[0].airportForm, 
+            confirmation!.data.outbound[0].airportTo, 
+            confirmation!.data.outbound[0].departureTime.toString().split('T')[0]
+        ) 
+
+        console.log('-> -> -> ', existingDeal)
+
+        let discountedPrice = null
+        if(existingDeal && existingDeal.discountType === 'FIXED') {
+            discountedPrice = confirmationData.pricing.payable - existingDeal.discountValue/100
+            confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
+        }
+
+        if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
+            discountedPrice = confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)
+            confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
+        }
+        
+        return response.ok(res, confirmationData)
     } catch (error: any) {
         return response.error(res, error)
     }

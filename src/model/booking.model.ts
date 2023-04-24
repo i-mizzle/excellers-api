@@ -85,6 +85,10 @@ const BookingSchema = new mongoose.Schema(
         ref: 'Addon'
       }
     ],
+    deal: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'FlightDeal' 
+    },
     addonsTotal: {type: Number},
     passengers: [],
     amount: {type: Number},

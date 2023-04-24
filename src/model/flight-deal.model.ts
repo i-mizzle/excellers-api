@@ -30,10 +30,15 @@ const FlightDealSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
     },
-    package: {
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'Package',
-      required: true
+    flight: {
+        origin: {
+            type: String,
+            required: true
+        },
+        destination: {
+            type: String,
+            required: true
+        }
     },
     discountType: {
         type: String,

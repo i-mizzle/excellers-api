@@ -59,6 +59,8 @@ import { cancelAppointmentHandler, createAppointmentHandler, getAppointmentHandl
 import { createPermissionsSchema } from './schema/permission.schema';
 import { createPermissionsHandler, getPermissionsHandler } from './controller/permission.controller';
 import { createPackageDealHandler, deletePackageDealHandler, getPackageDealHandler, getPackageDealsHandler, updatePackageDealHandler } from './controller/package-deal.controller';
+import { createFlightDealSchema, getFlightDealSchema } from './schema/flight-deal.schema';
+import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/fligt-deal.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -320,7 +322,7 @@ export default function(app: Express) {
     )
 
     /**
-     * Deals
+     * Package Deals
      */
     app.post('/deals/packages', 
         requiresUser,
@@ -354,6 +356,43 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(getPackageDealSchema),
         deletePackageDealHandler
+    )
+
+    /**
+     * Flight Deals
+     */
+    app.post('/deals/flights', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createFlightDealSchema),
+        createFlightDealHandler
+    )
+
+    app.get('/deals/flights', 
+        requiresUser,
+        requiresAdministrator,
+        getFlightDealsHandler
+    )
+
+    // app.get('/deals/packages/:dealCode', 
+    //     requiresUser,
+    //     requiresAdministrator,
+    //     validateRequest(getPackageDealSchema),
+    //     getPackageDealHandler
+    // )
+
+    app.put('/deals/flights/:dealCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getFlightDealSchema),
+        updateFlightDealHandler
+    )
+        
+    app.delete('/deals/flights/:dealCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getFlightDealSchema),
+        deleteFlightDealHandler
     )
 
     /**
