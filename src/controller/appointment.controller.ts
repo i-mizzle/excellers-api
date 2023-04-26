@@ -114,8 +114,14 @@ export const getAppointmentsHandler = async (req: Request, res: Response) => {
 export const getAppointmentHandler = async (req: Request, res: Response) => {
     try {
         const appointmentCode = get(req, 'params.appointmentCode');
-        console.log(appointmentCode)
-        const appointment = await findAppointment({appointmentCode: appointmentCode, deleted: false})
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const appointment = await findAppointment({appointmentCode: appointmentCode, deleted: false}, expand)
         // return res.send(post)
 
         if(!appointment) {
@@ -136,7 +142,7 @@ export const updateAppointmentHandler = async (req: Request, res: Response) => {
 
         let update = req.body
 
-        const appointment = await findAppointment({appointmentCode})
+        const appointment = await findAppointment({appointmentCode}, '')
         if(!appointment) {
             return response.notFound(res, {message: 'appointment not found'})
         }
@@ -177,7 +183,7 @@ export const cancelAppointmentHandler = async (req: Request, res: Response) => {
     try {
         const appointmentCode = get(req, 'params.appointmentCode');
 
-        const appointment = await findAppointment({appointmentCode})
+        const appointment = await findAppointment({appointmentCode}, '')
         if(!appointment) {
             return response.notFound(res, {message: 'appointment not found'})
         }

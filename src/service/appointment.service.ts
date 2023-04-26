@@ -32,9 +32,10 @@ export async function findAppointments(
 
 export async function findAppointment(
     query: FilterQuery<AppointmentDocument>,
+    expand: string,
     options: QueryOptions = { lean: true }
 ) {
-    return Appointment.findOne(query, {}, options)
+    return Appointment.findOne(query, {}, options).populate(expand)
 }
 
 export async function findAndUpdateAppointment(
