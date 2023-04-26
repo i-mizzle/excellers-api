@@ -89,7 +89,7 @@ export const getPackageDealHandler = async (req: Request, res: Response) => {
 export const updatePackageDealHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
-        const dealId = get(req, 'params.dealId');
+        const dealCode = get(req, 'params.dealCode');
 
         let update = req.body
 
@@ -101,7 +101,7 @@ export const updatePackageDealHandler = async (req: Request, res: Response) => {
             update = {...update, ...{startDate: getJsDate(update.endDate)}}
         }
 
-        const deal = await findPackageDeal({_id: dealId}, '')
+        const deal = await findPackageDeal({dealCode: dealCode}, '')
         if(!deal) {
             return response.notFound(res, {message: 'deal not found'})
         }
