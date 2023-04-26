@@ -39,7 +39,7 @@ import { createNewsletterSubscriptionHandler, deleteNewsletterSubscriptionHandle
 import { createNewsletterSubscriptionSchema, getNewsletterSubscriptionSchema } from './schema/newsletter-subscription.schema';
 import { createPackageSchema, getPackageSchema } from './schema/package.schema';
 import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler } from './controller/package.controller';
-import { createPackageDealSchema, getPackageDealSchema } from './schema/package-deal.schema';
+import { createPackageDealSchema, getPackageDealSchema, updatePackageDealSchema } from './schema/package-deal.schema';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
 import { createPackageBookingSchema, getPackageBookingSchema } from './schema/package-booking.schema';
@@ -59,8 +59,8 @@ import { cancelAppointmentHandler, createAppointmentHandler, getAppointmentHandl
 import { createPermissionsSchema } from './schema/permission.schema';
 import { createPermissionsHandler, getPermissionsHandler } from './controller/permission.controller';
 import { createPackageDealHandler, deletePackageDealHandler, getPackageDealHandler, getPackageDealsHandler, updatePackageDealHandler } from './controller/package-deal.controller';
-import { createFlightDealSchema, getFlightDealSchema } from './schema/flight-deal.schema';
-import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/fligt-deal.controller';
+import { createFlightDealSchema, getFlightDealSchema, updateFlightDealSchema } from './schema/flight-deal.schema';
+import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/flight-deal.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -347,7 +347,7 @@ export default function(app: Express) {
     app.put('/deals/packages/:dealCode', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(getPackageDealSchema),
+        validateRequest(updatePackageDealSchema),
         updatePackageDealHandler
     )
         
@@ -384,7 +384,7 @@ export default function(app: Express) {
     app.put('/deals/flights/:dealCode', 
         requiresUser,
         requiresAdministrator,
-        validateRequest(getFlightDealSchema),
+        validateRequest(updateFlightDealSchema),
         updateFlightDealHandler
     )
         

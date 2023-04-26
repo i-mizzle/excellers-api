@@ -53,6 +53,56 @@ const payload = {
     })
 }
 
+const updatePayload = {
+    body: object({
+        title: string(),
+        description: string(),
+        discountValue: number(),
+        discountType: string(),
+        startDate: string().test("validate-start-date", "start date must be today or after", function(value: any) {
+            const yesterday = new Date()
+            yesterday.setDate(yesterday.getDate() - 1)
+            if(getJsDate(value) > yesterday) {
+                return true
+            } else {
+                return false
+            }
+        }),
+        endDate: string().test("validate-end-date", "end date must be after today and after the start date", function(value: any) {
+            if(getJsDate(value) >= new Date()) {
+                return true
+            } else {
+                return false
+            }
+        }),
+        active: boolean(),
+        flight: object({
+            origin: string().test("validate-airport-code", "flight.origin must be a valid IATA airport code", function(value) {
+                const exists = airports.findWhere({ iata: value }) 
+                if(exists) {
+                    return true
+                } else {
+                    return false
+                }
+            }),
+            destination: string().test("validate-airport-code", "flight.destination must be a valid IATA airport code", function(value) {
+                const exists = airports.findWhere({ iata: value }) 
+                if(exists) {
+                    return true
+                } else {
+                    return false
+                }
+            })
+        }),
+        media: array(object({
+            type: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),
+            url: string().matches(
+                /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
+                'Please use a valid url for media.url').required('media.url is required')
+        })),
+    })
+}
+
 const params = {
     params: object({
         dealCode: string().required('dealCode is required as a path param')
@@ -61,6 +111,11 @@ const params = {
 
 export const createFlightDealSchema = object({
    ...payload
+});
+
+export const updateFlightDealSchema = object({
+    ...params,
+    ...updatePayload
 });
 
 export const getFlightDealSchema = object({

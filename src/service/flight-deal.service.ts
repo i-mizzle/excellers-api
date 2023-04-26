@@ -99,3 +99,26 @@ export async function findAndUpdateFlightDeal(
         } 
     }
 }
+
+export const findExistingFlightDeal = async(origin: string, destination: string, departureDate: string) => {
+    console.log(origin, ' => ', destination, ' on ', departureDate)
+    // search for existing deal on the route
+    const existingDeal = await findFlightDeal({
+        flight: {
+            origin: origin,
+            destination: destination
+        }, 
+        active: true, 
+        deleted: false,
+        startDate: {
+            // $lt: new Date(getJsDate(body.endDate))
+            $lte: new Date(departureDate)
+        },
+        endDate: {
+            $gte: new Date(departureDate),
+            // $gte: new Date(getJsDate(body.startDate)),
+        }
+    }, '') 
+
+    return existingDeal
+}

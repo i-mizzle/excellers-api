@@ -2,31 +2,9 @@ import { Request, Response } from "express";
 import { confirmFlightPrice, FlightSearch, searchForFlights } from "../service/integrations/tiqwa.service";
 import * as response from '../responses'
 import { get } from "lodash";
-import { findFlightDeal } from "../service/flight-deal.service";
+import { findExistingFlightDeal, findFlightDeal } from "../service/flight-deal.service";
 
 const airports = require('airport-codes');
-
-const findExistingDeal = async(origin: string, destination: string, departureDate: string) => {
-    // search for existing deal on the route
-    const existingDeal = await findFlightDeal({
-        flight: {
-            origin: origin,
-            destination: destination
-        }, 
-        active: true, 
-        deleted: false,
-        startDate: {
-            // $lt: new Date(getJsDate(body.endDate))
-            $lte: new Date(departureDate)
-        },
-        endDate: {
-            $gte: new Date(departureDate),
-            // $gte: new Date(getJsDate(body.startDate)),
-        }
-    }, '') 
-
-    return existingDeal
-}
 
 export const flightSearchHandler = async (req: Request, res: Response) => {
     try {
@@ -44,7 +22,7 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
         }
 
         // search for existing deal on the route
-        const existingDeal = await findExistingDeal(body.origin, body.destination, body.departureDate) 
+        const existingDeal = await findExistingFlightDeal(body.origin, body.destination, body.departureDate) 
 
         const flightSearchResults = await searchForFlights(requestPayload)
 
@@ -157,8 +135,8 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
 
         let confirmationData = confirmation!.data
 
-        const existingDeal = await findExistingDeal(
-            confirmation!.data.outbound[0].airportForm, 
+        const existingDeal = await findExistingFlightDeal(
+            confirmation!.data.outbound[0].airportFrom, 
             confirmation!.data.outbound[0].airportTo, 
             confirmation!.data.outbound[0].departureTime.toString().split('T')[0]
         ) 
@@ -174,6 +152,10 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
             discountedPrice = confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)
             confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
+        }
+        
+        if(existingDeal) {
+            confirmationData.deal = existingDeal
         }
         
         return response.ok(res, confirmationData)

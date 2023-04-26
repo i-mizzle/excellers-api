@@ -7,6 +7,7 @@ import { createInvoice, findInvoice } from "../service/invoice.service";
 import { addMinutesToDate, generateCode } from "../utils/utils";
 import { AddonDocument } from "../model/addon.model";
 import { findAddon } from "../service/addon.service";
+import { findExistingFlightDeal } from "../service/flight-deal.service";
 
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
@@ -25,23 +26,42 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             return response.handleErrorResponse(res, {data: booking.data})
         }
 
-        if(body.addon && body.addon.length > 0) {
-
-        }
-
         const bookingWithAddons: any = await findBooking({_id:booking.data._id}, {}, "addons")
         console.log('bookingWith addons -> ', bookingWithAddons)
 
         const totalAddonsPrice = bookingWithAddons!.addons.reduce((accumulator: number, currentValue: AddonDocument) => {
             return accumulator + currentValue.price;
-          }, 0);
+        }, 0);
 
-        console.log('total addons priceConfirmationSchema -> -> ', totalAddonsPrice)
+        const existingDeal = await findExistingFlightDeal(
+            flightPriceConfirmation!.data.outbound[0].airportFrom, 
+            flightPriceConfirmation!.data.outbound[0].airportTo, 
+            flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0]
+        )
+
+        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice
+
+        if(existingDeal) {
+            console.log('-> -> -> ', existingDeal)
+
+            let discountedPrice: any = null
+            if(existingDeal && existingDeal.discountType === 'FIXED') {
+                discountedPrice = flightPriceConfirmation.data.pricing.payable - existingDeal.discountValue/100
+                flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
+            }
+
+            if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
+                discountedPrice = flightPriceConfirmation.data.pricing.payable - ((existingDeal.discountValue/100) * flightPriceConfirmation.data.pricing.payable)
+                flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
+            }
+            
+            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice   
+        }
 
         const invoiceInput = {
             user: userId,
             invoiceCode: invoiceCode,
-            amount: (flightPriceConfirmation.data.amount * 100) + totalAddonsPrice,
+            amount: invoiceAmount,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             invoiceItem: booking.data._id
@@ -51,12 +71,14 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
 
         const updatedPricing = {
             markup: bookingWithAddons.pricing.markup,
-            payable: bookingWithAddons.pricing.payable + (totalAddonsPrice/100),
+            // payable: bookingWithAddons.pricing.payable + (totalAddonsPrice/100),
+            payable: invoiceAmount/100,
         }
 
         const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, {
             invoice: invoice._id,
             addonsTotal: totalAddonsPrice/100,
+            deal: existingDeal?._id,
             pricing: updatedPricing
         }, {new: true})
 

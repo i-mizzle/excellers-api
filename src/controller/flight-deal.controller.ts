@@ -111,7 +111,7 @@ export const updateFlightDealHandler = async (req: Request, res: Response) => {
         }
 
         if(update.endDate) {
-            update = {...update, ...{startDate: getJsDate(update.endDate)}}
+            update = {...update, ...{endDate: getJsDate(update.endDate)}}
         }
 
         const deal = await findFlightDeal({dealCode: dealCode}, '')
