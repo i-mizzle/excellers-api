@@ -11,10 +11,20 @@ export const createPackageDealHandler = async (req: Request, res: Response) => {
 
         // find available and active deals on the dealItem
         const existingDeals = await findPackageDeals({
-            dealItemId: body.dealItem, 
+            package: body.package, 
             active: true, 
-            deleted: false
+            deleted: false,
+            startDate: {
+                $gte: new Date(getJsDate(body.startDate)),
+                // $lt: new Date(getJsDate(body.endDate))
+            },
+            endDate: {
+                // $gte: new Date(getJsDate(body.startDate)),
+                $lte: new Date(getJsDate(body.endDate))
+            }
         }, 0, 0, '') 
+
+        console.log('EXISTING DEALS ON PACKAGE --------------------> ', existingDeals)
 
         if(existingDeals && existingDeals.deals.length > 0) {
             return response.conflict(res, {message: `deal item provided already has a running deal, please deactivate it first`})
