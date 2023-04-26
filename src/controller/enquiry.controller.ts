@@ -20,8 +20,13 @@ export const getEnquiriesHandler = async (req: Request, res: Response) => {
         const queryObject: any = req.query;
         const resPerPage = +queryObject.perPage || 25; 
         const page = +queryObject.page || 1; 
+        let expand = queryObject.expand || null
 
-        const enquiries = await findEnquiries( { deleted: false }, resPerPage, page)
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const enquiries = await findEnquiries( { deleted: false }, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {
@@ -40,8 +45,14 @@ export const getEnquiriesHandler = async (req: Request, res: Response) => {
 export const getEnquiryHandler = async (req: Request, res: Response) => {
     try {
         const enquiryId = get(req, 'params.enquiryId');
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
 
-        const enquiry = await findEnquiry({ _id: enquiryId, deleted: false })
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const enquiry = await findEnquiry({ _id: enquiryId, deleted: false }, expand)
 
         if(!enquiry) {
             return response.notFound(res, {message: 'enquiry not found'})

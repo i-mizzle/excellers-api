@@ -1,9 +1,19 @@
 import mongoose from "mongoose";
 import { UserDocument } from "./user.model";
+import { AppointmentDocument } from "./appointment.model";
 
 export interface EnquiryDocument extends mongoose.Document {
-  user: UserDocument["_id"];
-  guest: {};
+  name: string
+  email: string
+  phone: string
+  enquiryType: string
+  status: string
+  nationality?: string
+  visaEnquiryCountry?: string
+  passportAvailable: boolean
+  appointment: AppointmentDocument["_id"]
+  maritalStatus: string
+  deleted: boolean
   message: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -22,13 +32,32 @@ const EnquirySchema = new mongoose.Schema(
     }, 
     enquiryType: {
       type: String,
-      enum: ['PACKAGE', 'DEAL', 'GENERAL', 'VISA'],
+      enum: ['PACKAGE', 'DEAL', 'GENERAL', 'VISA', 'CORPORATE'],
       default: 'GENERAL'
     },
     status: {
       type: String,
       enum: ['PENDING', 'IN_PROGRESS', 'RESOLVED'],
       default: 'PENDING'
+    },
+    nationality: {
+      type: String
+    },
+    visaEnquiryCountry: {
+      type: String
+    },
+    passportAvailable: {
+      type: Boolean,
+      default: false
+    },
+    appointment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Appointment'
+    },
+    maritalStatus: {
+      type: 'String',
+      enum: ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED', 'OTHER'],
+      default: 'SINGLE'
     },
     message: { type: String, required: true },
     deleted: {

@@ -6,6 +6,7 @@ import { TimeSlotDocument } from "../model/time-slot.model";
 import { findTimeSlot } from "../service/time-slot.service";
 import { checkIsConsecutive, generateCode, getJsDate } from "../utils/utils";
 import { StringDate } from "../utils/types";
+import { findAndUpdateEnquiry, findEnquiry } from "../service/enquiry.service";
 
 const bookedForAttendees = async (attendees: any, timeSlots: any, appointmentDate: StringDate) => {
     
@@ -53,12 +54,29 @@ export const createAppointmentHandler = async (req: Request, res: Response) => {
             return response.badRequest(res, {message: 'One or more of your attendees has a clash on this date'})
         }
 
+        if(body.enquiry) {
+            const enquiry = await findEnquiry({_id: body.enquiry, deleted: false})
+            if(!enquiry) {
+                return response.notFound(res, {message: 'the enquiry you are trying to create an appointment for was not found'})
+            }
+
+            body.attendees.push({
+                name: enquiry.name,
+                email: enquiry.email,
+                phone: enquiry.phone
+            })
+        }
+
         // return response.ok(res, timeSlots)
         const appointmentCode = generateCode(16, false).toUpperCase()
         const appointment = await createAppointment({...body, ...{
             appointmentCode,
             createdBy: userId, 
             appointmentDate: getJsDate(body.appointmentDate)}})
+
+        if(body.enquiry) {
+            await findAndUpdateEnquiry({_id: body.enquiry}, {appointment: appointment._id}, {new: true})
+        }
 
         return response.created(res, appointment)
     } catch (error:any) {
