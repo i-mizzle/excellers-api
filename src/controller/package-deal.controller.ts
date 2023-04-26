@@ -3,11 +3,18 @@ import  * as response from "../responses"
 import { get } from 'lodash'
 import { generateCode, getJsDate } from "../utils/utils";
 import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPackageDeals } from "../service/package-deal.service";
+import { findPackage } from "../service/package.service";
 
 export const createPackageDealHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
         const body = req.body
+
+        const dealPackage = findPackage({_id: body.package}) 
+
+        if(!dealPackage) {
+            return response.notFound(res, {message: 'the package you are trying to deal for was not found'})
+        }
 
         // find available and active deals on the dealItem
         const existingDeals = await findPackageDeals({
@@ -23,8 +30,6 @@ export const createPackageDealHandler = async (req: Request, res: Response) => {
                 $lte: new Date(getJsDate(body.endDate))
             }
         }, 0, 0, '') 
-
-        console.log('EXISTING DEALS ON PACKAGE --------------------> ', existingDeals)
 
         if(existingDeals && existingDeals.deals.length > 0) {
             return response.conflict(res, {message: `deal item provided already has a running deal, please deactivate it first`})
