@@ -1,15 +1,14 @@
 import { Request, Response } from "express";
-import { changePassword, createUser, deleteUser, findAllUsers, findAndUpdateUser, findUser } from '../service/user.service'
+import { createUser, deleteUser, findAllUsers, findAndUpdateUser, findUser } from '../service/user.service'
 import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
-import { sendEmailConfirmation } from "../service/mailer.service";
-import { addMinutesToDate, generateCode } from "../utils/utils";
+import { addMinutesToDate } from "../utils/utils";
 import { createConfirmationCode, findAndUpdateConfirmation, findConfirmationCode } from "../service/confirmation-code.service";
-// import { findInvitee } from "../service/invitee.service";
-import { v4 as uuidv4 } from 'uuid';
+
 import config from 'config';
 import { nanoid } from "nanoid";
+// import { sendToKafka } from "../kafka/kafka";
 const tokenTtl = config.get('resetTokenTtl') as number
 
 export async function createUserHandler(req: Request, res: Response) {
@@ -36,11 +35,14 @@ export async function createUserHandler(req: Request, res: Response) {
 
         const user = await createUser(input)
 
-        await sendEmailConfirmation({
-            mailTo: user.email,
-            firstName: user.name.split(' ')[0] || input.name,
-            confirmationUrl: req.body.confirmationUrl + confirmationCode
-        })
+        // await sendToKafka(JSON.stringify({
+        //     message: {
+        //         mailTo: user.email,
+        //         firstName: user.name.split(' ')[0] || input.name,
+        //         confirmationUrl: req.body.confirmationUrl + confirmationCode.code
+        //     },
+        //     action: 'email-confirmation'
+        // }))
 
         return response.created(res, 
             omit(user.toJSON(), ['_id', 'password', 'confirmationToken'])
@@ -290,38 +292,6 @@ export async function deleteUserHandler (req: Request, res: Response) {
 //     }
 // }
 
-// export async function resendConfirmationHandler(req: Request, res: Response) {
-//     try {        
-//         const email = req.body.email
-//         const resent = await resendConfirmation(email)
-//         if(resent.error) {
-//             return response.handleErrorResponse(res, resent)
-//         } else {
-//             return response.ok(res, resent.data)
-//         }
-//     } catch (error: any) {
-//         log.error(error)
-//         return response.error(res, error)
-//     }
-// }
-
-// export async function requestPasswordResetHandler(req: Request, res: Response) {
-//     try {        
-//         const email = req.body.email
-
-//         const user = await findUser({email})
-//         if (!user) {
-//             return response.notFound(res, {message: "email not found"})
-//         }
-
-//         const resetRequest = await createResetRequest(user)
-
-//         return response.created(res, {message: 'Password reset OTP sent successfully'})
-//     } catch (error: any) {
-//         log.error(error)
-//         return response.error(res, error)
-//     }
-// }
 
 export async function getAllUsersHandler (req: Request, res: Response) {
     try {

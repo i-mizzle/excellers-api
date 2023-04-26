@@ -10,6 +10,7 @@ import log from "../logger";
 import { addMinutesToDate } from "../utils/utils";
 import { nanoid } from "nanoid";
 import { createResetRequest, findResetRequest } from "../service/password-reset.service";
+// import { sendToKafka } from "../kafka/kafka";
 
 const tokenTtl = config.get('resetTokenTtl') as number
 
@@ -33,11 +34,20 @@ export const requestPasswordResetHandler = async (req: Request, res: Response) =
             resetCode: resetCode._id
         })
 
-        await sendPasswordResetEmail({
-            mailTo: user.email,
-            firstName: user.name.split(' ')[0] || user.name,
-            resetUrl: req.body.confirmationUrl + code
-        })
+        // await sendPasswordResetEmail({
+        //     mailTo: user.email,
+        //     firstName: user.name.split(' ')[0] || user.name,
+        //     resetUrl: req.body.confirmationUrl + code
+        // })
+
+        // await sendToKafka(JSON.stringify({
+        //     message: {
+        //         mailTo: user.email,
+        //         firstName: user.name.split(' ')[0] || user.name,
+        //         resetUrl: req.body.confirmationUrl + code
+        //     },
+        //     action: 'password-reset-request'
+        // }))
 
         return response.created(res, "password reset link sent successfully. please check your email")
 

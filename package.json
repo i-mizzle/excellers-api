@@ -26,6 +26,7 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^8.5.1",
     "jssha": "^3.2.0",
+    "kafkajs": "^2.2.4",
     "lodash": "^4.17.21",
     "mailgun-js": "^0.22.0",
     "mongoose": "^5.12.11",

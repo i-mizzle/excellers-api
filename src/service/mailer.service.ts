@@ -4,6 +4,8 @@ const inlineCSS = require('inline-css');
 // const config = require("config");
 
 import config from 'config';
+import { UserEmailConfirmationTemplate } from '../static/email-templates/user-email-confirmation';
+import { PasswordResetEmailTemplate } from '../static/email-templates/password-reset-email-template';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -27,7 +29,7 @@ interface WalletCreationMailParams extends MailParams, AffiliateApprovalMailPara
     bank: String
 }
 
-interface ConfirmationMailParams extends MailParams {
+export interface ConfirmationMailParams extends MailParams {
     firstName: String
     confirmationUrl: String
 }
@@ -37,7 +39,7 @@ interface InvitationMailParams extends MailParams {
     invitationUrl: String
 }
 
-interface PasswordResetMailParams extends MailParams {
+export interface PasswordResetMailParams extends MailParams {
     firstName: String
     resetUrl: String
 }
@@ -45,25 +47,7 @@ interface PasswordResetMailParams extends MailParams {
 export async function sendEmailConfirmation (mailParams: ConfirmationMailParams) {
     console.log('MAILGUN --->', mg)
     try {
-        const template = `
-        <div>
-            <style>
-                h1 { color: green; }
-                button {
-                    background-color: green;
-                    color: white;
-                    padding: 15px;
-                    border-radius: 5px;
-                }
-            </style>
-
-            <h1>Hello, ${mailParams.firstName}</h1>
-
-            <p>Confirm your account by clicking the button below</p>
-
-            <button href="${mailParams.confirmationUrl}">Confirm account</button>
-        </div>
-        `;
+        const template = UserEmailConfirmationTemplate(mailParams);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@bcf.ng>',
@@ -127,11 +111,14 @@ export async function sendInvitation (mailParams: InvitationMailParams) {
 
 export async function sendPasswordResetEmail (mailParams: PasswordResetMailParams) {
     try {
+        const template = PasswordResetEmailTemplate(mailParams);
+        const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
             subject: 'Reset your password',
-            template: 'password_reset',
+            text: `Reset your password using this link - ${mailParams.resetUrl}`,
+            html: html,
             "h:X-Mailgun-Variables": JSON.stringify({
                 firstName: mailParams.firstName,
                 resetUrl: mailParams.resetUrl
