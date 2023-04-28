@@ -53,7 +53,7 @@ export const getFlightDealsHandler = async (req: Request, res: Response) => {
         const user: any = get(req, 'user');
         let expand = queryObject.expand || null
 
-        const deals = await findPackageDeals( {deleted: false}, resPerPage, page, expand)
+        const deals = await findFlightDeals( {deleted: false}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {
@@ -82,9 +82,9 @@ export const getFlightDealHandler = async (req: Request, res: Response) => {
 
         let deal = null
         if(ObjectId.isValid(dealCode)) {
-            deal = await findPackageDeal({_id: dealCode, deleted: false}, expand)
+            deal = await findFlightDeal({_id: dealCode, deleted: false}, expand)
         } else {
-            deal = await findPackageDeal({dealCode: dealCode, deleted: false}, expand)
+            deal = await findFlightDeal({dealCode: dealCode, deleted: false}, expand)
         }
         // return res.send(post)
 
