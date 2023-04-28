@@ -61,6 +61,8 @@ import { createPermissionsHandler, getPermissionsHandler } from './controller/pe
 import { createPackageDealHandler, deletePackageDealHandler, getPackageDealHandler, getPackageDealsHandler, updatePackageDealHandler } from './controller/package-deal.controller';
 import { createFlightDealSchema, getFlightDealSchema, updateFlightDealSchema } from './schema/flight-deal.schema';
 import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/flight-deal.controller';
+import { createPriceSchema, updatePriceSchema } from './schema/price.schema';
+import { createPriceHandler, getPricesHandler, updatePriceHandler } from './controller/price.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -534,6 +536,27 @@ export default function(app: Express) {
         requiresUser,
         requiresAdministrator,
         getPermissionsHandler
+    )
+
+    // prices
+    app.post("/settings/prices", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createPriceSchema),
+        createPriceHandler
+    )
+        
+    app.get("/settings/prices", 
+        requiresUser,
+        requiresAdministrator,
+        getPricesHandler
+    )
+        
+    app.put("/settings/prices/:priceId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updatePriceSchema),
+        updatePriceHandler
     )
 
     // CALENDAR?APPOINTMENTS
