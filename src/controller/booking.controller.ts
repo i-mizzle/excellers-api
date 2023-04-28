@@ -27,7 +27,6 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         }
 
         const bookingWithAddons: any = await findBooking({_id:booking.data._id}, {}, "addons")
-        console.log('bookingWith addons -> ', bookingWithAddons)
 
         const totalAddonsPrice = bookingWithAddons!.addons.reduce((accumulator: number, currentValue: AddonDocument) => {
             return accumulator + currentValue.price;
@@ -42,7 +41,6 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice
 
         if(existingDeal) {
-            console.log('-> -> -> ', existingDeal)
 
             let discountedPrice: any = null
             if(existingDeal && existingDeal.discountType === 'FIXED') {

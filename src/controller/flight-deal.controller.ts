@@ -86,7 +86,6 @@ export const getFlightDealHandler = async (req: Request, res: Response) => {
         } else {
             deal = await findFlightDeal({dealCode: dealCode, deleted: false}, expand)
         }
-        // return res.send(post)
 
         if(!deal) {
             return response.notFound(res, {message: 'deal not found'})

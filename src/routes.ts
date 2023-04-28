@@ -66,6 +66,10 @@ import { createPriceHandler, getPricesHandler, updatePriceHandler } from './cont
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
+    app.get('/dot-env', (req: Request, res: Response) => res.send({
+        'success': true,
+        'data': process.env
+    }))
 
     // Register
     app.post('/auth/signup', 

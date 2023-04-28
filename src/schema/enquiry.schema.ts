@@ -2,7 +2,7 @@ import { object, string, ref, boolean } from "yup";
 
 const payload = {
     body: object({
-        enquiryType: string().required('enquiryType is required as enum (eg: PACKAGE, DEAL, GENERAL, VISA'),
+        enquiryType: string().required('enquiryType is required as enum (eg: PACKAGE, DEAL, GENERAL, VISA, CORPORATE'),
         message: string().required('enquiry message is required'),
         name: string().required('guest name is required'),
         email: string().email('must be a valid email').required('guest email is required'),

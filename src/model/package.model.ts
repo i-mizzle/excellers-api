@@ -42,7 +42,7 @@ const PackageSchema = new mongoose.Schema(
     packageType: {
       type: String,
       required: true,
-      enum: ['PACKAGE', 'GROUP'],
+      enum: ['PRIVATE', 'GROUP'],
       default: 'GROUP'
     },
     inclusions: [
