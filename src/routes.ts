@@ -551,8 +551,6 @@ export default function(app: Express) {
     )
         
     app.get("/settings/prices", 
-        requiresUser,
-        requiresAdministrator,
         getPricesHandler
     )
         

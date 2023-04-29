@@ -14,7 +14,10 @@ export interface PriceDocument extends mongoose.Document {
 
 const PriceSchema = new mongoose.Schema(
   {
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    createdBy: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User" 
+    },
     item: { 
       type: String, 
       required: true 

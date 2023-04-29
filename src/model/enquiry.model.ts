@@ -55,11 +55,24 @@ const EnquirySchema = new mongoose.Schema(
       ref: 'Appointment'
     },
     maritalStatus: {
-      type: 'String',
+      type: String,
       enum: ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED', 'OTHER'],
       default: 'SINGLE'
     },
-    message: { type: String, required: true },
+    dateOfBirth: {
+      type: Date
+    },
+    travelHistory: {
+      type: Boolean
+    },
+    message: { 
+      type: String, 
+      required: true 
+    },
+    invoice:  {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Invoice'
+    },
     deleted: {
       type: Boolean,
       default: false

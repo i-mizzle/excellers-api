@@ -2,13 +2,53 @@ import { Request, Response } from "express";
 import { createEnquiry, findAndUpdateEnquiry, findEnquiries, findEnquiry } from "../service/enquiry.service"
 import * as response from '../responses'
 import { get } from "lodash";
+import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
+import { findPrice } from "../service/price.service";
+import { createInvoice } from "../service/invoice.service";
 
 export const createEnquiryHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
-        const body = req.body
+        let body = req.body
+
+        let enquiryPrice = null
+
+        if(body.enquiryType === 'VISA' && body.price && body.price !== '') {
+            enquiryPrice = await findPrice({_id: body.price})
+        }
+        
+        if(!enquiryPrice) {
+            return response.ok(res, {message: 'price not found'})
+        }
+
+        if(body.dateOfBirth && body.dateOfBirth !== '') {
+            body = {...body, ...{dateOfBirth: getJsDate(body.dateOfBirth)}}
+        }
 
         const enquiry = await createEnquiry({...body, ...{createdBy: userId}})
+        
+        if(body.enquiryType === 'VISA' && body.price && body.price !== '' ) {
+            const invoiceItemType = 'ENQUIRY'       
+            const invoiceCode = generateCode(18, false).toUpperCase()
+            
+            const invoiceInput = {
+                user: userId,
+                invoiceCode: invoiceCode,
+                amount: +enquiryPrice.price,
+                expiry: addMinutesToDate(new Date(), 1440), // 1 day
+                invoiceFor: invoiceItemType,
+                invoiceItem: enquiry._id
+            }
+    
+            const invoice = await createInvoice(invoiceInput)
+
+            // update with the invoice
+
+            const updatedEnquiry = await findAndUpdateEnquiry({_id: enquiry._id}, {invoice: invoice._id}, {new: true})
+            return response.created(res, updatedEnquiry)
+        }
+
+        
         return response.created(res, enquiry)
     } catch (error:any) {
         return response.error(res, error)

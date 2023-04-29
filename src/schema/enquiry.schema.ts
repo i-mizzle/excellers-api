@@ -22,6 +22,18 @@ const payload = {
         maritalStatus: string().when('enquiryType', {
             is: 'VISA', 
             then: string().required('marital status (maritalStatus) is required for VISA enquiries. should be one of: SINGLE, MARRIED, DIVORCED, WIDOWED, OTHER')
+        }),
+        dateOfBirth: string().when('enquiryType', {
+            is: 'VISA', 
+            then: string().required('date of birth (dateOfBirth) is required in the format DD-MM-YYYY')
+        }),
+        travelHistory: string().when('enquiryType', {
+            is: 'VISA', 
+            then: string().required('travel history (travelHistory) is required as a boolean')
+        }),
+        price: string().when('enquiryType', {
+            is: 'VISA', 
+            then: string().required('price is required - this is the id of the pricing item for this service')
         })
     })
 }
