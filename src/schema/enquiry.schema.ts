@@ -34,6 +34,10 @@ const payload = {
         price: string().when('enquiryType', {
             is: 'VISA', 
             then: string().required('price is required - this is the id of the pricing item for this service')
+        }),
+        companyName: string().when('enquiryType', {
+            is: 'CORPORATE', 
+            then: string().required('company name (companyName) is required for corporate enquiries')
         })
     })
 }

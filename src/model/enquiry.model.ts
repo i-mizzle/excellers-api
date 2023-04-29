@@ -40,6 +40,9 @@ const EnquirySchema = new mongoose.Schema(
       enum: ['PENDING', 'IN_PROGRESS', 'RESOLVED'],
       default: 'PENDING'
     },
+    companyName: {
+      type: String
+    },
     nationality: {
       type: String
     },
