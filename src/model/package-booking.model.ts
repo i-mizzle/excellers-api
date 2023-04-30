@@ -35,7 +35,8 @@ const PackageBookingSchema = new mongoose.Schema(
     },
     bookingCode: {
         type: String,
-        required: true
+        required: true,
+        immutable: true
     },
     packageOwners: [
         {

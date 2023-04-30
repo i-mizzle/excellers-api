@@ -13,13 +13,10 @@ export interface ConfirmationCodeDocument extends mongoose.Document {
 
 const ConfirmationCodeSchema = new mongoose.Schema(
   {
-    // user: { 
-    //     type: mongoose.Schema.Types.ObjectId, 
-    //     ref: "User" 
-    // },
     code: { 
       type: String, 
-      required: true 
+      required: true,
+      immutable: true
     },
     valid: {
         type: Boolean,

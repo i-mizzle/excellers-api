@@ -22,7 +22,8 @@ const TransactionSchema = new mongoose.Schema(
     transactionReference: { 
         type: String,
         unique: true,
-        required: true
+        required: true,
+        immutable: true
     },
     flutterwaveTransactionId: {
       type: String

@@ -29,7 +29,8 @@ const AppointmentSchema = new mongoose.Schema(
     {
         appointmentCode: {
             type: String,
-            required: true
+            required: true,
+            immutable: true
         },
         title: {
             type: String,

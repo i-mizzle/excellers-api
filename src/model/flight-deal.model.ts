@@ -51,7 +51,8 @@ const FlightDealSchema = new mongoose.Schema(
     },
     dealCode: {
         type: String,
-        required: true
+        required: true,
+        immutable: true
     },
     title: {
         type: String,

@@ -17,7 +17,8 @@ const PermissionSchema = new mongoose.Schema(
         slug: { 
             type: String, 
             required: true,
-            unique: true
+            unique: true,
+            immutable: true
         },
         description: { 
             type: String, 

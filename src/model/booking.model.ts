@@ -73,7 +73,11 @@ export interface BookingDocument extends mongoose.Document {
 
 const BookingSchema = new mongoose.Schema(
   {
-    bookingCode: {type: String},
+    bookingCode: {
+      type: String,
+      unique: true,
+      immutable: true
+    },
     flightId: {type: String},
     invoice: { 
       type:  mongoose.Schema.Types.ObjectId, 

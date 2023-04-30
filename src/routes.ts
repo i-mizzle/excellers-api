@@ -63,6 +63,8 @@ import { createFlightDealSchema, getFlightDealSchema, updateFlightDealSchema } f
 import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/flight-deal.controller';
 import { createPriceSchema, updatePriceSchema } from './schema/price.schema';
 import { createPriceHandler, getPricesHandler, updatePriceHandler } from './controller/price.controller';
+import { createPackageRequestSchema, getPackageRequestSchema } from './schema/package-request.schema';
+import { createPackageRequestHandler, deletePackageRequestHandler, getPackageRequestHandler, getPackageRequestsHandler, updatePackageRequestHandler } from './controller/package-request.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -262,6 +264,39 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(getPackageSchema),
         deletePackageHandler
+    )
+
+    /**
+     * Package requests
+     */
+    app.post('/package-requests', 
+        validateRequest(createPackageRequestSchema),
+        createPackageRequestHandler
+    )
+
+    app.get('/package-requests', 
+        requiresUser,
+        requiresAdministrator,
+        getPackageRequestsHandler
+    )
+
+    app.get('/package-requests/:packageRequestId', 
+        validateRequest(getPackageRequestSchema),
+        getPackageRequestHandler
+    )
+
+    app.put('/package-requests/:packageRequestId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getPackageRequestSchema),
+        updatePackageRequestHandler
+    )
+
+    app.delete('/package-requests/:packageRequestId', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getPackageRequestSchema),
+        deletePackageRequestHandler
     )
 
     // Package bookings

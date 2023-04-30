@@ -21,7 +21,8 @@ const InvoiceSchema = new mongoose.Schema(
     invoiceCode: { 
         type: String,
         unique: true,
-        required: true
+        required: true,
+        immutable: true
     },
     user: { 
         type: mongoose.Schema.Types.ObjectId, 
