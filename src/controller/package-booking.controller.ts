@@ -4,7 +4,42 @@ import * as response from '../responses'
 import { createInvoice } from "../service/invoice.service";
 import { createPackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
 import { applyPackageDeals, findPackage } from "../service/package.service";
-import { addMinutesToDate, generateCode } from "../utils/utils";
+import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
+
+const parsePackageBookingFilters = (query: any) => {
+    const { packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate } = query;
+
+    const filters: any = {}; 
+  
+    if (packageId) {
+      filters.package = packageId; 
+    }
+    
+    if (invoice) {
+      filters.invoice = invoice; 
+    }
+    
+    if (ownerName) {
+        filters["owner.name"] = { $elemMatch: { name: ownerName } };; 
+    }
+
+    if (ownerEmail) {
+        filters["owner.email"] = { $elemMatch: { email: ownerEmail } };; 
+    }
+    
+    if (ownerPhone) {
+        filters["flight.origin"] = { $elemMatch: { phone: ownerPhone } };;  
+    }
+  
+    if (minDate) {
+      filters.createdAt = { $lte: getJsDate(minDate) }; 
+    }
+  
+    if (maxDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+    }
+    return filters
+}
 
 export const createPackageBookingHandler = async (req: Request, res: Response) => {
     try {
@@ -49,6 +84,7 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
     try {
         const user: any = get(req, 'user');
         const queryObject: any = req.query;
+        const filters = parsePackageBookingFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         let expand = queryObject.expand || null
@@ -65,7 +101,7 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
             packagesBookingsQuery = {}
         }
 
-        const bookings = await findPackageBookings(packagesBookingsQuery, resPerPage, page, expand)
+        const bookings = await findPackageBookings({...filters, ...packagesBookingsQuery}, resPerPage, page, expand)
 
         const responseObject = {
             page,

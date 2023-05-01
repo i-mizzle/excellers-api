@@ -6,6 +6,61 @@ import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { findPrice } from "../service/price.service";
 import { createInvoice } from "../service/invoice.service";
 
+
+const parseEnquiryFilters = (query: any) => {
+    const { enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory } = query; 
+
+    const filters: any = {}; 
+
+    if (enquiryType) {
+        filters.enquiryType = enquiryType
+    } 
+    
+    if (status) {
+        filters.status = status
+    }
+
+    if (maritalStatus) {
+        filters.maritalStatus = maritalStatus
+    }
+    
+    if (name) {
+        filters.name = name; 
+    }
+    
+    if (email) {
+        filters.email = email; 
+    }
+        
+    if (phone) {
+        filters.phone = phone; 
+    }
+        
+    if (invoice) {
+        filters.invoice = invoice; 
+    }
+  
+    if (nationality) {
+        filters.nationality = nationality 
+    }
+  
+    if (appointment) {
+        filters.appointment = appointment; 
+    }
+  
+    if (visaEnquiryCountry) {
+        filters.visaEnquiryCountry = visaEnquiryCountry; 
+    }
+  
+    if (travelHistory) {
+        filters.travelHistory = travelHistory; 
+    }
+  
+    return filters
+
+}
+
+
 export const createEnquiryHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
@@ -58,6 +113,7 @@ export const createEnquiryHandler = async (req: Request, res: Response) => {
 export const getEnquiriesHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parseEnquiryFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; 
         const page = +queryObject.page || 1; 
         let expand = queryObject.expand || null
@@ -66,7 +122,7 @@ export const getEnquiriesHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const enquiries = await findEnquiries( { deleted: false }, resPerPage, page, expand)
+        const enquiries = await findEnquiries( {...filters, ...{ deleted: false }}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

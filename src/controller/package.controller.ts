@@ -4,6 +4,53 @@ import { get } from 'lodash'
 import { applyPackageDeals, createPackage, findAndUpdatePackage, findPackage, findPackages } from "../service/package.service";
 import { getJsDate } from "../utils/utils";
 
+const parsePackageFilters = (query: any) => {
+    const { active, packageType, minPrice, maxPrice, minLockDownPrice, maxLockDownPrice, createdBy, deal, minDate, maxDate } = query;
+
+    const filters: any = {}; 
+  
+    if (active) {
+      filters.active = active; 
+    }
+    
+    if (packageType) {
+      filters.packageType = packageType; 
+    }
+    
+    if (minPrice) {
+        filters.price = { $gte: +minPrice }; 
+    }
+
+    if (maxPrice) {
+        filters.price = { $lt: +maxPrice }; 
+    }
+    
+    if (minLockDownPrice) {
+        filters.price = { $gte: +minLockDownPrice }; 
+    }
+
+    if (maxLockDownPrice) {
+        filters.lockDownPrice = { $lt: +maxLockDownPrice }; 
+    }
+
+    if (createdBy) {
+      filters.createdBy = createdBy; 
+    }
+
+    if (deal) {
+      filters.deal = deal; 
+    }
+  
+    if (minDate) {
+      filters.createdAt = { $lte: getJsDate(minDate) }; 
+    }
+  
+    if (maxDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+    }
+    return filters
+}
+
 export const createPackageHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
@@ -19,6 +66,7 @@ export const createPackageHandler = async (req: Request, res: Response) => {
 export const getPackagesHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parsePackageFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         const expand = queryObject.expand || null
@@ -30,11 +78,10 @@ export const getPackagesHandler = async (req: Request, res: Response) => {
             packagesQuery = {deleted: false}
         }
 
-        const packages = await findPackages(packagesQuery, resPerPage, page, expand)
+        const packages = await findPackages({...packagesQuery, ...filters}, resPerPage, page, expand)
         // return res.send(post)
 
         const mutatedPackages = await applyPackageDeals(packages.packages)
-
         const responseObject = {
             page,
             perPage: resPerPage,

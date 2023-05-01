@@ -76,24 +76,24 @@ const updatePayload = {
             }
         }),
         active: boolean(),
-        flight: object({
-            origin: string().test("validate-airport-code", "flight.origin must be a valid IATA airport code", function(value) {
-                const exists = airports.findWhere({ iata: value }) 
-                if(exists) {
-                    return true
-                } else {
-                    return false
-                }
-            }),
-            destination: string().test("validate-airport-code", "flight.destination must be a valid IATA airport code", function(value) {
-                const exists = airports.findWhere({ iata: value }) 
-                if(exists) {
-                    return true
-                } else {
-                    return false
-                }
-            })
-        }),
+        // flight: object({
+        //     origin: string().test("validate-airport-code", "flight.origin must be a valid IATA airport code", function(value) {
+        //         const exists = airports.findWhere({ iata: value }) 
+        //         if(value && value !== '' && exists) {
+        //             return true
+        //         } else {
+        //             return false
+        //         }
+        //     }),
+        //     destination: string().test("validate-airport-code", "flight.destination must be a valid IATA airport code", function(value) {
+        //         const exists = airports.findWhere({ iata: value }) 
+        //         if(value && value !== '' && exists) {
+        //             return true
+        //         } else {
+        //             return false
+        //         }
+        //     })
+        // }),
         media: array(object({
             type: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),
             url: string().matches(

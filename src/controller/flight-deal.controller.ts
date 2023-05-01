@@ -5,6 +5,53 @@ import { generateCode, getJsDate } from "../utils/utils";
 import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPackageDeals } from "../service/package-deal.service";
 import { createFlightDeal, findAndUpdateFlightDeal, findFlightDeal, findFlightDeals } from "../service/flight-deal.service";
 
+const parseFlightDealFilters = (query: any) => {
+    const { title, discountType, minDiscountValue, maxDiscountValue, startDate, endDate, active, createdBy, origin, destination } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+
+    const filters: any = {}; // create an empty object to hold the filters
+  
+    if (title) {
+      filters.title = { $regex: title, $options: "i" }; 
+    }
+
+    if (discountType) {
+      filters.discountType = discountType; 
+    }
+    
+    if (active) {
+      filters.active = active; 
+    }
+    
+    if (origin) {
+      filters["flight.origin"] = origin; 
+    }
+    
+    if (destination) {
+      filters["flight.destination"] = destination; 
+    }
+    
+    if (createdBy) {
+      filters.createdBy = createdBy; 
+    }
+  
+    if (minDiscountValue) {
+      filters.discountValue = { $gte: +minDiscountValue }; 
+    }
+  
+    if (maxDiscountValue) {
+      filters.discountValue = { $lt: +maxDiscountValue }; 
+    }
+  
+    if (startDate) {
+      filters.startDate = { $gte: (getJsDate(startDate)) }; 
+    }
+  
+    if (endDate) {
+      filters.endDate = { $lte: getJsDate(endDate) }; 
+    }
+    return filters
+}
+
 export const createFlightDealHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
@@ -48,12 +95,13 @@ export const createFlightDealHandler = async (req: Request, res: Response) => {
 export const getFlightDealsHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parseFlightDealFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         const user: any = get(req, 'user');
         let expand = queryObject.expand || null
 
-        const deals = await findFlightDeals( {deleted: false}, resPerPage, page, expand)
+        const deals = await findFlightDeals( {...filters, ...{deleted: false}}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

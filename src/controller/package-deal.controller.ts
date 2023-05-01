@@ -5,6 +5,50 @@ import { generateCode, getJsDate } from "../utils/utils";
 import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPackageDeals } from "../service/package-deal.service";
 import { findPackage } from "../service/package.service";
 
+const parsePackageDealFilters = (query: any) => {
+    const { title, discountType, minDiscountValue, maxDiscountValue, startDate, endDate, active, createdBy, packageId } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+
+    const filters: any = {}; // create an empty object to hold the filters
+  
+    if (title) {
+      filters.title = { $regex: title, $options: "i" }; 
+    }
+
+    if (discountType) {
+      filters.discountType = discountType; 
+    }
+    
+    if (packageId) {
+      filters.package = packageId; 
+    }
+    
+    if (active) {
+      filters.active = active; 
+    }
+    
+    if (createdBy) {
+      filters.createdBy = createdBy; 
+    }
+  
+    if (minDiscountValue) {
+      filters.discountValue = { $gte: +minDiscountValue }; 
+    }
+  
+    if (maxDiscountValue) {
+      filters.discountValue = { $lt: +maxDiscountValue }; 
+    }
+  
+    if (startDate) {
+      filters.startDate = { $gte: (getJsDate(startDate)) }; 
+    }
+  
+    if (endDate) {
+      filters.endDate = { $lte: getJsDate(endDate) }; 
+    }
+
+    return filters
+}
+
 export const createPackageDealHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
@@ -50,12 +94,14 @@ export const createPackageDealHandler = async (req: Request, res: Response) => {
 export const getPackageDealsHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parsePackageDealFilters(queryObject)
+
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         const user: any = get(req, 'user');
         let expand = queryObject.expand || null
 
-        const deals = await findPackageDeals( {deleted: false}, resPerPage, page, expand)
+        const deals = await findPackageDeals( {...filters, ...{deleted: false}}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

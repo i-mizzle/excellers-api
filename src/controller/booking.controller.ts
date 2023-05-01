@@ -4,10 +4,84 @@ import * as response from '../responses'
 import { createBooking, findAndUpdateBooking, findBooking, findBookings } from "../service/booking.service";
 import { cancelBooking, confirmFlightPrice, issueTicket } from "../service/integrations/tiqwa.service";
 import { createInvoice, findInvoice } from "../service/invoice.service";
-import { addMinutesToDate, generateCode } from "../utils/utils";
+import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { AddonDocument } from "../model/addon.model";
-import { findAddon } from "../service/addon.service";
 import { findExistingFlightDeal } from "../service/flight-deal.service";
+
+const parseBookingFilters = (query: any) => {
+    const { deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+
+    const filters: any = {}; // create an empty object to hold the filters
+  
+    // if (deal) {
+    //   filters.title = { $regex: title, $options: "i" }; 
+    // }
+
+    if (airportFrom) {
+        filters.outbound = { $elemMatch: {airportFrom: airportFrom} }; 
+    } 
+    
+    if (airportTo) {
+        filters.outbound = { $elemMatch: {airportTo: airportTo} }; 
+    }
+
+    if (addons) {
+        const addonIds = addons.split(","); // assuming that the category ids are passed as a comma-separated string
+        filters.addons = { $in: addonIds }; 
+    }
+    
+    if (deal) {
+        filters.deal = deal; 
+    }
+    
+    if (documentRequired) {
+        filters.documentRequired = documentRequired; 
+    }
+        
+    if (ticketed) {
+        filters.ticketed = ticketed; 
+    }
+        
+    if (cancelled) {
+        filters.cancelled = cancelled; 
+    }
+  
+    if (passengerFirstName) {
+        filters["passengers.firstName"] = passengerFirstName; 
+    }
+  
+    if (passengerLastName) {
+        filters["passengers.lastName"] = passengerLastName; 
+    }
+  
+    if (passengerPhone) {
+        filters["passengers.phone"] = passengerPhone; 
+    }
+  
+    if (passengerEmail) {
+        filters["passengers.email"] = passengerEmail; 
+    }
+  
+    if (minAmount) {
+        filters["pricing.payable"] = { $gte: +minAmount }; 
+    }
+  
+    if (maxAmount) {
+        filters["pricing.payable"] = { $lt: +maxAmount }; 
+    }
+  
+    if (minDate) {
+        filters.createdAt = { $gte: (getJsDate(minDate)) }; 
+    }
+  
+    if (maxDate) {
+        filters.createAt = { $lte: getJsDate(maxDate) }; 
+    }
+
+    return filters
+
+}
+
 
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
@@ -89,6 +163,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
 export const getBookingsHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parseBookingFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         let expand = queryObject.expand || null
@@ -96,7 +171,7 @@ export const getBookingsHandler = async (req: Request, res: Response) => {
         if(expand && expand.includes(',')) {
             expand = expand.split(',')
         }
-        const bookings = await findBookings({}, resPerPage, page, expand)
+        const bookings = await findBookings(filters, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

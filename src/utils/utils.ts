@@ -229,7 +229,7 @@ export const snakeToCamel = (obj: Record<string, any>): Record<string, any> => {
 }
 
 
-export const getJsDate = (stringDate: StringDate): Date => {
+export const getJsDate = (stringDate: StringDate | any): Date => {
   if (!stringDate) return new Date()
 
   var dateParts: any = stringDate.split("-");

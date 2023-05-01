@@ -4,6 +4,66 @@ import { get } from 'lodash'
 import { getJsDate } from "../utils/utils";
 import { createPackageRequest, findAndUpdatePackageRequest, findPackageRequest, findPackageRequests } from "../service/package-request.service";
 
+const parsePackageRequestFilters = (query: any) => {
+    const { origin, destination, name, requesterName, requesterEmail, requesterPhone, packageType, minBudget, maxBudget, minTravelDate, maxTravelDate, minDate, maxDate } = query;
+
+    const filters: any = {}; 
+  
+    if (origin) {
+      filters.origin = origin; 
+    }
+  
+    if (destination) {
+      filters.destination = destination; 
+    }
+  
+    if (name) {
+      filters.name = name; 
+    }
+    
+    if (packageType) {
+      filters.packageType = packageType; 
+    }
+    
+    if (minBudget) {
+        filters.budget = { $gte: +minBudget }; 
+    }
+
+    if (maxBudget) {
+        filters.price = { $lt: +maxBudget }; 
+    }
+  
+    if (minTravelDate) {
+      filters.travelDate = { $gte: getJsDate(minTravelDate) }; 
+    }
+  
+    if (maxTravelDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+    }
+  
+    if (minDate) {
+      filters.createdAt = { $gte: getJsDate(minDate) }; 
+    }
+  
+    if (maxDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+    }
+
+    if (requesterName) {
+        filters["requester.name"] = requesterName; 
+    }
+  
+    if (requesterEmail) {
+        filters["requester.email"] = requesterEmail; 
+    }
+  
+    if (requesterPhone) {
+        filters["requester.phone"] = requesterPhone; 
+    }
+  
+    return filters
+}
+
 export const createPackageRequestHandler = async (req: Request, res: Response) => {
     try {
         const body = req.body
@@ -21,6 +81,7 @@ export const createPackageRequestHandler = async (req: Request, res: Response) =
 export const getPackageRequestsHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const filters = parsePackageRequestFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         const expand = queryObject.expand || null
@@ -32,7 +93,7 @@ export const getPackageRequestsHandler = async (req: Request, res: Response) => 
             packagesQuery = {deleted: false}
         }
 
-        const packageRequests = await findPackageRequests(packagesQuery, resPerPage, page, expand)
+        const packageRequests = await findPackageRequests({...filters, ...packagesQuery}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

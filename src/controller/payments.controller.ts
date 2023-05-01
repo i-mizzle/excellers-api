@@ -68,8 +68,8 @@ export const verifyTransactionHandler = async (req: Request, res: Response) => {
         if (verification.error) {
             return response.parseFlutterwaveError(res, verification)
         } else {
-            const transaction = await findTransaction({transactionReference: verification.data.txRef})
-            const invoice = await findInvoice(transaction.invoice)
+            const transaction = await findTransaction({transactionReference: verification.data.txRef}, '')
+            const invoice = await findInvoice(transaction!.invoice)
 
             if(!invoice || !transaction) {
                 return response.error(res, {message: 'error updating transaction'})
@@ -107,7 +107,7 @@ export const flutterwaveWebhookHandler = async (req: Request, res: Response) => 
             return response.error(res, {message: 'Hash not provided or invalid'})
         } 
 
-        const transaction = await findTransaction({transactionReference: req.body.data.txRef})
+        const transaction = await findTransaction({transactionReference: req.body.data.txRef}, '')
 
         if(!transaction) {
             return response.error(res, {message: 'transaction not found'})

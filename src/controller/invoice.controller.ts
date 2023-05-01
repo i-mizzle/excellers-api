@@ -1,11 +1,45 @@
 import { Request, Response } from "express";
 import { createInvoice, findInvoice, findInvoices } from "../service/invoice.service";
 import * as response from '../responses'
-import User from "../model/user.model";
 import { get } from "lodash";
 import { findPrice } from "../service/price.service";
 import { generateCode } from "../utils/utils";
 import { getJsDate } from "../utils/utils";
+
+const parseInvoiceFilters = (query: any) => {
+    const { status, invoiceFor, invoiceItem, minExpiry, maxExpiry, minDate, maxDate } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+
+    const filters: any = {}; // create an empty object to hold the filters
+  
+    if (status) {
+      filters.status = status; 
+    }
+    
+    if (invoiceFor) {
+      filters.invoiceFor = invoiceFor; 
+    }
+    
+    if (invoiceItem) {
+      filters.invoiceItem = invoiceItem; 
+    }
+  
+    if (minExpiry) {
+      filters.expiry = { $gte: (getJsDate(minExpiry)) }; 
+    }
+  
+    if (maxExpiry) {
+      filters.expiry = { $gte: (getJsDate(maxExpiry)) }; 
+    }
+  
+    if (minDate) {
+      filters.createdAt = { $lte: getJsDate(minDate) }; 
+    }
+  
+    if (maxDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+    }
+    return filters
+}
 
 export const createInvoiceHandler = async (req: Request, res: Response) => {
     try {
@@ -44,6 +78,7 @@ export const getInvoicesHandler = async (req: Request, res: Response) => {
     try {
         const user: any = get(req, 'user')
         const queryObject: any = req.query;
+        const filters = parseInvoiceFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         let expand = queryObject.expand || null
@@ -52,15 +87,13 @@ export const getInvoicesHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        console.log(expand)
-
         let invoicesQuery: any = {user: user?._id}
 
         if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
             invoicesQuery = {}
         }
         
-        const invoices = await findInvoices(invoicesQuery, resPerPage, page, expand)
+        const invoices = await findInvoices({...filters, ...invoicesQuery}, resPerPage, page, expand)
 
         const responseObject = {
             page,

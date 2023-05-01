@@ -352,7 +352,7 @@ export const getAccountBalance = async (input: AccountBalanceObject) => {
         
         let expenditure = 0
         let rolledBack = 0
-        const expenses = await findTransactions({user: mongoose.Types.ObjectId(input.user)}, 0, 1000000000)
+        const expenses = await findTransactions({user: mongoose.Types.ObjectId(input.user)}, 0, 1000000000, '')
         expenses.data.forEach((expense: any) => {
             if(expense.status === 'SUCCESSFUL' && expense.source === 'MONNIFY_WALLET') {
                 expenditure += expense.amount

@@ -5,6 +5,39 @@ import { initializePurchase } from "../service/integrations/flutterwave.service"
 import { createTransaction, findAllTransactions, findAndUpdateTransaction, findTransaction, findTransactions } from "../service/transaction.service";
 // import { generateCode } from "../utils/utils";
 import { createUser, findUser } from "../service/user.service";
+import { getJsDate } from "../utils/utils";
+
+const parseTransactionFilters = (query: any) => {
+    const { status, invoice, minAmount, maxAmount, minDate, maxDate, channel } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+
+    const filters: any = {}; // create an empty object to hold the filters
+  
+    if (channel) {
+      filters.channel = channel; 
+    }
+
+    if (invoice) {
+      filters.invoice = invoice; 
+    }
+  
+    if (minAmount) {
+      filters.amount = { $gte: +minAmount }; 
+    }
+  
+    if (maxAmount) {
+      filters.amount = { $lt: +maxAmount }; 
+    }
+  
+    if (minDate) {
+      filters.created = { $gte: (getJsDate(minDate)) }; 
+    }
+  
+    if (maxDate) {
+      filters.created = { $lte: getJsDate(maxDate) }; 
+    }
+
+    return filters
+}
 
 export async function createTransactionHandler (req: Request, res: Response) {
     try {
@@ -64,7 +97,7 @@ export async function updateTransactionHandler (req: Request, res: Response) {
         const transactionReference = get(req, 'params.transactionRef');
         const update = req.body;
     
-        const item = await findTransaction({ transactionReference });
+        const item = await findTransaction({ transactionReference }, '');
         if (!item) {
             return response.notFound(res, { message: `Transaction with reference: ${transactionReference} was not found` })
         }
@@ -80,14 +113,19 @@ export async function getTransactionHandler (req: Request, res: Response) {
         const user: any = get(req, 'user')
 
         const transactionReference = get(req, 'params.transactionReference');
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
 
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
         let transactionsQuery: any = {transactionReference: transactionReference, user: user?._id}
         
         if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
             transactionsQuery = {transactionReference: transactionReference}
         } 
     
-        const transaction = await findTransaction({ transactionReference });
+        const transaction = await findTransaction({ transactionReference }, expand);
         if (!transaction) {
             return response.notFound(res, { message: `transaction not found` })
         }
@@ -102,8 +140,15 @@ export async function getAllTransactionsHandler (req: Request, res: Response) {
     try {
         const user: any = get(req, 'user')
         const queryObject: any = req.query;
+        const filters = parseTransactionFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
+
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
         
         let transactionsQuery: any = {user: user?._id}
 
@@ -111,9 +156,8 @@ export async function getAllTransactionsHandler (req: Request, res: Response) {
             transactionsQuery = {}
         }
         
-        const transactions = await findTransactions(transactionsQuery, resPerPage, page);
+        const transactions = await findTransactions({...transactionsQuery, ...filters}, resPerPage, page, expand);
 
-    
         const responseObject = {
             page,
             perPage: resPerPage,
@@ -130,8 +174,14 @@ export async function adminGetTransactionsByUserHandler (req: Request, res: Resp
     try {
         const queryObject: any = req.query;
         const userCode = get(req, 'params.userCode');
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
 
         const user = await findUser({userCode})
+        let transactionsQuery: any = {user: user?._id}
 
         if(!user) {
             return response.notFound(res, {message: `user with user code: ${userCode} not found`})
@@ -139,7 +189,7 @@ export async function adminGetTransactionsByUserHandler (req: Request, res: Resp
 
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
-        const transactions = await findTransactions({user: user!._id}, resPerPage, page );
+        const transactions = await findTransactions({user: user!._id}, resPerPage, page, expand );
     
         const responseObject = {
             page,
