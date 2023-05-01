@@ -9,6 +9,9 @@ export interface EnquiryDocument extends mongoose.Document {
   enquiryType: string
   status: string
   nationality?: string
+  companyName?: string
+  officeAddress?: string
+  designation?: string
   visaEnquiryCountry?: string
   passportAvailable: boolean
   appointment: AppointmentDocument["_id"]
@@ -41,6 +44,12 @@ const EnquirySchema = new mongoose.Schema(
       default: 'PENDING'
     },
     companyName: {
+      type: String
+    },
+    officeAddress: {
+      type: String
+    },
+    designation: {
       type: String
     },
     nationality: {

@@ -38,6 +38,14 @@ const payload = {
         companyName: string().when('enquiryType', {
             is: 'CORPORATE', 
             then: string().required('company name (companyName) is required for corporate enquiries')
+        }),
+        officeAddress: string().when('enquiryType', {
+            is: 'CORPORATE', 
+            then: string().required('officeAddress is required for corporate enquiries')
+        }),
+        designation: string().when('enquiryType', {
+            is: 'CORPORATE', 
+            then: string().required('designation is required for corporate enquiries')
         })
     })
 }

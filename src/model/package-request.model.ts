@@ -6,12 +6,17 @@ export interface PackageRequestDocument extends mongoose.Document {
     phone: string
     description: string
     packageType: string
-    inclusions: string[]
-    itinerary: {
-      title: string
-      description: string
-    }[]
+    // inclusions: string[]
+    // itinerary: {
+    //   title: string
+    //   description: string
+    // }[]
     budget: number
+    adult: number
+    children: number
+    infant: number
+    origin: string
+    destination: string
     travelDate?: Date
     returnDate?: Date
     media: {
@@ -52,19 +57,22 @@ const PackageRequestSchema = new mongoose.Schema(
       enum: ['PRIVATE', 'GROUP'],
       default: 'GROUP'
     },
-    inclusions: [
-      {type: String}
-    ],
-    itinerary: [
-      {
-        title: {
-          type: String
-        }, 
-        description: {
-          type: String
-        }
-      }
-    ],
+    // inclusions: [
+    //   {type: String}
+    // ],
+    // itinerary: [
+    //   {
+    //     title: {
+    //       type: String
+    //     }, 
+    //     description: {
+    //       type: String
+    //     }
+    //   }
+    // ],
+    activities: {
+      type: String
+    },
     travelDate: {
         type: Date,
         required: true
@@ -73,6 +81,14 @@ const PackageRequestSchema = new mongoose.Schema(
         type: Date,
         required: true
     },
+    origin: {
+      type: String,
+    },
+    
+    destination: {
+      type: String,
+    },
+    
     media: [
       {
         type: {
