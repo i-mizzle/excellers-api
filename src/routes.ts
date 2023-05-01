@@ -60,7 +60,7 @@ import { createPermissionsSchema } from './schema/permission.schema';
 import { createPermissionsHandler, getPermissionsHandler } from './controller/permission.controller';
 import { createPackageDealHandler, deletePackageDealHandler, getPackageDealHandler, getPackageDealsHandler, updatePackageDealHandler } from './controller/package-deal.controller';
 import { createFlightDealSchema, getFlightDealSchema, updateFlightDealSchema } from './schema/flight-deal.schema';
-import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/flight-deal.controller';
+import { createFlightDealHandler, deleteFlightDealHandler, getFlightDealHandler, getFlightDealsHandler, updateFlightDealHandler } from './controller/flight-deal.controller';
 import { createPriceSchema, updatePriceSchema } from './schema/price.schema';
 import { createPriceHandler, getPricesHandler, updatePriceHandler } from './controller/price.controller';
 import { createPackageRequestSchema, getPackageRequestSchema } from './schema/package-request.schema';
@@ -410,17 +410,13 @@ export default function(app: Express) {
     )
 
     app.get('/deals/flights', 
-        requiresUser,
-        requiresAdministrator,
         getFlightDealsHandler
     )
 
-    // app.get('/deals/packages/:dealCode', 
-    //     requiresUser,
-    //     requiresAdministrator,
-    //     validateRequest(getPackageDealSchema),
-    //     getPackageDealHandler
-    // )
+    app.get('/deals/flights/:dealCode', 
+        validateRequest(getPackageDealSchema),
+        getFlightDealHandler
+    )
 
     app.put('/deals/flights/:dealCode', 
         requiresUser,
