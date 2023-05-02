@@ -93,7 +93,17 @@ export async function findAndUpdatePackage(
 }
 
 export const applyPackageDeals = async (packages: PackageDocument[]) => {
-    const deals = await findPackageDeals({active: true, deleted: false}, 0, 0, '')
+    const deals = await findPackageDeals({
+        deleted: false,
+        startDate: {
+            // $lt: new Date(getJsDate(body.endDate))
+            $lte: new Date()
+        },
+        endDate: {
+            $gte: new Date(),
+            // $gte: new Date(getJsDate(body.startDate)),
+        }
+    }, 0, 0, '')
 
     const mutatedPackages = await Promise.all(packages.map(async (pack: PackageDocument) => {
         let existingDeal = {}

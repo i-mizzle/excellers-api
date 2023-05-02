@@ -108,7 +108,7 @@ export const findExistingFlightDeal = async(origin: string, destination: string,
             origin: origin,
             destination: destination
         }, 
-        active: true, 
+        // active: true, 
         deleted: false,
         startDate: {
             // $lt: new Date(getJsDate(body.endDate))

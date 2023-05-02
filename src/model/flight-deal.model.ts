@@ -70,10 +70,10 @@ const FlightDealSchema = new mongoose.Schema(
       type: Date,
       required: true
     },
-    active: {
-      type: Boolean,
-      default: true
-    },
+    // active: {
+    //   type: Boolean,
+    //   default: true
+    // },
     deleted: {
       type: Boolean,
       default: false
