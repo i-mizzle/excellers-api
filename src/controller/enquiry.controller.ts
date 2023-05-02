@@ -71,18 +71,18 @@ export const createEnquiryHandler = async (req: Request, res: Response) => {
         if(body.enquiryType === 'VISA' && body.price && body.price !== '') {
             enquiryPrice = await findPrice({_id: body.price})
         }
-        
-        if(!enquiryPrice) {
+
+        if(body.enquiryType === 'VISA' && body.price && body.price !== '' && !enquiryPrice) {
             return response.ok(res, {message: 'price not found'})
         }
-
+        
         if(body.dateOfBirth && body.dateOfBirth !== '') {
             body = {...body, ...{dateOfBirth: getJsDate(body.dateOfBirth)}}
         }
 
         const enquiry = await createEnquiry({...body, ...{createdBy: userId}})
         
-        if(body.enquiryType === 'VISA' && body.price && body.price !== '' ) {
+        if(body.enquiryType === 'VISA' && body.price && body.price !== '' && enquiryPrice ) {
             const invoiceItemType = 'ENQUIRY'       
             const invoiceCode = generateCode(18, false).toUpperCase()
             

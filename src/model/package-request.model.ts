@@ -11,6 +11,7 @@ export interface PackageRequestDocument extends mongoose.Document {
     //   title: string
     //   description: string
     // }[]
+    activities: string[]
     budget: number
     adult: number
     children: number
@@ -70,9 +71,9 @@ const PackageRequestSchema = new mongoose.Schema(
     //     }
     //   }
     // ],
-    activities: {
+    activities: [{
       type: String
-    },
+    }],
     travelDate: {
         type: Date,
         required: true

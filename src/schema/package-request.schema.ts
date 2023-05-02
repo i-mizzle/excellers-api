@@ -4,7 +4,7 @@ import { getJsDate } from "../utils/utils";
 const payload = {
     body: object({
         name: string().required('package name (name) is required'),
-        activities: string().required('activities is required'),
+        activities: array().required('an array of activities is required').min(1, 'provide at least one activity'),
         description: string().required('package description (description) is required'),
         packageType: string().required('package type (packageType) is required as enum [eg: PRIVATE, GROUP]'),
         budget: number().required('package price (price) is required'),
