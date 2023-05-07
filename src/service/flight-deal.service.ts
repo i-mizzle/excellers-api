@@ -12,6 +12,7 @@ interface CreateFlightDealInput {
         destination: string
     }
     discountValue: number,
+    airline: string,
     discountType: string,
     title: string
     description: string,
@@ -32,6 +33,7 @@ export const createFlightDeal = async (
             dealCode: input.dealCode,
             discountValue: input.discountValue,
             discountType: input.discountType,
+            airline: input.airline,
             startDate: getJsDate(input.startDate),
             endDate: getJsDate(input.endDate),
             active: input.active || true
@@ -100,25 +102,30 @@ export async function findAndUpdateFlightDeal(
     }
 }
 
-export const findExistingFlightDeal = async(origin: string, destination: string, departureDate: string) => {
-    console.log(origin, ' => ', destination, ' on ', departureDate)
+export const findExistingFlightDeal = async(origin: string, destination: string, departureDate: string, airline: string) => {
+    console.log(origin, ' -> ', destination, ' on ', departureDate)
     // search for existing deal on the route
-    const existingDeal = await findFlightDeal({
+    const dealQuery = {
         flight: {
             origin: origin,
             destination: destination
         }, 
-        // active: true, 
+        active: true, 
         deleted: false,
+        airline: airline || 'ALL',
         startDate: {
-            // $lt: new Date(getJsDate(body.endDate))
             $lte: new Date(departureDate)
         },
         endDate: {
             $gte: new Date(departureDate),
-            // $gte: new Date(getJsDate(body.startDate)),
         }
-    }, '') 
+    }
+
+    console.log('deal => ', dealQuery)
+
+    const existingDeal = await findFlightDeal(dealQuery, '') 
+
+    console.log('deal => ', existingDeal)
 
     return existingDeal
 }

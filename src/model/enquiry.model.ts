@@ -18,6 +18,11 @@ export interface EnquiryDocument extends mongoose.Document {
   maritalStatus: string
   deleted: boolean
   message: string;
+  notes: {
+    noteBy: UserDocument["_id"],
+    note: string
+    createdDate: Date
+  }[],
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -85,6 +90,20 @@ const EnquirySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Invoice'
     },
+    notes: [
+      {
+          note: { 
+              type: String 
+          },
+          noteBy: { 
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+          },
+          createdDate: {
+              type: Date
+          }
+      }
+  ],
     deleted: {
       type: Boolean,
       default: false

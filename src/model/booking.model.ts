@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { InvoiceDocument } from "./invoice.model";
 import { AddonDocument } from "./addon.model";
+import { FlightDealDocument } from "./flight-deal.model";
 
 export interface Passenger {
     passengerType: string
@@ -47,6 +48,7 @@ export interface BookingDocument extends mongoose.Document {
     flightId: string
     passengers: Array<Passenger>
     addons: Array<AddonDocument['_id']>
+    deal?: FlightDealDocument['_id']
     addonsTotal: number,
     ticketed: Boolean
     cancelled: Boolean

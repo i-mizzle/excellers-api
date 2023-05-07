@@ -6,7 +6,7 @@ import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPacka
 import { createFlightDeal, findAndUpdateFlightDeal, findFlightDeal, findFlightDeals } from "../service/flight-deal.service";
 
 const parseFlightDealFilters = (query: any) => {
-    const { title, discountType, minDiscountValue, maxDiscountValue, startDate, endDate, active, createdBy, origin, destination } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { title, discountType, minDiscountValue, maxDiscountValue, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy, origin, destination } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
@@ -42,12 +42,20 @@ const parseFlightDealFilters = (query: any) => {
       filters.discountValue = { $lt: +maxDiscountValue }; 
     }
   
-    if (startDate) {
-      filters.startDate = { $gte: (getJsDate(startDate)) }; 
+    if (minStartDate) {
+      filters.startDate = { $gte: (getJsDate(minStartDate)) }; 
     }
   
-    if (endDate) {
-      filters.endDate = { $lte: getJsDate(endDate) }; 
+    if (maxStartDate) {
+      filters.startDate = { $lte: getJsDate(maxStartDate) }; 
+    }
+
+    if (minEndDate) {
+      filters.endDate = { $gte: (getJsDate(minEndDate)) }; 
+    }
+  
+    if (maxEndDate) {
+      filters.endDate = { $lte: getJsDate(maxEndDate) }; 
     }
     return filters
 }
@@ -62,19 +70,21 @@ export const createFlightDealHandler = async (req: Request, res: Response) => {
         // }
 
         // find available and active deals on the dealItem
-        const existingDeals = await findFlightDeals({
+        const dealsQuery = {
             flight: body.flight, 
             active: true, 
             deleted: false,
+            airline: body.airline || 'ALL',
             startDate: {
-                $gte: new Date(getJsDate(body.startDate)),
-                // $lt: new Date(getJsDate(body.endDate))
+                $gte: new Date(getJsDate(body.startDate))
             },
             endDate: {
-                // $gte: new Date(getJsDate(body.startDate)),
                 $lte: new Date(getJsDate(body.endDate))
             }
-        }, 0, 0, '') 
+        }
+
+        console.log('query -< ', dealsQuery)
+        const existingDeals = await findFlightDeals(dealsQuery, 0, 0, '') 
 
         if(existingDeals && existingDeals.deals.length > 0) {
             return response.conflict(res, {message: `this route already has a running deal, please deactivate it first`})

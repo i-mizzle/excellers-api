@@ -82,7 +82,6 @@ const parseBookingFilters = (query: any) => {
 
 }
 
-
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
         const flightId = get(req, 'params.flightId')
@@ -109,12 +108,13 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         const existingDeal = await findExistingFlightDeal(
             flightPriceConfirmation!.data.outbound[0].airportFrom, 
             flightPriceConfirmation!.data.outbound[0].airportTo, 
-            flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0]
+            flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0],
+            flightPriceConfirmation!.data.outbound[0].marketingAirline
         )
 
         let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice
 
-        if(existingDeal) {
+        if(existingDeal && body?.bookAtDealPrice === true) {
 
             let discountedPrice: any = null
             if(existingDeal && existingDeal.discountType === 'FIXED') {
@@ -147,12 +147,18 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             payable: invoiceAmount/100,
         }
 
-        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, {
+        const bookingUpdatePayload = {
             invoice: invoice._id,
             addonsTotal: totalAddonsPrice/100,
-            deal: existingDeal?._id,
-            pricing: updatedPricing
-        }, {new: true})
+            pricing: updatedPricing,
+            deal: null
+        }
+
+        if (body?.bookAtDealPrice === true && existingDeal) {
+            bookingUpdatePayload.deal = existingDeal._id
+        }
+
+        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, bookingUpdatePayload, {new: true})
 
         return response.created(res, bookingWithInvoice)
     } catch (error: any) {

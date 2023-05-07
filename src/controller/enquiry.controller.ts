@@ -6,7 +6,6 @@ import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { findPrice } from "../service/price.service";
 import { createInvoice } from "../service/invoice.service";
 
-
 const parseEnquiryFilters = (query: any) => {
     const { enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory } = query; 
 
@@ -164,12 +163,24 @@ export const getEnquiryHandler = async (req: Request, res: Response) => {
 export const updateEnquiryHandler = async (req: Request, res: Response) => {
     try {
         const enquiryId = get(req, 'params.enquiryId');
-
+        const userId = get(req, 'user._id');
         let update = req.body
 
         const enquiry = await findEnquiry({_id: enquiryId})
         if(!enquiry) {
             return response.notFound(res, {message: 'enquiry not found'})
+        }
+
+        if(update.note && update.note !== '') {
+            const enquiryNotes = enquiry.notes || []
+            
+            enquiryNotes.push({
+                noteBy: userId,
+                note: update.note,
+                createdDate: new Date()
+            })
+
+            update.notes = enquiryNotes
         }
 
         await findAndUpdateEnquiry({_id: enquiry._id}, update, {new: true})

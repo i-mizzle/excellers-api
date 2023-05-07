@@ -8,6 +8,58 @@ import { checkIsConsecutive, generateCode, getJsDate } from "../utils/utils";
 import { StringDate } from "../utils/types";
 import { findAndUpdateEnquiry, findEnquiry } from "../service/enquiry.service";
 
+const parseAppointmentFilters = (query: any) => {
+    const { cancelled, title, enquiry, attendeeName, attendeeEmail, attendeePhone, minAppointmentDate, maxAppointmentDate, minDateCreated, maxDateCreated } = query; 
+
+    const filters: any = {}; 
+
+    if (cancelled) {
+        filters.cancelled = cancelled
+    } 
+    
+    if (title) {
+        filters.title = title
+    }
+
+    if (enquiry) {
+        filters.enquiry = enquiry
+    }
+    
+    if (attendeeName) {
+        // filters.attendee = attendeeName; 
+        filters["attendee.name"] = { $elemMatch: { name: attendeeName } };; 
+    }
+    
+    if (attendeeEmail) {
+        // filters.email = email; 
+        filters["attendee.email"] = { $elemMatch: { name: attendeeEmail } };; 
+    }
+    
+    if (attendeePhone) {
+        // filters.phone = phone; 
+        filters["attendee.email"] = { $elemMatch: { name: attendeePhone } };; 
+    }
+        
+    if (minAppointmentDate) {
+        filters.appointmentDate = { $gte: (getJsDate(minAppointmentDate)) }; 
+    }
+
+    if (maxAppointmentDate) {
+        filters.appointmentDate = { $lte: getJsDate(maxAppointmentDate) }; 
+    }
+        
+    if (minDateCreated) {
+        filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
+    }
+
+    if (maxDateCreated) {
+        filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
+    }
+  
+    return filters
+
+}
+
 const bookedForAttendees = async (attendees: any, timeSlots: any, appointmentDate: StringDate) => {
     
     // check attendee emails if time-slot has already been booked for that attendee
@@ -87,6 +139,7 @@ export const createAppointmentHandler = async (req: Request, res: Response) => {
 export const getAppointmentsHandler = async (req: Request, res: Response) => {
     try { 
         const queryObject: any = req.query;
+        const filters = parseAppointmentFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         let expand = queryObject.expand || null
@@ -95,7 +148,7 @@ export const getAppointmentsHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const appointments = await findAppointments({deleted: false}, resPerPage, page, expand)
+        const appointments = await findAppointments({...filters, ...{deleted: false}}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

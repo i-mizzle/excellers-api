@@ -21,9 +21,6 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
             return_date: body.returnDate
         }
 
-        // search for existing deal on the route
-        const existingDeal = await findExistingFlightDeal(body.origin, body.destination, body.departureDate) 
-
         const flightSearchResults = await searchForFlights(requestPayload)
 
         if(flightSearchResults.error === true) {
@@ -46,18 +43,32 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
             resultsToParse = filteredResults
         }
 
-        const results = resultsToParse.map((result: any) => {
+        const results = await Promise.all(resultsToParse.map(async (result: any) => {
+            console.log(result)
             let discountedPrice = null
-            if(existingDeal && existingDeal.discountType === 'FIXED') {
+
+            // search for existing deal on the route
+            const existingDeal = await findExistingFlightDeal(
+                body.origin, 
+                body.destination, 
+                body.departureDate,
+                result.outbound[0].marketingAirline
+            ) 
+
+            if(existingDeal && existingDeal.discountType === 'FIXED' && body.showDeals && body.showDeals === true) {
                 discountedPrice = result.pricing.payable - existingDeal.discountValue/100
                 result.pricing = {...result.pricing, ...{discountedPrice: discountedPrice}}
             }
 
-            if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
+            if(existingDeal && existingDeal.discountType === 'PERCENTAGE' && body.showDeals && body.showDeals === true) {
                 discountedPrice = result.pricing.payable - ((existingDeal.discountValue/100) * result.pricing.payable)
                 result.pricing = {...result.pricing, ...{discountedPrice: discountedPrice}}
             }
-            result.deal = existingDeal
+
+            if(body.showDeals && body.showDeals === true) {
+                result.deal = existingDeal
+            }
+
             const outboundFlights: any = []
             const inboundFlights: any = []
 
@@ -82,10 +93,10 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
                 flight.departureTime = new Date(flight?.departureTime).toLocaleTimeString()
                 flight.arrivalDate = new Date(flight?.arrivalTime).toLocaleDateString()
                 flight.arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString()
-
                 
                 outboundFlights.push(flight)
             })
+
             result.outbound = outboundFlights
 
             result.inbound.forEach((flight: any) => {
@@ -111,10 +122,11 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
                 flight.arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString()
                 inboundFlights.push(flight)
             })
+
             result.inbound = inboundFlights
 
             return result
-        })
+        }))
 
         return response.ok(res, {total: results.length, results})
         // return response.ok(res, flightSearchResults!.data)
@@ -126,7 +138,7 @@ export const flightSearchHandler = async (req: Request, res: Response) => {
 export const confirmFlightPriceHandler = async (req: Request, res: Response) => {
     try {
         const flightId = req.params.flightId
-
+        const queryObject: any = req.query;
         const confirmation = await confirmFlightPrice(flightId)
 
         if(confirmation.error === true) {
@@ -138,23 +150,24 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         const existingDeal = await findExistingFlightDeal(
             confirmation!.data.outbound[0].airportFrom, 
             confirmation!.data.outbound[0].airportTo, 
-            confirmation!.data.outbound[0].departureTime.toString().split('T')[0]
+            confirmation!.data.outbound[0].departureTime.toString().split('T')[0],
+            confirmationData.outbound[0].marketingAirline
         ) 
 
-        console.log('-> -> -> ', existingDeal)
+        console.log('-> -> -> ', existingDeal, ' -> -> ', queryObject?.showDeal)
 
         let discountedPrice = null
-        if(existingDeal && existingDeal.discountType === 'FIXED') {
+        if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'FIXED') {
             discountedPrice = confirmationData.pricing.payable - existingDeal.discountValue/100
             confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
         }
 
-        if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
+        if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'PERCENTAGE') {
             discountedPrice = confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)
             confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
         }
         
-        if(existingDeal) {
+        if(queryObject?.showDeal === 'true' && existingDeal) {
             confirmationData.deal = existingDeal
         }
         

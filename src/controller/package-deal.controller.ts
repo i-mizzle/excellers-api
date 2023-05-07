@@ -6,7 +6,7 @@ import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPacka
 import { findPackage } from "../service/package.service";
 
 const parsePackageDealFilters = (query: any) => {
-    const { title, discountType, minDiscountValue, maxDiscountValue, startDate, endDate, active, createdBy, packageId } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { title, discountType, minDiscountValue, maxDiscountValue, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy, packageId } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
@@ -38,12 +38,20 @@ const parsePackageDealFilters = (query: any) => {
       filters.discountValue = { $lt: +maxDiscountValue }; 
     }
   
-    if (startDate) {
-      filters.startDate = { $gte: (getJsDate(startDate)) }; 
+    if (minStartDate) {
+      filters.startDate = { $gte: (getJsDate(minStartDate)) }; 
     }
   
-    if (endDate) {
-      filters.endDate = { $lte: getJsDate(endDate) }; 
+    if (maxStartDate) {
+      filters.startDate = { $lte: (getJsDate(maxStartDate)) }; 
+    }
+  
+    if (minEndDate) {
+      filters.endDate = { $gte: getJsDate(minEndDate) }; 
+    }
+  
+    if (maxEndDate) {
+      filters.endDate = { $lte: getJsDate(maxEndDate) }; 
     }
 
     return filters
