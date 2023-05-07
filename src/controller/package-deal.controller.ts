@@ -35,7 +35,7 @@ const parsePackageDealFilters = (query: any) => {
     }
   
     if (maxDiscountValue) {
-      filters.discountValue = { $lt: +maxDiscountValue }; 
+      filters.discountValue = { $lte: +maxDiscountValue }; 
     }
   
     if (minStartDate) {
