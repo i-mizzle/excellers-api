@@ -78,11 +78,23 @@ interface BookingInput {
     passengers: Array<Passenger>
 }
 
+interface PassengerForTiqwa {
+    passenger_type: string
+    first_name: string
+    last_name: string
+    dob: string,
+    gender: string
+    title: string
+    email:string
+    phone_number:string
+    documents?: any
+}
+
 export const bookFlight = async (input: BookingInput, flightId: string) => {
     try {
 
         const requestPassengers = input.passengers.map((passenger) => {
-            return {
+            const passengerObject: PassengerForTiqwa= {
                 passenger_type: passenger.passengerType,
                 first_name: passenger.firstName,
                 last_name: passenger.lastName,
@@ -90,8 +102,11 @@ export const bookFlight = async (input: BookingInput, flightId: string) => {
                 gender: passenger.gender,
                 title: passenger.title,
                 email: passenger.email,
-                phone_number: passenger.phoneNumber,
-                documents: {
+                phone_number: passenger.phoneNumber
+            }
+
+            if (passenger.documents) {
+                passengerObject.documents = {
                     number: passenger.documents.number,
                     issuing_date: passenger.documents.issuingDate,
                     expiry_date: passenger.documents.expiryDate,
@@ -99,7 +114,9 @@ export const bookFlight = async (input: BookingInput, flightId: string) => {
                     nationality_country: passenger.documents.nationalityCountry,
                     document_type: passenger.documents.documentType,
                     holder: passenger.documents.holder
-                }}
+                }
+            }
+            return passengerObject
         })
 
         const requestPayload = {
