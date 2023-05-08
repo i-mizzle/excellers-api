@@ -109,7 +109,7 @@ export const getPackageHandler = async (req: Request, res: Response) => {
             return response.notFound(res, {message: 'package not found'})
         }
 
-        const mutatedPackage = await applyPackageDeals([foundPackage])
+        const mutatedPackage = queryObject.showDeals && queryObject.showDeals === 'true' ? await applyPackageDeals([foundPackage]) : [foundPackage]
 
         return response.ok(res, mutatedPackage[0])
         
