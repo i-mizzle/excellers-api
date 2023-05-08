@@ -55,10 +55,20 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
         const invoiceCode = generateCode(18, false).toUpperCase()
         const packagePrice = await applyPackageDeals([bookingPackage])
 
+        let invoicePrice = 0
+
+        if(body.lockDown && body.lockDown === true) {
+            invoicePrice = bookingPackage.lockDownPrice
+        } else if ((!body.lockDown || body.lockDown === false) && body.bookAtDealPrice && body.bookAtDealPrice === true) {
+            invoicePrice = packagePrice[0].discountedPrice
+        } else if ((!body.lockDown || body.lockDown === false) && (!body.bookAtDealPrice || body.bookAtDealPrice === false)) {
+            invoicePrice = bookingPackage.price
+        }
+
         const invoiceInput = {
             user: userId,
             invoiceCode: invoiceCode,
-            amount: body.lockDown && body.lockDown == true ? bookingPackage.lockDownPrice : packagePrice[0].discountedPrice,
+            amount:invoicePrice,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             invoiceItem: bookingPackage._id

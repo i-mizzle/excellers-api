@@ -81,7 +81,7 @@ export const getPackagesHandler = async (req: Request, res: Response) => {
         const packages = await findPackages({...packagesQuery, ...filters}, resPerPage, page, expand)
         // return res.send(post)
 
-        const mutatedPackages = await applyPackageDeals(packages.packages)
+        const mutatedPackages = queryObject.showDeals && queryObject.showDeals === 'true' ? await applyPackageDeals(packages.packages) : packages.packages
         const responseObject = {
             page,
             perPage: resPerPage,
