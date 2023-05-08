@@ -79,5 +79,5 @@ export async function deletePostCommentHandler (req: Request, res: Response) {
 
     // await deletePost({ postId });
     await findAndUpdatePostComment({_id: postCommentId }, {deleted: true}, { new: true })
-    return response.ok(res, {message: 'post deleted successfully'});
+    return response.ok(res, {message: 'comment deleted successfully'});
 }
