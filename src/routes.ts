@@ -67,6 +67,8 @@ import { createPackageRequestSchema, getPackageRequestSchema } from './schema/pa
 import { createPackageRequestHandler, deletePackageRequestHandler, getPackageRequestHandler, getPackageRequestsHandler, updatePackageRequestHandler } from './controller/package-request.controller';
 import { createPostHandler, deletePostHandler, getPostHandler, getPostsHandler, updatePostHandler } from './controller/post.controller';
 import { createPostSchema, deletePostSchema, getPostSchema, updatePostSchema } from './schema/post.schema';
+import { createPostCommentSchema, deletePostCommentSchema, getPostCommentsSchema, updatePostCommentSchema } from './schema/post-comment.schema';
+import { createPostCommentHandler, deletePostCommentHandler, getPostCommentsHandler, publishPostCommentHandler } from './controller/post-comment.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -659,6 +661,30 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(deletePostSchema),
         deletePostHandler
+    )
+
+    app.post("/blog/posts/comments/:postId", 
+        validateRequest(createPostCommentSchema),
+        createPostCommentHandler
+    )
+
+    app.get("/blog/posts/comments/:postId", 
+        validateRequest(getPostCommentsSchema),
+        getPostCommentsHandler
+    )
+
+    app.put("/blog/posts/comments/:postCommentId/publish", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updatePostCommentSchema),
+        publishPostCommentHandler
+    )
+
+    app.delete("/blog/posts/comments/:postCommentId/delete", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deletePostCommentSchema),
+        deletePostCommentHandler
     )
 
     // UPLOAD FILE

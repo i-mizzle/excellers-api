@@ -11,7 +11,7 @@ const payload = {
                 'please use a valid url for media.url').required('media.url is required')
         })),
         authors: array(object({
-            name: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),
+            name: string().required('author.name is required'),
             designation: string()
         })).required('an array of authors is required'),
         coverImageUrl: string().matches(
