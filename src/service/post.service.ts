@@ -12,6 +12,24 @@ export async function findPost(
     return Post.findOne(query, {}, options)
 }
 
+export async function findPosts(
+    query: FilterQuery<PostDocument>,
+    perPage: number,
+    page: number,
+    expand: string,
+    options: QueryOptions = { lean: true }
+) {
+    const total = await Post.find(query, {}, options).countDocuments()
+    const posts = await Post.find(query, {}, options).select('-body').populate(expand)
+        .sort({ 'createdAt' : -1 })
+        .skip((perPage * page) - perPage)
+        .limit(perPage);
+    return {
+        total,
+        posts: posts
+    }
+}
+
 export async function findAndUpdate(
     query: FilterQuery<PostDocument>,
     update: UpdateQuery<PostDocument>,

@@ -65,6 +65,8 @@ import { createPriceSchema, updatePriceSchema } from './schema/price.schema';
 import { createPriceHandler, getPricesHandler, updatePriceHandler } from './controller/price.controller';
 import { createPackageRequestSchema, getPackageRequestSchema } from './schema/package-request.schema';
 import { createPackageRequestHandler, deletePackageRequestHandler, getPackageRequestHandler, getPackageRequestsHandler, updatePackageRequestHandler } from './controller/package-request.controller';
+import { createPostHandler, deletePostHandler, getPostHandler, getPostsHandler, updatePostHandler } from './controller/post.controller';
+import { createPostSchema, deletePostSchema, getPostSchema, updatePostSchema } from './schema/post.schema';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -625,10 +627,51 @@ export default function(app: Express) {
         cancelAppointmentHandler
     )
 
+    /**
+     * BLOG ENDPOINTS
+     */
+
+    app.post("/blog/posts", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createPostSchema),
+        createPostHandler
+    )
+
+    app.get("/blog/posts", 
+        getPostsHandler
+    )
+
+    app.get("/blog/posts/:postId", 
+        validateRequest(getPostSchema),
+        getPostHandler
+    )
+
+    app.put("/blog/posts/:postId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updatePostSchema),
+        updatePostHandler
+    )
+
+    app.delete("/blog/posts/:postId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deletePostSchema),
+        deletePostHandler
+    )
+
     // UPLOAD FILE
     app.post("/files/new", 
         requiresUser,
         upload.single("file"),
+        newFileHandler
+    )
+    
+    // UPLOAD MULTIPLE FILES
+    app.post("/files/new/multiple", 
+        requiresUser,
+        upload.array("files", 10),
         newFileHandler
     )
     

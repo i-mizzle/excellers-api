@@ -15,3 +15,16 @@ export const newFileHandler = async (req: Request, res: Response) => {
         return response.error(res, error)
     } 
 }
+
+export const newFilesHandler = async (req: Request, res: Response) => {
+    try {
+        if(!req.files) {
+            return response.badRequest(res, { message: 'an array of files (files) is expected, none received' })
+        }
+        return response.created(res, { 
+            file: (req as unknown as MulterRequest).file.path
+        })
+    } catch (error:any) {
+        return response.error(res, error)
+    } 
+}

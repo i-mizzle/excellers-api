@@ -6,21 +6,73 @@ export interface PostDocument extends mongoose.Document {
   user: UserDocument["_id"];
   title: string;
   body: string;
+  authors: {
+    name: string
+    designation: string
+  }[]
+  media: {
+    type: string
+    url: string
+  }[]
+  excerpt: string
+  coverImageUrl: string
+  published: Boolean,
+  deleted: Boolean
   createdAt: Date;
   updatedAt: Date;
 }
 
 const PostSchema = new mongoose.Schema(
   {
-    postId: {
-      type: String,
-      required: true,
-      unique: true,
-      default: () => nanoid(10),
+    user: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User" },
+    authors: [
+      {
+        name: { 
+          type: String, 
+          required: true 
+        },
+        designation: { 
+          type: String
+        },
+      }
+    ],
+    excerpt: {
+      type: String, 
+      required: true 
     },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    title: { type: String, default: true },
-    body: { type: String, default: true },
+    title: { 
+      type: String, 
+      required: true 
+    },
+    body: { 
+      type: String, 
+      required: true 
+    },
+    coverImageUrl: {
+      type: String,
+    },
+    published: {
+      type: Boolean,
+      default: false
+    },
+    deleted: {
+      type: Boolean,
+      default: false
+    },
+    media: [
+      {
+        type: {
+          type: String,
+          enum: ['VIDEO', 'IMAGE', 'DOCUMENT'],
+          default: 'IMAGE'
+        },
+        url: {
+          type: String
+        }
+      }
+    ],
   },
   { timestamps: true }
 );
