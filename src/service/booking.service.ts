@@ -7,7 +7,10 @@ import { generateCode } from "../utils/utils";
 export const createBooking = async (
     input: {
         passengers: Array<Passenger>
-    }, flightId: string) => {
+    }, 
+    flightId: string,
+    documentRequirement: Boolean
+    ) => {
     try {
         const booking = await bookFlight(input, flightId)
         const bookingCode = generateCode(16, false).toUpperCase()
@@ -15,14 +18,19 @@ export const createBooking = async (
         if(booking.error) {
             return booking
         }
-        const newBooking = await Booking.create({
+
+        const bookingPayload = {
             ...input, 
             ...{
                 bookingCode: bookingCode,
                 flightId: flightId
             }, 
+            ...{documentRequired: documentRequirement},
             ...booking.data
-        })
+        }
+
+        bookingPayload.documentRequired = documentRequirement
+        const newBooking = await Booking.create(bookingPayload)
         return {
             error: false,
             errorType: '',

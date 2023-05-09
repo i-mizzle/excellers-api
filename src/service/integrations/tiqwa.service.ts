@@ -66,11 +66,13 @@ export const confirmFlightPrice = async (flightId: string) => {
 
     } catch (error: any) {
         console.error('---> ERROR BLOCK --->', error.response.data)  
-        return {
-            error: true,
-            errorType: 'error',
-            data: error.response.data
-        } 
+        throw new Error(error.response.data.message)
+
+        // return {
+        //     error: true,
+        //     errorType: 'error',
+        //     data: error.response.data
+        // } 
     }
 }
 

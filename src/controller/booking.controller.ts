@@ -82,18 +82,36 @@ const parseBookingFilters = (query: any) => {
 
 }
 
+const findPassengersRequiringDocuments = (passengers: any) => {
+    const requireDocs: string[] = []
+    passengers.forEach((passenger: any)=>{
+        if (!passenger.documents) {
+            requireDocs.push(passenger.firstName + ' ' + passenger.lastName)
+        }
+    })
+
+    return requireDocs
+}
+
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
         const flightId = get(req, 'params.flightId')
         const userId = get(req, 'user._id');
+        const body = req.body
         
         const invoiceItemType = 'FLIGHT'       
         const invoiceCode = generateCode(18, false).toUpperCase()
 
         const flightPriceConfirmation = await confirmFlightPrice(flightId)
-        const body = req.body
 
-        const booking = await createBooking(body, flightId)
+        const passengersRequiringDocuments = findPassengersRequiringDocuments(body.passengers)
+
+        if(flightPriceConfirmation && flightPriceConfirmation?.data?.documentRequired === true && passengersRequiringDocuments.length > 0) {
+            return response.badRequest(res, {message: `The following passengers require a document for this trip: ${passengersRequiringDocuments.join(', ')}`})
+        }
+        
+
+        const booking = await createBooking(body, flightId, flightPriceConfirmation?.data?.documentRequired)
 
         if(booking.error === true) {
             return response.handleErrorResponse(res, {data: booking.data})
