@@ -6,13 +6,16 @@ import { AffiliateMarkupDocument } from './affiliate-markup.model';
 
 export interface UserDocument extends mongoose.Document {
     email: string;
-    name: string;
+    firstName: string;
+    middleName?: string;
+    lastName: string;
     phone: string;
     userCode?:string,
     emailConfirmed: Boolean;
     confirmationCode: ConfirmationCodeDocument["_id"]
     password: string;
     userType: string;
+    bvnValidationReference?: string;
     accountPermissions?: [];
     avatar?: string
     approvedAsAffiliate?: Boolean
@@ -33,7 +36,14 @@ const UserSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
-        name: {
+        firstName: {
+            type: String,
+            required: true
+        },
+        middleName: {
+            type: String,
+        },
+        lastName: {
             type: String,
             required: true
         },
@@ -71,6 +81,11 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        bvnValidationReference: {
+            type: String,
+            unique: true,
+            immutable: true
+        },
         bvnValidationData: {},
         affiliateMarkup: {
             type: mongoose.Schema.Types.ObjectId,
@@ -82,7 +97,10 @@ const UserSchema = new mongoose.Schema(
         location: {
             typ: String
         },
-        accountPermissions: [],
+        role: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: "Role" 
+        }
     },
     { timestamps: true }
 );

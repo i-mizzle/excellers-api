@@ -3,13 +3,83 @@ import { createUser, deleteUser, findAllUsers, findAndUpdateUser, findUser } fro
 import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
-import { addMinutesToDate } from "../utils/utils";
+import { addMinutesToDate, getJsDate } from "../utils/utils";
 import { createConfirmationCode, findAndUpdateConfirmation, findConfirmationCode } from "../service/confirmation-code.service";
 
 import config from 'config';
 import { nanoid } from "nanoid";
+import { sendEmailConfirmation } from "../service/mailer.service";
 // import { sendToKafka } from "../kafka/kafka";
 const tokenTtl = config.get('resetTokenTtl') as number
+
+const parseUserFilters = (query: any) => {
+    const { email, firstName, lastName, emailConfirmed, phone, userType, approvedAsAffiliate, bvnValidated, role, minDateCreated, maxDateCreated } = query; 
+
+    const filters: any = {}; 
+
+    if (email) {
+        filters.email = email
+    } 
+    
+    if (firstName) {
+        filters.firstName = firstName
+    }
+
+    if (lastName) {
+        filters.lastName = lastName
+    }
+
+    if (emailConfirmed) {
+        filters.emailConfirmed = emailConfirmed
+    } 
+    
+    if (phone) {
+        filters.phone = phone
+    }
+
+    if (userType) {
+        filters.userType = userType
+    }
+
+    if (approvedAsAffiliate) {
+        filters.approvedAsAffiliate = approvedAsAffiliate
+    } 
+    
+    if (bvnValidated) {
+        filters.bvnValidated = bvnValidated
+    }
+
+    if (role) {
+        filters.role = role
+    }
+    
+    // if (attendeeName) {
+    //     // filters.attendee = attendeeName; 
+    //     filters["attendee.name"] = { $elemMatch: { name: attendeeName } };; 
+    // }
+    
+    // if (attendeeEmail) {
+    //     // filters.email = email; 
+    //     filters["attendee.email"] = { $elemMatch: { name: attendeeEmail } };; 
+    // }
+    
+    // if (attendeePhone) {
+    //     // filters.phone = phone; 
+    //     filters["attendee.email"] = { $elemMatch: { name: attendeePhone } };; 
+    // }
+
+        
+    if (minDateCreated) {
+        filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
+    }
+
+    if (maxDateCreated) {
+        filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
+    }
+  
+    return filters
+
+}
 
 export async function createUserHandler(req: Request, res: Response) {
     try {
@@ -38,11 +108,17 @@ export async function createUserHandler(req: Request, res: Response) {
         // await sendToKafka(JSON.stringify({
         //     message: {
         //         mailTo: user.email,
-        //         firstName: user.name.split(' ')[0] || input.name,
+        //         firstName: user.firstName,
         //         confirmationUrl: req.body.confirmationUrl + confirmationCode.code
         //     },
         //     action: 'email-confirmation'
         // }))
+
+        await sendEmailConfirmation({
+            mailTo: user.email,
+            firstName: user.firstName,
+            confirmationUrl: req.body.confirmationUrl + confirmationCode.code
+        })
 
         return response.created(res, 
             omit(user.toJSON(), ['_id', 'password', 'confirmationToken'])
@@ -176,17 +252,17 @@ export const checkExistingUserHandler = async (req: Request, res: Response) => {
 
 export async function updateUserHandler (req: Request, res: Response) {
     try {
-        if(req.body.handle && req.body.handle !== '') {
-            let user = await findUser({handle: req.body.handle})
-            if(user) {
-                return response.conflict(res, {message: `the handle ${req.body.handle} is already taken`})
-            }
-        }
+        // if(req.body.handle && req.body.handle !== '') {
+        //     let user = await findUser({handle: req.body.handle})
+        //     if(user) {
+        //         return response.conflict(res, {message: `the handle ${req.body.handle} is already taken`})
+        //     }
+        // }
 
         const currentUser = get(req, 'user._id')
         const update = req.body
         const updatedUser = await findAndUpdateUser({ _id: currentUser }, update, { new: true })
-        return response.ok(res, omit(updatedUser, ['_id', 'password', 'confirmationToken']))
+        return response.ok(res, omit(updatedUser, ['password']))
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
@@ -196,10 +272,10 @@ export async function updateUserHandler (req: Request, res: Response) {
 
 export async function deleteUserHandler (req: Request, res: Response) {
     try {
-        const user = await findUser({userCode: req.params.userCode})
+        const user = await findUser({_id: req.params.userId})
         const currentUser = get(req, 'user._id')
         if(!user) {
-            return response.notFound(res, {message: `user with user code ${req.params.userCode} not found`})
+            return response.notFound(res, {message: `user not found`})
         }
         console.log(user._id)
         console.log(currentUser)
@@ -269,28 +345,49 @@ export async function deleteUserHandler (req: Request, res: Response) {
 //     }
 // }
 
-
-// export async function adminUpdateUserHandler (req: Request, res: Response) {
-//     try {
-//         const currentUser = get(req, 'user')
-//         const user = await findUser({userCode: req.params.userCode})
-//         const update = req.body;
-
-//         if(!user) {
-//             return response.notFound(res, {message: "User not found"})
-//         }
-//         const updateObjectCheck = checkUpdateObject(update, currentUser)
-//         if(updateObjectCheck.error) {
-//             return response.badRequest(res, {message: updateObjectCheck.message})
-//         }
-    
-//         const updatedUser = await findAndUpdate({ _id: user._id }, update, { new: true })
-//         return response.ok(res, updatedUser)
-//     } catch (error: any) {
-//         log.error(error)
-//         return response.error(res, error)
+// const checkUpdateObject = (update: any, currentUser: any) : { error: Boolean, message: string } => {
+//     if(update.userType && update.userType !== '' && currentUser.userType !== 'SUPER_ADMINISTRATOR') {
+//         return {error: true, message: "You are not allowed to update account type"}
+//     }else if(update.userCode && update.userCode !== '') {
+//         return {error: true, message: "You are not allowed to update user code"}
+//     }else if(update.emailConfirmed && currentUser.accountType !== 'SUPER_ADMINISTRATOR' ) {
+//         return {error: true, message: "You are not allowed to update confirmation status"}
+//     }else if(update.deactivated && currentUser.accountType !== 'SUPER_ADMINISTRATOR') {
+//         return {error: true, message: "You are not allowed to update active status"}
+//     }else if(update.devices) {
+//         return {error: true, message: "You are not allowed to update devices"}
+//     }else if(update.bvnValidationData) {
+//         return {error: true, message: "You are not allowed to update bvn data"}
+//     }else if(update.bvnValidated) {
+//         return {error: true, message: "You are not allowed to update bvn validation status"}
+//     } else {
+//         return {error: false, message: ''}
 //     }
 // }
+
+
+
+export async function adminUpdateUserHandler (req: Request, res: Response) {
+    try {
+        const currentUser = get(req, 'user')
+        const user = await findUser({userCode: req.params.userCode})
+        const update = req.body;
+
+        if(!user) {
+            return response.notFound(res, {message: "User not found"})
+        }
+        // const updateObjectCheck = checkUpdateObject(update, currentUser)
+        // if(updateObjectCheck.error) {
+        //     return response.badRequest(res, {message: updateObjectCheck.message})
+        // }
+    
+        const updatedUser = await findAndUpdateUser({ _id: user._id }, {role: update.role}, { new: true })
+        return response.ok(res, updatedUser)
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
 
 
 export async function getAllUsersHandler (req: Request, res: Response) {
@@ -298,7 +395,15 @@ export async function getAllUsersHandler (req: Request, res: Response) {
         const queryObject: any = req.query;
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
-        const users = await findAllUsers(resPerPage, page);
+        const filters = parseUserFilters(queryObject)
+
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+        
+        const users = await findAllUsers(filters, resPerPage, page, expand);
     
         const responseObject = {
             page,

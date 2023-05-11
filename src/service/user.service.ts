@@ -21,12 +21,14 @@ export async function findUser( query: FilterQuery<UserDocument>) {
 }
 
 export async function findAllUsers(
+    query: FilterQuery<UserDocument>,
     perPage: number,
     page: number,
+    expand: string,
     options: QueryOptions = { lean: true }
 ) {
     const total = await User.find().countDocuments()
-    const users = await User.find({}, {}, options)
+    const users = await User.find(query, {}, options).select('-password').populate(expand)
         .sort({ 'createdAt' : -1 })
         .skip((perPage * page) - perPage)
         .limit(perPage)

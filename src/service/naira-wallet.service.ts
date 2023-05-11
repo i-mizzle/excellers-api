@@ -3,25 +3,18 @@ import NairaWallet, { NairaWalletDocument } from '../model/naira-wallet.model';
 import { UserDocument } from '../model/user.model';
 import { generateCode } from '../utils/utils';
 import { reserveAccount } from './integrations/monnify.service';
+import { BizgemCreateVirtualAccountInterface, createVirtualAccount } from './integrations/bizgem.service';
 // import { CustomerValidationObject, validateCustomer } from './biller-providers/irecharge.service';
 
-interface CreateWalletInterface {
+interface CreateWalletInterface extends BizgemCreateVirtualAccountInterface {
     userId: UserDocument["_id"]
-    customerEmail: string
-    customerBvn: string
-    customerName: string
 }
 
 export async function createNairaWallet (input: DocumentDefinition<CreateWalletInterface>) {
     try {
         const accountReference = generateCode(18, false)
 
-        const reservedAccount = await reserveAccount({
-            accountReference,
-            customerEmail: input.customerEmail,
-            customerBvn: input.customerBvn,
-            customerName: input.customerName,
-        })
+        const reservedAccount = await createVirtualAccount(input)
 
         if(reservedAccount.error === true) {
             return reservedAccount

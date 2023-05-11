@@ -27,7 +27,7 @@ export const resendInvitation = async (invitationCode: InvitationDocument['email
         await findAndUpdate({ _id: invitation._id }, { invitationCode: newInvitationCode }, { new: true })
         await sendInvitation({
             mailTo: invitation.email,
-            firstName: invitation.name.split(' ')[0],
+            firstName: invitation.firstName,
             invitationUrl: invitationUrl + newInvitationCode
         })
         return {
@@ -60,10 +60,11 @@ export async function findInvitation( query: FilterQuery<InvitationDocument>) {
 export async function findAllInvitations(
     perPage: number,
     page: number,
+    expand: string,
     options: QueryOptions = { lean: true }
 ) {
     const total = await Invitation.find().countDocuments()
-    const invitations = await Invitation.find({}, {}, options)
+    const invitations = await Invitation.find({}, {}, options).populate(expand)
         .sort({ 'createdAt' : -1 })
         .skip((perPage * page) - perPage)
         .limit(perPage)

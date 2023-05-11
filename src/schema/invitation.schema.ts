@@ -2,7 +2,8 @@ import { object, string, ref } from "yup";
 
 export const createInvitationSchema = object({
     body: object({
-        name: string().required('name is required'),
+        firstName: string().required('firstName is required'),
+        lastName: string().required('lastName is required'),
         email: string()
             .email('must be a valid email')
             .required('email is required'),

@@ -4,10 +4,11 @@ import { findAndUpdateUser, findUser } from "../service/user.service";
 import * as response from '../responses'
 import { createAffiliateMarkup, findAffiliateMarkup } from "../service/affiliate-markup.service";
 import { sendAffiliateApprovalConfirmation, sendWalletCreationNotification } from "../service/mailer.service";
-import { reserveAccount, validateBvn } from "../service/integrations/monnify.service";
+import { reserveAccount } from "../service/integrations/monnify.service";
 import { generateCode, parseDateForMonnify } from "../utils/utils";
 import { createSubAccount } from "../service/integrations/flutterwave.service";
 import { createNairaWallet, findAndUpdateNairaWallet } from "../service/naira-wallet.service";
+import { validateBvn } from "../service/integrations/bizgem.service";
 
 export const approveAffiliateHandler = async (req: Request, res: Response) => {
     try {
@@ -44,7 +45,7 @@ export const approveAffiliateHandler = async (req: Request, res: Response) => {
 
         await sendAffiliateApprovalConfirmation({
             mailTo: affiliate.email,
-            firstName: affiliate.name.split(' ')[0] || affiliate.name
+            firstName: affiliate.firstName
         })
 
         return response.ok(res, {message: "Affiliate account has been approved successfully"})
@@ -56,17 +57,17 @@ export const approveAffiliateHandler = async (req: Request, res: Response) => {
 
 export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => {
     try {
-        const affiliateId = get(req, 'params.userId')
-        const userId = get(req, 'user._id');
-        if(!userId) {
+        // const affiliateId = get(req, 'params.userId')
+        const affiliateId = get(req, 'user._id');
+        if(!affiliateId) {
             return
         }
         const bvn = req.body.bvn
         const dateOfBirth = req.body.dateOfBirth
 
-        if(affiliateId !== userId) {
-            return response.forbidden(res, {message: "Sorry, you can only add your BVN to your own affiliate account"})
-        }
+        // if(affiliateId !== userId) {
+        //     return response.forbidden(res, {message: "Sorry, you can only add your BVN to your own affiliate account"})
+        // }
 
         const affiliate = await findUser({_id: affiliateId})
         
@@ -86,12 +87,14 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
 
         console.log('affiliate markup, confirming bvn... ', affiliateMarkup)
 
+        const bvnConfirmationRef = generateCode(18, false)
+
         const bvnConfirmation = await validateBvn({
             bvn,
-            name: affiliate.name,
-            dob: parseDateForMonnify(dateOfBirth),
-            phone: affiliate.phone,
-            userId: affiliate._id
+            firstName: affiliate.firstName,
+            lastName: affiliate.lastName,
+            dob: dateOfBirth,
+            reference: bvnConfirmationRef
         })
 
         if(!bvnConfirmation || bvnConfirmation.error === true) {
@@ -99,32 +102,42 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
         }
         let bvnValidated = false
 
-        if(bvnConfirmation.data.name.matchPercentage > 50 && bvnConfirmation.data.dateOfBirth === 'FULL_MATCH') {
+        if(bvnConfirmation.data.fieldMatches.dob === true && bvnConfirmation.data.fieldMatches.firstName  === true && bvnConfirmation.data.fieldMatches.lastName  === true) {
             bvnValidated = true
+        } else {
+            return response.badRequest(res, {message: "Sorry, the BVN you supplied is not valid or does not match your information, please contact support"})
         }
+        // if(bvnConfirmation.data.name.matchPercentage > 50 && bvnConfirmation.data.dateOfBirth === 'FULL_MATCH') {
+        //     bvnValidated = true
+        // }
 
         await findAndUpdateUser({_id: affiliateId}, {
             bvnValidated, 
-            bvnValidationData: bvnConfirmation.data
+            bvnValidationData: bvnConfirmation.data,
+            bvnValidationReference: bvnConfirmationRef
         }, {new: true})
 
 
-        const monnifyWallet = await createNairaWallet({
+        const nairaWallet = await createNairaWallet({
             userId:affiliateId,
-            customerEmail: affiliate.email,
-            customerBvn: bvn,
-            customerName: affiliate.name
+            // customerEmail: affiliate.email,
+            bvn: bvn,
+            firstName: affiliate.firstName,
+            lastName: affiliate.firstName,
+            address: affiliate.location,
+            phoneNumber: affiliate.phone,
+            dob: dateOfBirth
         })
 
-        if(!monnifyWallet || monnifyWallet.error === true) {
+        if(!nairaWallet || nairaWallet.error === true) {
             return response.error(res, {message: 'Sorry, there was a problem verifying your BVN, please contact support to assist in completing the process'})
         }
 
         // create flw sub
         const flwSubAccount = await createSubAccount({
-            bankCode: monnifyWallet.data.bankCode,
-            accountNumber: monnifyWallet.data.accountNumber,
-            accountName: monnifyWallet.data.accountName,
+            bankCode: nairaWallet.data.channel.bankCode,
+            accountNumber: nairaWallet.data.accountNumber,
+            accountName: nairaWallet.data.accountName,
             phone: affiliate.phone,
             splitType: affiliateMarkup.markupType,
             splitValue: affiliateMarkup.markup
@@ -134,13 +147,13 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
             return response.error(res, {message: 'Sorry, there was a problem verifying your BVN, please contact support to assist in completing the process'})
         }
 
-        await findAndUpdateNairaWallet({_id: monnifyWallet.data._id}, {flwSubAccountReference: flwSubAccount.data.account_reference}, {new: true})
+        await findAndUpdateNairaWallet({_id: nairaWallet.data._id}, {flwSubAccountReference: flwSubAccount.data.account_reference}, {new: true})
 
         await sendWalletCreationNotification({
-            accountName: monnifyWallet.data.accountName,
-            accountNumber: monnifyWallet.data.accountNumber,
-            bank: monnifyWallet.data.bankName,
-            firstName: affiliate.name.split(' ')[0] || affiliate.name,
+            accountName: nairaWallet.data.accountName,
+            accountNumber: nairaWallet.data.accountNumber,
+            bank: nairaWallet.data.bankName,
+            firstName: affiliate.firstName,
             mailTo: affiliate.email
         })
 

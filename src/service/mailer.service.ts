@@ -6,6 +6,9 @@ const inlineCSS = require('inline-css');
 import config from 'config';
 import { UserEmailConfirmationTemplate } from '../static/email-templates/user-email-confirmation';
 import { PasswordResetEmailTemplate } from '../static/email-templates/password-reset-email-template';
+import { AffiliateApprovalConfirmationTemplate } from '../static/email-templates/affiliate-confirmation-template';
+import { AffiliateWalletNotificationTemplate } from '../static/email-templates/affiliate-wallet-notification-template';
+import { AdminInvitationTemplate } from '../static/email-templates/admin-invitation-template';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -19,11 +22,11 @@ interface MailParams {
     mailTo: String,
 }
 
-interface AffiliateApprovalMailParams extends MailParams {
+export interface AffiliateApprovalMailParams extends MailParams {
     firstName: String
 }
 
-interface WalletCreationMailParams extends MailParams, AffiliateApprovalMailParams {
+export interface WalletCreationMailParams extends MailParams, AffiliateApprovalMailParams {
     accountName: String
     accountNumber: String
     bank: String
@@ -34,7 +37,7 @@ export interface ConfirmationMailParams extends MailParams {
     confirmationUrl: String
 }
 
-interface InvitationMailParams extends MailParams {
+export interface InvitationMailParams extends MailParams {
     firstName: String
     invitationUrl: String
 }
@@ -82,15 +85,19 @@ export async function sendEmailConfirmation (mailParams: ConfirmationMailParams)
 
 export async function sendInvitation (mailParams: InvitationMailParams) {
     try {
+        const template = AdminInvitationTemplate(mailParams);
+        const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
             subject: `You've been invited to GeoTravels Admin`,
-            template: 'admin_invitation',
-            "h:X-Mailgun-Variables": JSON.stringify({
-                firstName: mailParams.firstName,
-                invitationUrl: mailParams.invitationUrl
-            })
+            // template: 'admin_invitation',
+            // "h:X-Mailgun-Variables": JSON.stringify({
+            //     firstName: mailParams.firstName,
+            //     invitationUrl: mailParams.invitationUrl
+            // })
+            text: `Follow this link to accept your invitation to Geotravels - ${mailParams.invitationUrl}`,
+            html: html,
         };
         await mg.messages().send(data);
         console.log('Sent!');
@@ -143,14 +150,18 @@ export async function sendPasswordResetEmail (mailParams: PasswordResetMailParam
 
 export async function sendAffiliateApprovalConfirmation (mailParams: AffiliateApprovalMailParams) {
     try {
+        const template = AffiliateApprovalConfirmationTemplate(mailParams);
+        const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
             subject: 'Your Affiliate account has been approved',
-            template: 'password_reset',
-            "h:X-Mailgun-Variables": JSON.stringify({
-                firstName: mailParams.firstName,
-            })
+            // template: 'password_reset',
+            // "h:X-Mailgun-Variables": JSON.stringify({
+            //     firstName: mailParams.firstName,
+            // })
+            text: `Your account has been approved`,
+            html: html,
         };
         await mg.messages().send(data);
         console.log('Sent!');
@@ -171,14 +182,18 @@ export async function sendAffiliateApprovalConfirmation (mailParams: AffiliateAp
 
 export async function sendWalletCreationNotification (mailParams: WalletCreationMailParams) {
     try {
+        const template = AffiliateWalletNotificationTemplate(mailParams);
+        const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
-            subject: 'Your Affiliate account has been approved',
-            template: 'password_reset',
-            "h:X-Mailgun-Variables": JSON.stringify({
-                firstName: mailParams.firstName,
-            })
+            subject: 'Your Geotravel Affiliate Wallet has been created',
+            // template: 'password_reset',
+            // "h:X-Mailgun-Variables": JSON.stringify({
+            //     firstName: mailParams.firstName,
+            // })
+            text: `Please log in to your geo travel account to see your affiliate wallet details`,
+            html: html,
         };
         await mg.messages().send(data);
         console.log('Sent!');

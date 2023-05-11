@@ -36,4 +36,13 @@ export default {
         BASE_URL: process.env.MONNIFY_BASE_URL,
         CONTRACT_CODE: process.env.MONNIFY_CONTRACT_CODE
     },
+    bizgem: {
+        SECRET_KEY: process.env.BIZGEM_SECRET_KEY,
+        PUBLIC_KEY: process.env.BIZGEM_PUBLIC_KEY,
+        BASE_URL: process.env.BIZGEM_BASE_URL,
+        BASE_WALLET: process.env.BIZGEM_BASE_WALLET,
+    },
+    geoTravelSettings: {
+        forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'confirmationCode', 'approvedAsAffiliate', 'bvnValidated', 'affiliateMarkup', 'role']
+    }
 }

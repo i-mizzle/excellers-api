@@ -50,7 +50,7 @@ export async function inviteUserHandler(req: Request, res: Response) {
         console.log(req.body.confirmationUrl + invitationCode)
         await sendInvitation({
             mailTo: invitation.email,
-            firstName: invitation.name.split(' ')[0] || input.name,
+            firstName: invitation.firstName,
             invitationUrl: req.body.invitationUrl + invitationCode
         })
 
@@ -243,7 +243,7 @@ export async function deleteUserHandler (req: Request, res: Response) {
 
 export async function resendInvitationHandler(req: Request, res: Response) {
     try {        
-        const resent = await resendInvitation(req.body.invitaionCode, req.body.invitationUrl)
+        const resent = await resendInvitation(req.body.invitationCode, req.body.invitationUrl)
         if(resent.error) {
             return response.handleErrorResponse(res, resent)
         } else {
@@ -261,13 +261,20 @@ export async function getAllInvitationsHandler (req: Request, res: Response) {
         const queryObject: any = req.query;
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
-        const users = await findAllInvitations(resPerPage, page);
+
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const users = await findAllInvitations(resPerPage, page, expand);
     
         const responseObject = {
             page,
             perPage: resPerPage,
             total: users.total,
-            users: users.data
+            invitations: users.data
         }
         return response.ok(res, responseObject)
     } catch (error) {

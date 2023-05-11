@@ -8,8 +8,6 @@ export async function createPriceHandler (req: Request, res: Response) {
     const userId = get(req, 'user._id')
     const body = req.body
 
-
-
     const post = await createPrice({ ...body, ...{createdBy: userId, slug: slugify(body.item)} })
     // return res.send(post)
     return response.created(res, post)

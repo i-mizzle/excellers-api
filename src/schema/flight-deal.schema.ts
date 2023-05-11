@@ -75,14 +75,7 @@ const updatePayload = {
                 return false
             }
         }),
-        airline: string().test("validate-airport-code", "airline must be a valid IATA airport code", function(value) {
-            const exists = airports.findWhere({ iata: value }) 
-            if(value && value !== '' && exists) {
-                return true
-            } else {
-                return false
-            }
-        }),
+        airline: array(string()),
         active: boolean(),
         // flight: object({
         //     origin: string().test("validate-airport-code", "flight.origin must be a valid IATA airport code", function(value) {

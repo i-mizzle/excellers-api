@@ -28,7 +28,7 @@ import { createInvitationSchema, getInvitationSchema } from './schema/invitation
 // import { getInvitationHandler, InviteUserHandler } from './controller/invitation.controller';
 import { confirmationSchema } from './schema/confirmation-code.schema';
 import { requestPasswordResetHandler, resetPasswordHandler } from './controller/password-reset.controller';
-import { inviteUserHandler } from './controller/invitation.controller';
+import { getAllInvitationsHandler, inviteUserHandler } from './controller/invitation.controller';
 import { confirmFlightPriceHandler, flightSearchHandler } from './controller/flight.controller';
 import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
 import { bookingSchema, getBookingSchema } from './schema/booking.schema';
@@ -69,6 +69,8 @@ import { createPostHandler, deletePostHandler, getPostHandler, getPostsHandler, 
 import { createPostSchema, deletePostSchema, getPostSchema, updatePostSchema } from './schema/post.schema';
 import { createPostCommentSchema, deletePostCommentSchema, getPostCommentsSchema, updatePostCommentSchema } from './schema/post-comment.schema';
 import { createPostCommentHandler, deletePostCommentHandler, getPostCommentsHandler, publishPostCommentHandler } from './controller/post-comment.controller';
+import { createRoleSchema, deleteRoleSchema } from './schema/role.schema';
+import { createRoleHandler, deleteRoleHandler, getRoleHandler, getRolesHandler } from './controller/role.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -90,12 +92,18 @@ export default function(app: Express) {
         confirmEmailHandler
     )
 
-    // Get user sessions
+    // Invite user
     app.post('/auth/invitations', 
         requiresUser, 
         requiresAdministrator,
         validateRequest(createInvitationSchema),
         inviteUserHandler
+    )
+
+    app.get('/auth/invitations', 
+        requiresUser, 
+        requiresAdministrator,
+        getAllInvitationsHandler
     )
 
     // Login
@@ -132,6 +140,14 @@ export default function(app: Express) {
     app.put('/user/profile', 
         requiresUser, 
         rejectForbiddenUserFields, 
+        updateUserHandler
+    )
+
+    // Update user profile
+    app.put('/user/profile/:userId', 
+        requiresUser, 
+        requiresAdministrator, 
+        validateRequest(getUserDetailsSchema),
         updateUserHandler
     )
 
@@ -377,8 +393,6 @@ export default function(app: Express) {
     )
 
     app.get('/deals/packages', 
-        requiresUser,
-        requiresAdministrator,
         getPackageDealsHandler
     )
 
@@ -503,7 +517,7 @@ export default function(app: Express) {
         approveAffiliateHandler
     )
 
-    app.post("/affiliates/validate-bvn/:userId", 
+    app.post("/affiliates/validate-bvn", 
         requiresUser,
         requiresAffiliate,
         validateRequest(validateBvnSchema),
@@ -594,6 +608,34 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(updatePriceSchema),
         updatePriceHandler
+    )
+
+    // Roles
+    app.post("/settings/roles", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createRoleSchema),
+        createRoleHandler
+    )
+        
+    app.get("/settings/roles", 
+        requiresUser,
+        requiresAdministrator,
+        getRolesHandler
+    )
+        
+    app.get("/settings/roles/:roleId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deleteRoleSchema),
+        getRoleHandler
+    )
+
+    app.delete("/settings/roles/:roleId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deleteRoleSchema),
+        deleteRoleHandler
     )
 
     // CALENDAR?APPOINTMENTS

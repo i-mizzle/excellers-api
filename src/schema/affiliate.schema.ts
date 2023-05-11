@@ -21,8 +21,7 @@ const params = {
 }
 
 export const validateBvnSchema = object({
-   ...validateBvnPayload,
-   ...params
+   ...validateBvnPayload
 });
 
 export const approveAffiliateSchema = object({

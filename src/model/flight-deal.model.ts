@@ -8,7 +8,7 @@ export interface FlightDealDocument extends mongoose.Document {
         destination: string
     },
     discountType: string,
-    airline: string,
+    airlines: string[],
     discountValue: number,
     title: string
     dealCode: string
@@ -59,10 +59,9 @@ const FlightDealSchema = new mongoose.Schema(
         type: String,
         required: true
     },
-    airline: {
-        type: String,
-        default: 'ALL'
-    },
+    airlines: [
+      {type: String}
+    ],
     description: {
         type: String,
         required: true

@@ -6,7 +6,7 @@ import { createPackageDeal, findAndUpdatePackageDeal, findPackageDeal, findPacka
 import { createFlightDeal, findAndUpdateFlightDeal, findFlightDeal, findFlightDeals } from "../service/flight-deal.service";
 
 const parseFlightDealFilters = (query: any) => {
-    const { title, discountType, minDiscountValue, maxDiscountValue, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy, origin, destination } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { title, discountType, minDiscountValue, maxDiscountValue, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy, origin, destination, airline} = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
@@ -20,6 +20,10 @@ const parseFlightDealFilters = (query: any) => {
     
     if (active) {
       filters.active = active; 
+    }
+    
+    if (airline) {
+      filters.airlines = { $in: [airline] }; 
     }
     
     if (origin) {
