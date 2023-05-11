@@ -1,6 +1,6 @@
 import axios from "axios";
 import { StringDate } from "../../utils/types"
-import { formatPhoneNumber, parseResponse } from "../../utils/utils"
+import { formatPhoneNumber, months, parseResponse } from "../../utils/utils"
 const requestPromise = require("request-promise");
 const config = require('config')
 interface BizgemBvnValidationInterface {
@@ -13,22 +13,29 @@ interface BizgemBvnValidationInterface {
 
 const headers = {
     "Content-Type": "application/json",
-    Authorization: config.bizgem.PUBLIC_KEY
+    Authorization: config.bizgem.SECRET_KEY
 }
 
 export const validateBvn = async (input: BizgemBvnValidationInterface) => {
     try {
         console.log('validating... ', `${config.bizgem.BASE_URL}/kyc/bvn`)
+        console.log('public key.... ', config.bizgem.PUBLIC_KEY)
+        console.log('secret key.... ', config.bizgem.PUBLIC_KEY)
         // const url = `${config.bizgem.BASE_URL}/kyc/bvn`
         // const verb = 'POST'
+
+        const dob = input.dob.split('-')
 
         const requestBody = {
             bvn:input.bvn,
             firstName: input.firstName,
             lastName: input.lastName,
             reference: input.reference,
-            dateOfBirth: input.dob
+            dateOfBirth: `${dob[0]}-${months[dob[1] as keyof typeof months]}-${dob[2]}`
         }
+
+        console.log('rqst .... ', requestBody)
+
 
         // const requestHeaders = {
         //     Authorization: config.bizgem.PUBLIC_KEY
@@ -56,15 +63,12 @@ export const validateBvn = async (input: BizgemBvnValidationInterface) => {
         // }
 
         const response = await axios.post(`${config.bizgem.BASE_URL}/kyc/bvn`, requestBody, { headers })
-        console.log(response)
+        // console.log(response)
         return {
             error: false,
             data: response.data,
             errorType: '',
         }
-        
-
-
     } catch (error: any) {
         console.error('--->BIZGEM BVN VALIDATION ERROR BLOCK --->', error.response.data)  
         throw new Error(error.response.data.message)
@@ -81,12 +85,7 @@ const getChannelBankCodes = async () => {
             requestType: "FETCH_ALL"
         }
 
-        const requestHeaders = {
-            Authorization: `${config.bizgem.PUBLIC_KEY}`,
-            "Content-Type": "application/json"
-        }
-
-        let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestBody) };
+        let requestOptions = { uri: url, method: verb, headers: headers, body: JSON.stringify(requestBody) };
         let response = null
         
         response = await requestPromise(requestOptions);
@@ -95,6 +94,8 @@ const getChannelBankCodes = async () => {
         if(response.responseCode !== '00') {
             throw new Error(response.responseMessage)
         }
+
+        console.log('CHANNELS ->0> ', response.data)
 
         return {
             error: false, 
@@ -136,12 +137,7 @@ export const createVirtualAccount = async (input: BizgemCreateVirtualAccountInte
             dob: input.dob
         }
 
-        const requestHeaders = {
-            Authorization: `${config.bizgem.PUBLIC_KEY}`,
-            "Content-Type": "application/json"
-        }
-
-        let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestBody) };
+        let requestOptions = { uri: url, method: verb, headers: headers, body: JSON.stringify(requestBody) };
         let response = null
         
         response = await requestPromise(requestOptions);

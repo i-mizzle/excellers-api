@@ -240,7 +240,7 @@ export const getJsDate = (stringDate: StringDate | any): Date => {
   return dateObject;
 }
 
-const months = {
+export const months = {
   '01': 'Jan',
   '02': 'Feb',
   '03': 'Mar',

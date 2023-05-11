@@ -65,7 +65,8 @@ export interface BookingDocument extends mongoose.Document {
     pricing: any,
     reference: string
     totalDuration: number
-    invoice: InvoiceDocument['_id']
+    invoice: InvoiceDocument['_id'],
+    paymentStatus: string
     totalInboundDuration: number | null
     totalOutboundDuration: number | null
     travelersPrice: Array<object>
@@ -84,6 +85,9 @@ const BookingSchema = new mongoose.Schema(
     invoice: { 
       type:  mongoose.Schema.Types.ObjectId, 
       ref: 'Invoice'
+    },
+    paymentStatus: {
+      type: String
     },
     addons: [
       {

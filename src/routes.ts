@@ -32,7 +32,7 @@ import { getAllInvitationsHandler, inviteUserHandler } from './controller/invita
 import { confirmFlightPriceHandler, flightSearchHandler } from './controller/flight.controller';
 import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
 import { bookingSchema, getBookingSchema } from './schema/booking.schema';
-import { bookFlightHandler, cancelBookingHandler, getBookingHandler, getBookingsHandler, issueTicketForBookingHandler } from './controller/booking.controller';
+import { bookFlightHandler, cancelBookingHandler, getBookingHandler, getBookingsHandler, issueTicketForBookingHandler, updateBookingsWithInvoiceStatuses } from './controller/booking.controller';
 import { createTripHandler, deleteTripHandler, getTripHandler, getTripsHandler, updateTripHandler } from './controller/trip.controller';
 import { createTripSchema, getTripSchema, updateTripSchema } from './schema/trip.schema';
 import { createNewsletterSubscriptionHandler, deleteNewsletterSubscriptionHandler, getNewsletterSubscriptionHandler, getNewsletterSubscriptionsHandler, updateNewsletterSubscriptionHandler } from './controller/newsletter-subscription.controller';
@@ -182,6 +182,12 @@ export default function(app: Express) {
     )
 
     // FLIGHTS
+    app.get('/flights/bookings/update-scripts/invoice-status',
+        requiresUser,
+        requiresAdministrator,
+        updateBookingsWithInvoiceStatuses
+    )
+    
     app.post('/flights/search', 
         validateRequest(searchFlightSchema),
         flightSearchHandler

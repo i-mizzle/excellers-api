@@ -57,6 +57,7 @@ export async function findBookings(
             .sort({ 'createdAt' : -1 })
             .skip((perPage * page) - perPage)
             .limit(perPage);
+
     }
 
     return {

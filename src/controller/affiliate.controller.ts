@@ -5,7 +5,7 @@ import * as response from '../responses'
 import { createAffiliateMarkup, findAffiliateMarkup } from "../service/affiliate-markup.service";
 import { sendAffiliateApprovalConfirmation, sendWalletCreationNotification } from "../service/mailer.service";
 import { reserveAccount } from "../service/integrations/monnify.service";
-import { generateCode, parseDateForMonnify } from "../utils/utils";
+import { generateCode, months, parseDateForMonnify } from "../utils/utils";
 import { createSubAccount } from "../service/integrations/flutterwave.service";
 import { createNairaWallet, findAndUpdateNairaWallet } from "../service/naira-wallet.service";
 import { validateBvn } from "../service/integrations/bizgem.service";
@@ -100,9 +100,13 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
         if(!bvnConfirmation || bvnConfirmation.error === true) {
             return response.handleErrorResponse(res, bvnConfirmation)
         }
-        let bvnValidated = false
 
-        if(bvnConfirmation.data.fieldMatches.dob === true && bvnConfirmation.data.fieldMatches.firstName  === true && bvnConfirmation.data.fieldMatches.lastName  === true) {
+        let bvnValidated = false
+        const dob = dateOfBirth.split('-')
+        console.log('CONF DATA ======> ', bvnConfirmation.data)
+        if(bvnConfirmation.data.birthdate === `${dob[0]}-${months[dob[1] as keyof typeof months]}-${dob[2]}` 
+            && bvnConfirmation.data.firstName.toLowerCase().trim()  === affiliate.firstName.toLowerCase().trim() 
+            && bvnConfirmation.data.lastName.toLowerCase().trim()  === affiliate.lastName.toLowerCase().trim()) {
             bvnValidated = true
         } else {
             return response.badRequest(res, {message: "Sorry, the BVN you supplied is not valid or does not match your information, please contact support"})

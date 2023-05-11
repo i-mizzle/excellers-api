@@ -7,15 +7,20 @@ import { createInvoice, findInvoice } from "../service/invoice.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { AddonDocument } from "../model/addon.model";
 import { findExistingFlightDeal } from "../service/flight-deal.service";
-
+import mongoose from 'mongoose';
 const parseBookingFilters = (query: any) => {
-    const { deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
     // if (deal) {
     //   filters.title = { $regex: title, $options: "i" }; 
     // }
+
+    
+    if (paymentStatus) {
+        filters.paymentStatus = paymentStatus;
+    } 
 
     if (airportFrom) {
         filters.outbound = { $elemMatch: {airportFrom: airportFrom} }; 
@@ -167,6 +172,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
 
         const bookingUpdatePayload = {
             invoice: invoice._id,
+            paymentStatus: invoice.status,
             addonsTotal: totalAddonsPrice/100,
             pricing: updatedPricing,
             deal: null
@@ -195,6 +201,7 @@ export const getBookingsHandler = async (req: Request, res: Response) => {
         if(expand && expand.includes(',')) {
             expand = expand.split(',')
         }
+        console.log(filters)
         const bookings = await findBookings(filters, resPerPage, page, expand)
         // return res.send(post)
 
@@ -301,6 +308,28 @@ export const issueTicketForBookingHandler = async (req: Request, res: Response) 
 
             return response.ok(res, {message: 'ticket successfully issued for booking'})
         }
+
+    } catch (error: any) {
+        return response.error(res, error)
+    }
+}
+
+
+export const updateBookingsWithInvoiceStatuses = async (req: Request, res: Response) => {
+    try {
+        const bookings = await findBookings({}, 0, 0, 'invoice')
+        console.log(bookings)
+        let updatedCount = 0
+        if(bookings.bookings) {
+            await Promise.all(bookings.bookings.map(async(booking) => {
+                console.log(booking.invoice)
+                if(booking.invoice && booking.invoice.status) {
+                    await findAndUpdateBooking({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
+                    updatedCount ++
+                }
+            }))
+        }
+        return response.ok(res, {message: `${updatedCount} out of ${bookings.bookings.length} bookings updated`})
 
     } catch (error: any) {
         return response.error(res, error)
