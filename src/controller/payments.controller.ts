@@ -9,6 +9,8 @@ import { generateCode, parseResponse } from "../utils/utils";
 import config from 'config';
 import { findAndUpdateInvoice, findInvoice } from "../service/invoice.service";
 import { findAndUpdateBooking } from "../service/booking.service";
+import { findAndUpdatePackage } from "../service/package-booking.service";
+import { findAndUpdateEnquiry } from "../service/enquiry.service";
 
 
 export const initializePaymentHandler = async (req: Request, res: Response) => {
@@ -95,6 +97,14 @@ export const verifyTransactionHandler = async (req: Request, res: Response) => {
 
             if (invoice.invoiceFor === 'FLIGHT') {
                 await findAndUpdateBooking({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+            }
+
+            if (invoice.invoiceFor === 'PACKAGE') {
+                await findAndUpdatePackage({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+            }
+
+            if (invoice.invoiceFor === 'ENQUIRY') {
+                await findAndUpdateEnquiry({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
             }
 
             return response.ok(res, verification.data)

@@ -7,12 +7,16 @@ import { findPrice } from "../service/price.service";
 import { createInvoice } from "../service/invoice.service";
 
 const parseEnquiryFilters = (query: any) => {
-    const { enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory } = query; 
+    const { enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
 
     const filters: any = {}; 
 
     if (enquiryType) {
         filters.enquiryType = enquiryType
+    } 
+
+    if (paymentStatus) {
+        filters.paymentStatus = paymentStatus;
     } 
     
     if (status) {
@@ -207,6 +211,27 @@ export const deleteEnquiryHandler = async (req: Request, res: Response) => {
         
         
     } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+export const updateEnquiriesWithInvoiceStatuses = async (req: Request, res: Response) => {
+    try {
+        const bookings = await findEnquiries({}, 0, 0, 'invoice')
+        console.log(bookings)
+        let updatedCount = 0
+        if(bookings.enquiries) {
+            await Promise.all(bookings.enquiries.map(async(booking) => {
+                console.log(booking.invoice)
+                if(booking.invoice && booking.invoice.status) {
+                    await findAndUpdateEnquiry({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
+                    updatedCount ++
+                }
+            }))
+        }
+        return response.ok(res, {message: `${updatedCount} out of ${bookings.enquiries.length} package bookings updated`})
+
+    } catch (error: any) {
         return response.error(res, error)
     }
 }

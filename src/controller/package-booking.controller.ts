@@ -2,15 +2,19 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import * as response from '../responses'
 import { createInvoice } from "../service/invoice.service";
-import { createPackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
+import { createPackageBooking, findAndUpdatePackage, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
 import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 
 const parsePackageBookingFilters = (query: any) => {
-    const { packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate } = query;
+    const { packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
 
     const filters: any = {}; 
-  
+      
+    if (paymentStatus) {
+        filters.paymentStatus = paymentStatus;
+    } 
+
     if (packageId) {
       filters.package = packageId; 
     }
@@ -154,6 +158,27 @@ export const getPackageBookingHandler = async (req: Request, res: Response) => {
         return response.ok(res, booking)
         
     } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+export const updatePackageBookingsWithInvoiceStatuses = async (req: Request, res: Response) => {
+    try {
+        const bookings = await findPackageBookings({}, 0, 0, 'invoice')
+        console.log(bookings)
+        let updatedCount = 0
+        if(bookings.packageBookings) {
+            await Promise.all(bookings.packageBookings.map(async(booking) => {
+                console.log(booking.invoice)
+                if(booking.invoice && booking.invoice.status) {
+                    await findAndUpdatePackage({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
+                    updatedCount ++
+                }
+            }))
+        }
+        return response.ok(res, {message: `${updatedCount} out of ${bookings.packageBookings.length} package bookings updated`})
+
+    } catch (error: any) {
         return response.error(res, error)
     }
 }

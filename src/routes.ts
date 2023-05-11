@@ -41,9 +41,9 @@ import { createPackageSchema, getPackageSchema } from './schema/package.schema';
 import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler } from './controller/package.controller';
 import { createPackageDealSchema, getPackageDealSchema, updatePackageDealSchema } from './schema/package-deal.schema';
 import { createEnquirySchema } from './schema/enquiry.schema';
-import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiryHandler } from './controller/enquiry.controller';
+import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiriesWithInvoiceStatuses, updateEnquiryHandler } from './controller/enquiry.controller';
 import { createPackageBookingSchema, getPackageBookingSchema } from './schema/package-booking.schema';
-import { createPackageBookingHandler, getPackageBookingHandler, getPackageBookingsHandler } from './controller/package-booking.controller';
+import { createPackageBookingHandler, getPackageBookingHandler, getPackageBookingsHandler, updatePackageBookingsWithInvoiceStatuses } from './controller/package-booking.controller';
 import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
 import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
 import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
@@ -187,7 +187,7 @@ export default function(app: Express) {
         requiresAdministrator,
         updateBookingsWithInvoiceStatuses
     )
-    
+
     app.post('/flights/search', 
         validateRequest(searchFlightSchema),
         flightSearchHandler
@@ -326,6 +326,12 @@ export default function(app: Express) {
     )
 
     // Package bookings
+    app.get('/packages/bookings/update-scripts/invoice-status',
+        requiresUser,
+        requiresAdministrator,
+        updatePackageBookingsWithInvoiceStatuses
+    )
+
     app.post('/bookings/packages',
         validateRequest(createPackageBookingSchema),
         createPackageBookingHandler
@@ -459,6 +465,13 @@ export default function(app: Express) {
     /**
      * Enquiries
      */
+
+
+    app.get('/enquiries/update-scripts/invoice-status',
+        requiresUser,
+        requiresAdministrator,
+        updateEnquiriesWithInvoiceStatuses
+    )
     app.post('/enquiries', 
         validateRequest(createEnquirySchema),
         createEnquiryHandler

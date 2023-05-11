@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { UserDocument } from "./user.model";
 import { AppointmentDocument } from "./appointment.model";
+import { InvoiceDocument } from "./invoice.model";
 
 export interface EnquiryDocument extends mongoose.Document {
   name: string
@@ -18,6 +19,8 @@ export interface EnquiryDocument extends mongoose.Document {
   maritalStatus: string
   deleted: boolean
   message: string;
+  invoice: InvoiceDocument["_id"]
+  paymentStatus: string
   notes: {
     noteBy: UserDocument["_id"],
     note: string
@@ -89,6 +92,9 @@ const EnquirySchema = new mongoose.Schema(
     invoice:  {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Invoice'
+    },
+    paymentStatus: {
+      type: String
     },
     notes: [
       {
