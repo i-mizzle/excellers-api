@@ -31,13 +31,18 @@ const parseInvoiceFilters = (query: any) => {
       filters.expiry = { $gte: (getJsDate(maxExpiry)) }; 
     }
   
-    if (minDate) {
-      filters.createdAt = { $lte: getJsDate(minDate) }; 
+    if (minDate && !maxDate) {
+        filters.createdAt = { $gte: (getJsDate(minDate)) }; 
     }
-  
-    if (maxDate) {
-      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+
+    if (maxDate && !minDate) {
+        filters.createdAt = { $lte: getJsDate(maxDate) }; 
     }
+
+    if (minDate && maxDate) {
+        filters.date = { $gte: getJsDate(minDate), $lte: getJsDate(maxDate) };
+    }
+
     return filters
 }
 

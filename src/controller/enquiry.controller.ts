@@ -7,7 +7,7 @@ import { findPrice } from "../service/price.service";
 import { createInvoice } from "../service/invoice.service";
 
 const parseEnquiryFilters = (query: any) => {
-    const { enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
+    const { minDateCreated, maxDateCreated, enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
 
     const filters: any = {}; 
 
@@ -57,6 +57,18 @@ const parseEnquiryFilters = (query: any) => {
   
     if (travelHistory) {
         filters.travelHistory = travelHistory; 
+    }
+
+    if (minDateCreated && !maxDateCreated) {
+        filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
+    }
+
+    if (maxDateCreated && !minDateCreated) {
+        filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
+    }
+
+    if (minDateCreated && maxDateCreated) {
+        filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
     }
   
     return filters

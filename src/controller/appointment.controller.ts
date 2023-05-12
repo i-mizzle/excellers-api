@@ -40,20 +40,31 @@ const parseAppointmentFilters = (query: any) => {
         filters["attendee.email"] = { $elemMatch: { name: attendeePhone } };; 
     }
         
-    if (minAppointmentDate) {
+    if (minAppointmentDate && !maxAppointmentDate) {
+        console.log(getJsDate(minAppointmentDate))
         filters.appointmentDate = { $gte: (getJsDate(minAppointmentDate)) }; 
     }
 
-    if (maxAppointmentDate) {
+    if (maxAppointmentDate && !minAppointmentDate) {
+        console.log(getJsDate(maxAppointmentDate))
+
         filters.appointmentDate = { $lte: getJsDate(maxAppointmentDate) }; 
     }
+
+    if (minAppointmentDate && maxAppointmentDate) {
+        filters.date = { $gte: getJsDate(maxAppointmentDate), $lte: getJsDate(maxAppointmentDate) };
+    }
         
-    if (minDateCreated) {
+    if (minDateCreated && !maxDateCreated) {
         filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
     }
 
-    if (maxDateCreated) {
+    if (maxDateCreated && !minDateCreated) {
         filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
+    }
+
+    if (minDateCreated && maxDateCreated) {
+        filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
     }
   
     return filters

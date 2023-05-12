@@ -46,21 +46,30 @@ const parseFlightDealFilters = (query: any) => {
       filters.discountValue = { $lt: +maxDiscountValue }; 
     }
   
-    if (minStartDate) {
+    if (minStartDate && !maxStartDate) {
       filters.startDate = { $gte: (getJsDate(minStartDate)) }; 
     }
   
-    if (maxStartDate) {
+    if (maxStartDate && !minStartDate) {
       filters.startDate = { $lte: getJsDate(maxStartDate) }; 
     }
 
-    if (minEndDate) {
-      filters.endDate = { $gte: (getJsDate(minEndDate)) }; 
+    if (minStartDate && maxStartDate) {
+        filters.startDate = { $gte: getJsDate(minStartDate), $lte: getJsDate(maxStartDate) };
     }
-  
-    if (maxEndDate) {
-      filters.endDate = { $lte: getJsDate(maxEndDate) }; 
+    
+    if (minEndDate && !maxEndDate) {
+        filters.endDate = { $gte: (getJsDate(minEndDate)) }; 
     }
+    
+    if (maxEndDate && !minEndDate) {
+        filters.endDate = { $lte: getJsDate(maxEndDate) }; 
+    }
+
+    if (minEndDate && maxEndDate) {
+        filters.endDate = { $gte: getJsDate(minEndDate), $lte: getJsDate(maxEndDate) };
+    }
+
     return filters
 }
 

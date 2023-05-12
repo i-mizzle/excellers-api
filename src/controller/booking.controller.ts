@@ -75,12 +75,17 @@ const parseBookingFilters = (query: any) => {
         filters["pricing.payable"] = { $lt: +maxAmount }; 
     }
   
-    if (minDate) {
+    if (minDate && !maxDate) {
         filters.createdAt = { $gte: (getJsDate(minDate)) }; 
     }
   
-    if (maxDate) {
+    if (maxDate && !minDate) {
         filters.createAt = { $lte: getJsDate(maxDate) }; 
+    }
+
+
+    if (minDate && maxDate) {
+        filters.date = { $gte: getJsDate(minDate), $lte: getJsDate(maxDate) };
     }
 
     return filters
