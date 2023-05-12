@@ -9,14 +9,13 @@ import { AddonDocument } from "../model/addon.model";
 import { findExistingFlightDeal } from "../service/flight-deal.service";
 import mongoose from 'mongoose';
 const parseBookingFilters = (query: any) => {
-    const { deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { hasDeal, deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
-    const filters: any = {}; // create an empty object to hold the filters
-  
-    // if (deal) {
-    //   filters.title = { $regex: title, $options: "i" }; 
-    // }
+    const filters: any = {}; 
 
+    if (hasDeal) {
+        filters.deal = { $exists: true, $ne: "" };
+    }
     
     if (paymentStatus) {
         filters.paymentStatus = paymentStatus;

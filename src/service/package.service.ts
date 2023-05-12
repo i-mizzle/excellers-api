@@ -95,6 +95,7 @@ export async function findAndUpdatePackage(
 export const applyPackageDeals = async (packages: PackageDocument[]) => {
     const deals = await findPackageDeals({
         deleted: false,
+        active: true,
         startDate: {
             // $lt: new Date(getJsDate(body.endDate))
             $lte: new Date()
