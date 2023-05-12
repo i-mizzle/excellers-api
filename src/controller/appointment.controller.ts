@@ -52,7 +52,7 @@ const parseAppointmentFilters = (query: any) => {
     }
 
     if (minAppointmentDate && maxAppointmentDate) {
-        filters.date = { $gte: getJsDate(minAppointmentDate), $lte: getJsDate(maxAppointmentDate) };
+        filters.appointmentDate = { $gte: getJsDate(minAppointmentDate), $lte: getJsDate(maxAppointmentDate) };
     }
         
     if (minDateCreated && !maxDateCreated) {
@@ -64,7 +64,7 @@ const parseAppointmentFilters = (query: any) => {
     }
 
     if (minDateCreated && maxDateCreated) {
-        filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
+        filters.createdAt = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
     }
   
     return filters
