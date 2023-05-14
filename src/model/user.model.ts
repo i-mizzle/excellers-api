@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import config from 'config';
 import { ConfirmationCodeDocument } from './confirmation-code.model';
 import { AffiliateMarkupDocument } from './affiliate-markup.model';
+import { NairaWalletDocument } from './naira-wallet.model';
 
 export interface UserDocument extends mongoose.Document {
     email: string;
@@ -22,6 +23,7 @@ export interface UserDocument extends mongoose.Document {
     bvnValidated?: Boolean,
     bvnValidationData?: {}
     affiliateMarkup?: AffiliateMarkupDocument["_id"]
+    wallet?: NairaWalletDocument["_id"]
     businessName?: string,
     location?: string
     createdAt?: Date;
@@ -90,6 +92,10 @@ const UserSchema = new mongoose.Schema(
         affiliateMarkup: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'AffiliateMarkup'
+        },
+        wallet: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'NairaWallet'
         },
         businessName: {
             type: String

@@ -19,10 +19,6 @@ const headers = {
 export const validateBvn = async (input: BizgemBvnValidationInterface) => {
     try {
         console.log('validating... ', `${config.bizgem.BASE_URL}/kyc/bvn`)
-        console.log('public key.... ', config.bizgem.PUBLIC_KEY)
-        console.log('secret key.... ', config.bizgem.PUBLIC_KEY)
-        // const url = `${config.bizgem.BASE_URL}/kyc/bvn`
-        // const verb = 'POST'
 
         const dob = input.dob.split('-')
 
@@ -35,32 +31,6 @@ export const validateBvn = async (input: BizgemBvnValidationInterface) => {
         }
 
         console.log('rqst .... ', requestBody)
-
-
-        // const requestHeaders = {
-        //     Authorization: config.bizgem.PUBLIC_KEY
-        // }
-
-        // console.log('requestHeaders... ', requestHeaders)
-
-
-        // let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestBody) };
-        // let response = null
-        
-        // response = await requestPromise(requestOptions);
-        // response = parseResponse(response);
-
-        // console.log('-----> Validation response ----->', response)
-        // if(response.responseCode !== '00') {
-        //     console.log('errored... ')
-        //     throw new Error(response.responseMessage)
-        // }
-
-        // return {
-        //     error: false, 
-        //     errorType: "", 
-        //     data: response.responseBody.accessToken
-        // }
 
         const response = await axios.post(`${config.bizgem.BASE_URL}/kyc/bvn`, requestBody, { headers })
         // console.log(response)
@@ -108,11 +78,53 @@ const getChannelBankCodes = async () => {
     }
 }
 
+interface BizgemWalletCreationInterface {
+    bvn: string
+    dob: string
+    email: string
+    firstName: string
+    lastName: string
+    phoneNumber: string
+}
+
+const createWallet = async (input: BizgemWalletCreationInterface) => {
+    try {
+        console.log('creating wallet... ', `${config.bizgem.BASE_URL}/wallet/create`)
+
+        const dob = input.dob.split('-')
+
+        const requestBody = {
+            bvn: input.dob,
+            dob: `${dob[2]}-${dob[1]}-${dob[0]}`,
+            email: input.email,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            phoneNumber: input.phoneNumber,
+            countryCode: "234",
+            currency: "NGN"
+        }
+
+        console.log('wallet creation rqst .... ', requestBody)
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/wallet/create`, requestBody, { headers })
+        // console.log(response)
+        return {
+            error: false,
+            data: response.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM BVN VALIDATION ERROR BLOCK --->', error.response.data)  
+        throw new Error(error.response.data.message)
+    }
+}
+
 export interface BizgemCreateVirtualAccountInterface {
     firstName: string
     lastName: string
     address?: string 
     phoneNumber: string
+    email: string
     bvn: string
     dob: string
 }
@@ -120,6 +132,14 @@ export interface BizgemCreateVirtualAccountInterface {
 export const createVirtualAccount = async (input: BizgemCreateVirtualAccountInterface) => {
     try {
         console.log('creating virtual account... ')
+        const wallet = await createWallet({
+            firstName: input.firstName,
+            lastName: input.lastName,
+            email: input.email,
+            phoneNumber: input.phoneNumber,
+            bvn: input.bvn,
+            dob: input.dob
+        })
         const url = `${config.bizgem.BASE_URL}/virtual-account/create`
         const verb = 'POST'
 
@@ -131,11 +151,13 @@ export const createVirtualAccount = async (input: BizgemCreateVirtualAccountInte
             lastName: input.lastName,
             address: input.address,
             phoneNumber: input.phoneNumber,
-            accountParent: config.bizgem.BASE_WALLET,
+            accountParent: wallet.data.accountNumber,
             bvn: input.bvn,
             channelBankCode: selectedChannel.bankCode,
             dob: input.dob
         }
+
+        console.log('RQST_BODY -> ', requestBody)
 
         let requestOptions = { uri: url, method: verb, headers: headers, body: JSON.stringify(requestBody) };
         let response = null
@@ -146,19 +168,20 @@ export const createVirtualAccount = async (input: BizgemCreateVirtualAccountInte
         console.log('-----> virtual account creation response ----->', response)
 
         if(response.responseCode !== '00') {
-            // return {
-            //     error: true, 
-            //     errorType: "error", 
-            //     data: response
-            // }
-            throw new Error(response.responseMessage)
+            return {
+                error: true, 
+                errorType: "error", 
+                data: response
+            }
+            // throw new Error(response.responseMessage)
+        } else {
+            return {
+                error: false, 
+                errorType: "", 
+                data: {...response, ...{channel: selectedChannel} }
+            }
         }
 
-        return {
-            error: false, 
-            errorType: "", 
-            data: {...response.data, ...{channel: selectedChannel} }
-        }
         
     } catch (error: any) {
         console.error('--->BIZGEM VIRTUAL ACCT CREATION ERROR BLOCK --->', error.response.data)  
@@ -166,27 +189,219 @@ export const createVirtualAccount = async (input: BizgemCreateVirtualAccountInte
     }
 }
 
-const getVirtualAccountTransactions = () => {
+interface BizgemWalletTransactionsInterface {
+    startDate: string,
+    endDate: string,
+    accountNumber: string,
+    searchItem: string,
+    page: number
+}
+
+export const getVirtualAccountTransactions = async (input: BizgemWalletTransactionsInterface) => {
     try {
-        
-    } catch (error) {
-        
+        const url = "virtual-account/read-transaction"
+        console.log('fetching wallet transaction... ', `${config.bizgem.BASE_URL}/${url}`)
+
+
+        const requestBody = {
+            startDate: input.startDate,
+            endDate: input.endDate,
+            accountNumber: input.accountNumber,
+            searchItem: input.searchItem || '',
+            page: input.page
+        }
+
+        console.log('wallet transactions request .... ', requestBody)
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/${url}`, requestBody, { headers })
+        console.log(response.data)
+
+        if(response.data.responseCode !== '00') {
+            return {
+                error: true,
+                data: response.data.responseMessage,
+                errorType: 'badRequest',
+            }
+        }
+
+        return {
+            error: false,
+            data: response.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM VIRTUAL ACCT TRANSACTIONS ERROR BLOCK --->', error.response.data)  
+        // throw new Error(error.response.data.message)
+        return {
+            error: true,
+            data: error.response.data.message,
+            errorType: 'badRequest',
+        }
     }
 }
 
-const validateAccountNumber = () => {
+interface BizgemWalletBalanceInterface {
+    accountNumber: string
+}
+
+export const getVirtualAccountBalance = async (input: BizgemWalletBalanceInterface) => {
     try {
-        
-    } catch (error) {
-        
+        const url = "wallet/balance-enquiry"
+        console.log('fetching wallet balance... ', `${config.bizgem.BASE_URL}/${url}`)
+
+
+        const requestBody = input
+
+        console.log('wallet balance request .... ', requestBody)
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/${url}`, requestBody, { headers })
+        console.log(response.data)
+
+        if(response.data.responseCode !== '00') {
+            return {
+                error: true,
+                data: response.data.responseMessage,
+                errorType: 'badRequest',
+            }
+        }
+
+        return {
+            error: false,
+            data: response.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM WALLET ERROR BLOCK --->', error.response.data)  
+        // throw new Error(error.response.data.message)
+        return {
+            error: true,
+            data: error.response.data.message,
+            errorType: 'badRequest',
+        }
     }
 }
 
-const transferFunds = () => {
+interface bizgemValidateAccountNumberInterface {
+        accountBankCode: string,
+        accountNumber: string
+}
+
+export const validateAccountNumber = async (input: bizgemValidateAccountNumberInterface) => {
     try {
-        
-    } catch (error) {
-        
+        const url = "virtual-account/name-enquiry"
+        console.log('fetching banks list... ', `${config.bizgem.BASE_URL}/${url}`)
+
+        const requestBody = input
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/${url}`, requestBody, { headers })
+        console.log(response.data)
+
+        if(response.data.responseCode !== '00') {
+            return {
+                error: true,
+                data: response.data.responseMessage,
+                errorType: 'badRequest',
+            }
+        }
+
+        return {
+            error: false,
+            data: response.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM WALLET ERROR BLOCK --->', error.response.data)  
+        // throw new Error(error.response.data.message)
+        return {
+            error: true,
+            data: error.response.data.message,
+            errorType: 'badRequest',
+        }
+    }
+}
+
+export const getBanksList = async () => {
+    try {
+        const url = "virtual-account/bank-list"
+        console.log('fetching banks list... ', `${config.bizgem.BASE_URL}/${url}`)
+
+        const requestBody = {
+            readAll: "YES"
+        }
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/${url}`, requestBody, { headers })
+        console.log(response.data)
+
+        if(response.data.responseCode !== '00') {
+            return {
+                error: true,
+                data: response.data.responseMessage,
+                errorType: 'badRequest',
+            }
+        }
+
+        return {
+            error: false,
+            data: response.data.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM WALLET ERROR BLOCK --->', error.response.data)  
+        // throw new Error(error.response.data.message)
+        return {
+            error: true,
+            data: error.response.data.message,
+            errorType: 'badRequest',
+        }
+    }
+}
+
+export interface BizgemFundsTransferInterface {
+    amount: string,
+    bankName: string,
+    bankCode: string,
+    creditAccountName: string,
+    creditAccountNumber: string,
+    debitAccountName: string,
+    debitAccountNumber: string,
+    narration: string,
+    sessionId: string,
+    reference: string
+}
+
+export const transferFunds = async (input: BizgemFundsTransferInterface) => {
+    try {
+        const url = "virtual-account/inter-bank-fund-transfer"
+        console.log('fetching wallet balance... ', `${config.bizgem.BASE_URL}/${url}`)
+
+        const requestBody = input
+
+        console.log('wallet balance request .... ', requestBody)
+
+        const response = await axios.post(`${config.bizgem.BASE_URL}/${url}`, requestBody, { headers })
+        console.log(response.data)
+
+        if(response.data.responseCode !== '00') {
+            return {
+                error: true,
+                data: response.data.responseMessage,
+                errorType: 'badRequest',
+            }
+        }
+
+        return {
+            error: false,
+            data: response.data,
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('--->BIZGEM WALLET ERROR BLOCK --->', error.response.data)  
+        // throw new Error(error.response.data.message)
+        return {
+            error: true,
+            data: error.response.data.message,
+            errorType: 'badRequest',
+        }
     }
 }
 

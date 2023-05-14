@@ -239,23 +239,31 @@ interface NewSubAccountInterface {
     accountNumber: string
     accountName: string
     phone: string
+    email: string
+    accountReference: string
     splitType: string
     splitValue: number
 }
 
 export const createSubAccount = async (input: NewSubAccountInterface) => {    
+    console.log('creating sub account ...')
     let url = 'https://api.flutterwave.com/v3/payout-subaccounts';
     let verb = "POST";
 
     const payload = {
+        account_reference: input.accountReference,
         account_bank: input.bankCode,
         account_number: input.accountNumber,
+        account_name: input.accountName,
         business_name: input.accountName,
         business_mobile: input.phone,
+        email: input.email,
         country: "NG",
         split_type: input.splitType.toLowerCase(),
         split_value: input.splitValue
     }
+
+    console.log('sub account payload ... ', payload)
 
     let subAccount = null;
 

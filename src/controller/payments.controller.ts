@@ -18,11 +18,35 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const invoiceCode = req.body.invoiceCode
 
-        const invoice = await findInvoice({invoiceCode})
+        const invoice = await findInvoice({invoiceCode}, 'user')
+        
         if(!invoice) {
             return response.notFound(res, {message: "invoice not found"})
         }
 
+        // TO DO
+        // Get split type and value
+        // calculate how much the affiliate gets
+        // send the request with a split with charge type: flat_subaccount
+
+        // let split
+
+
+            // {
+            //   id: "RS_A8EB7D4D9C66C0B1C75014EE67D4D663",
+            //   // If you want the subaccount to get 4200 naira only
+            //   // Subaccount gets: 4200
+            //   // You get: 6000 - 4200 - 60 = 1740
+            //   transaction_charge_type: "flat_subaccount",
+            //   transaction_charge: 4200,
+            // },
+
+            
+
+        if(invoice.user.userType === 'AFFILIATE') {
+
+        }
+        
         if(new Date() > new Date(invoice.expiry)) {
             return response.notFound(res, {message: "invoice has expired and can no longer be paid for, please create booking again"})
         }

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { InvoiceDocument } from "./invoice.model";
 import { AddonDocument } from "./addon.model";
 import { FlightDealDocument } from "./flight-deal.model";
+import { UserDocument } from "./user.model";
 
 export interface Passenger {
     passengerType: string
@@ -70,6 +71,7 @@ export interface BookingDocument extends mongoose.Document {
     totalInboundDuration: number | null
     totalOutboundDuration: number | null
     travelersPrice: Array<object>
+    bookedBy?: UserDocument["_id"]
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -118,7 +120,11 @@ const BookingSchema = new mongoose.Schema(
     totalDuration: {type: Number},
     totalInboundDuration: {},
     totalOutboundDuration: {type: Number},
-    travelersPrice: []
+    travelersPrice: [],
+    bookedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
   },
   { timestamps: true }
 );

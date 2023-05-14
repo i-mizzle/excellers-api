@@ -51,7 +51,8 @@ export const approveAffiliateHandler = async (req: Request, res: Response) => {
         return response.ok(res, {message: "Affiliate account has been approved successfully"})
         
     } catch (error: any) {
-        
+        console.log(error)
+        return response.error(res, error)
     }
 }
 
@@ -115,20 +116,13 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
         //     bvnValidated = true
         // }
 
-        await findAndUpdateUser({_id: affiliateId}, {
-            bvnValidated, 
-            bvnValidationData: bvnConfirmation.data,
-            bvnValidationReference: bvnConfirmationRef
-        }, {new: true})
-
-
         const nairaWallet = await createNairaWallet({
             userId:affiliateId,
-            // customerEmail: affiliate.email,
             bvn: bvn,
             firstName: affiliate.firstName,
-            lastName: affiliate.firstName,
+            lastName: affiliate.lastName,
             address: affiliate.location,
+            email: affiliate.email,
             phoneNumber: affiliate.phone,
             dob: dateOfBirth
         })
@@ -139,10 +133,12 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
 
         // create flw sub
         const flwSubAccount = await createSubAccount({
-            bankCode: nairaWallet.data.channel.bankCode,
+            accountReference: nairaWallet.data.accountReference,
+            bankCode: nairaWallet.data.bankCode,
             accountNumber: nairaWallet.data.accountNumber,
             accountName: nairaWallet.data.accountName,
             phone: affiliate.phone,
+            email: affiliate.email,
             splitType: affiliateMarkup.markupType,
             splitValue: affiliateMarkup.markup
         })
@@ -152,7 +148,14 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
         }
 
         await findAndUpdateNairaWallet({_id: nairaWallet.data._id}, {flwSubAccountReference: flwSubAccount.data.account_reference}, {new: true})
-
+        
+        await findAndUpdateUser({_id: affiliateId}, {
+            bvnValidated, 
+            bvnValidationData: bvnConfirmation.data,
+            bvnValidationReference: bvnConfirmationRef,
+            wallet: nairaWallet.data._id
+        }, {new: true})
+        
         await sendWalletCreationNotification({
             accountName: nairaWallet.data.accountName,
             accountNumber: nairaWallet.data.accountNumber,
@@ -164,7 +167,8 @@ export const verifyAffiliateBvnHandler = async (req: Request, res: Response) => 
         return response.ok(res, {message: 'Your BVN has been verified successfully'})
 
     } catch (error: any) {
-        
+        console.log(error)
+        return response.error(res, error)
     }
 }
 

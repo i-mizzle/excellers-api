@@ -23,7 +23,15 @@ export function createAccessToken({
     | LeanDocument<Omit<SessionDocument, 'password'>>;
 }) {
     const accessToken = sign(
-        { ...user, session: session._id },
+        { ...{
+            userType: user.userType,
+            email: user.email,
+            phone: user.phone,
+            firstName: user.firstName,
+            middleName: user?.middleName,
+            lastName: user.lastName,
+            _id: user._id
+        }, session: session._id },
         config.get('privateKey'),
         { expiresIn: config.get('accessTokenTtl') }
     );

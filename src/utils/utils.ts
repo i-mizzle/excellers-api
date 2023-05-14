@@ -283,3 +283,11 @@ export const foundDuplicateStrings = (stringArray: string[]) => {
     return false
   }
 }
+
+export const formatBizgemDate = (date: Date): string => {
+  if(!date) {return ''}
+
+  const formatted = (date.getDate().toString().length != 2 ?"0" + date.getDate() : date.getDate()) + "-" +((date.getMonth()+1).toString().length != 2 ? "0" + (date.getMonth() + 1) : (date.getMonth()+1)) + "-" + date.getFullYear();
+
+  return formatted
+}

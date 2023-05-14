@@ -17,7 +17,7 @@ export async function createUser(input: DocumentDefinition<UserDocument>) {
 
 export async function findUser( query: FilterQuery<UserDocument>) {
 
-    return User.findOne(query).populate('affiliateMarkup').lean();
+    return User.findOne(query).populate(['affiliateMarkup', 'wallet']).select('-bvnValidationData').lean();
 }
 
 export async function findAllUsers(

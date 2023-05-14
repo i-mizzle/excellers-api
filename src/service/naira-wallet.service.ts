@@ -12,7 +12,7 @@ interface CreateWalletInterface extends BizgemCreateVirtualAccountInterface {
 
 export async function createNairaWallet (input: DocumentDefinition<CreateWalletInterface>) {
     try {
-        const accountReference = generateCode(18, false)
+        const accountReference = generateCode(20, false)
 
         const reservedAccount = await createVirtualAccount(input)
 
@@ -20,14 +20,28 @@ export async function createNairaWallet (input: DocumentDefinition<CreateWalletI
             return reservedAccount
         }
 
+        console.log('RESERVED ===> ', reservedAccount)
+
+        // const createdWallet = await NairaWallet.create({
+        //     user: input.userId,
+        //     accountReference: reservedAccount.data.accountReference,
+        //     reservationReference: reservedAccount.data.reservationReference,
+        //     accountName: reservedAccount.data.accounts[0].accountName,
+        //     accountNumber: reservedAccount.data.accounts[0].accountNumber,
+        //     bankCode: reservedAccount.data.accounts[0].bankCode,
+        //     bankName: reservedAccount.data.accounts[0].bankName,
+        //     nairaWallet: 
+        // })
+
         const createdWallet = await NairaWallet.create({
-            user: input.userId,
-            accountReference: reservedAccount.data.accountReference,
-            reservationReference: reservedAccount.data.reservationReference,
-            accountName: reservedAccount.data.accounts[0].accountName,
-            accountNumber: reservedAccount.data.accounts[0].accountNumber,
-            bankCode: reservedAccount.data.accounts[0].bankCode,
-            bankName: reservedAccount.data.accounts[0].bankName
+            accountReference,
+            accountNumber: reservedAccount.data.accountNumber,
+            accountName: reservedAccount.data.accountName,
+            accountParent: reservedAccount.data.accountParent,
+            accountCustomerId: reservedAccount.data.accountCustomerId,
+            bankCode: reservedAccount.data.channel.bankCode,
+            bankName: reservedAccount.data.channel.bankName,
+            user: input.userId
         })
     
         console.log('the wallet ==========>', createdWallet)
@@ -39,7 +53,32 @@ export async function createNairaWallet (input: DocumentDefinition<CreateWalletI
         }
 
     } catch (error: any) {
+        console.log('error saving the wallet => ', error)
         throw new Error(error);
+    }
+}
+
+export async function findWallets(
+    query: FilterQuery<NairaWalletDocument>,
+    perPage: number,
+    page: number,
+    // expand: string,
+    options: QueryOptions = { lean: true }
+) {
+    const total = await NairaWallet.find(query, {}, options).countDocuments()
+    let wallets = null
+    if(perPage===0&&page===0){
+        wallets = await NairaWallet.find(query, {}, options)
+    } else {
+        wallets = await NairaWallet.find(query, {}, options)
+            .sort({ 'createdAt' : -1 })
+            .skip((perPage * page) - perPage)
+            .limit(perPage)
+    }
+
+    return {
+        total,
+        wallets
     }
 }
 

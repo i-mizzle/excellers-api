@@ -102,6 +102,10 @@ const findPassengersRequiringDocuments = (passengers: any) => {
     return requireDocs
 }
 
+const bookingPriceWithAffiliateMarkup = () => {
+
+}
+
 export const bookFlightHandler = async (req: Request, res: Response) => {
     try {
         const flightId = get(req, 'params.flightId')
@@ -119,7 +123,6 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             return response.badRequest(res, {message: `The following passengers require a document for this trip: ${passengersRequiringDocuments.join(', ')}`})
         }
         
-
         const booking = await createBooking(body, flightId, flightPriceConfirmation?.data?.documentRequired)
 
         if(booking.error === true) {

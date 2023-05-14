@@ -71,6 +71,11 @@ import { createPostCommentSchema, deletePostCommentSchema, getPostCommentsSchema
 import { createPostCommentHandler, deletePostCommentHandler, getPostCommentsHandler, publishPostCommentHandler } from './controller/post-comment.controller';
 import { createRoleSchema, deleteRoleSchema } from './schema/role.schema';
 import { createRoleHandler, deleteRoleHandler, getRoleHandler, getRolesHandler } from './controller/role.controller';
+import { getWalletBalanceHandler, getWalletHandler, getWalletTransactionsHandler, getWalletsHandler } from './controller/naira-wallet.controller';
+import { getWalletDetailsSchema } from './schema/naira-wallet.schema';
+import requiresAffiliateOrAdmin from './middleware/requiresAffiliateOrAdmin';
+import { fundsTransferHandler, getBanksHandler, validateBankAccountHandler } from './controller/funds-transfer.controller';
+import { fundsTransferSchema, validateBankAccountSchema } from './schema/funds-transfer.schema';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -541,6 +546,57 @@ export default function(app: Express) {
         requiresAffiliate,
         validateRequest(validateBvnSchema),
         verifyAffiliateBvnHandler
+    )
+
+    app.get("/affiliates/wallets", 
+        requiresUser,
+        requiresAffiliate,
+        getWalletsHandler
+    )
+
+    app.get("/affiliates/wallets/:walletId", 
+        requiresUser,
+        requiresAffiliate,
+        validateRequest(getWalletDetailsSchema),
+        getWalletHandler
+    )
+
+    app.get("/affiliates/wallets/:walletId/transactions", 
+        requiresUser,
+        requiresAffiliate,
+        validateRequest(getWalletDetailsSchema),
+        getWalletTransactionsHandler
+    )
+
+    app.get("/affiliates/wallets/:walletId/balance", 
+        requiresUser,
+        requiresAffiliateOrAdmin,
+        validateRequest(getWalletDetailsSchema),
+        getWalletBalanceHandler
+    )
+
+    /**
+     * FUNDS TRANSFER
+     */
+
+    app.get("/funds-transfer/banks", 
+        requiresUser,
+        requiresAffiliateOrAdmin,
+        getBanksHandler
+    )
+
+    app.post("/funds-transfer/validate-account", 
+        requiresUser,
+        requiresAffiliateOrAdmin,
+        validateRequest(validateBankAccountSchema),
+        validateBankAccountHandler
+    )
+
+    app.post("/funds-transfer/initiate", 
+        requiresUser,
+        requiresAffiliate,
+        validateRequest(fundsTransferSchema),
+        fundsTransferHandler
     )
 
     /**
