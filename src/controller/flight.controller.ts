@@ -162,7 +162,11 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
             confirmationData.documentRequired ? 'INTERNATIONAL' : 'LOCAL', confirmationData.pricing.payable
         )
 
-        if(!margin) {
+        log.info('=====================')
+        log.info(margin)
+        log.info('=====================')
+
+        if(margin === null) {
             return response.notFound(res, {message: 'margin not found'})
         }
 
