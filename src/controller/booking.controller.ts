@@ -8,6 +8,7 @@ import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { AddonDocument } from "../model/addon.model";
 import { findExistingFlightDeal } from "../service/flight-deal.service";
 import mongoose from 'mongoose';
+import { findMargin, getMarginValue } from "../service/margin.service";
 const parseBookingFilters = (query: any) => {
     const { hasDeal, deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
@@ -142,7 +143,15 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             flightPriceConfirmation!.data.outbound[0].marketingAirline
         )
 
-        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice
+        const margin = getMarginValue(
+            flightPriceConfirmation?.data?.documentRequired ? 'INTERNATIONAL' : 'LOCAL', flightPriceConfirmation.data.pricing.payable
+        )
+
+        if(!margin) {
+            return response.notFound(res, {message: 'margin not found'})
+        }
+
+        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice + margin
 
         if(existingDeal && body?.bookAtDealPrice === true) {
 
@@ -157,7 +166,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
                 flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
             }
             
-            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice   
+            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice + margin 
         }
 
         const invoiceInput = {

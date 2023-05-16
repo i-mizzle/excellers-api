@@ -7,6 +7,7 @@ export interface PackageBookingDocument extends mongoose.Document {
     bookedBy?: UserDocument['_id'];
     invoice: InvoiceDocument['_id']
     package: PackageDocument['_id']
+    lockDown: Boolean,
     bookingCode: String,
     paymentStatus: String
     packageOwners: {
@@ -27,7 +28,7 @@ const PackageBookingSchema = new mongoose.Schema(
     invoice: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Invoice',
-        required: true
+        // required: true
     }, 
     paymentStatus: {
         type: String,
@@ -41,6 +42,9 @@ const PackageBookingSchema = new mongoose.Schema(
         type: String,
         required: true,
         immutable: true
+    },
+    lockDown: {
+        type: Boolean 
     },
     packageOwners: [
         {

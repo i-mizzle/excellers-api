@@ -21,7 +21,7 @@ import {
     validateRequest
 } from './middleware'
 import { upload } from './service/integrations/cloudinary.service';
-import { newFileHandler } from './controller/file.controller';
+import { newFileHandler, newFilesHandler } from './controller/file.controller';
 import { rejectForbiddenUserFields } from './middleware/rejectForbiddenUserFields';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { createInvitationSchema, getInvitationSchema } from './schema/invitation.schema';
@@ -76,6 +76,10 @@ import { getWalletDetailsSchema } from './schema/naira-wallet.schema';
 import requiresAffiliateOrAdmin from './middleware/requiresAffiliateOrAdmin';
 import { fundsTransferHandler, getBanksHandler, validateBankAccountHandler } from './controller/funds-transfer.controller';
 import { fundsTransferSchema, validateBankAccountSchema } from './schema/funds-transfer.schema';
+import { createMarginHandler, getMarginsHandler, updateMarginHandler } from './controller/margin.controller';
+import { createMarginSchema, getMarginSchema } from './schema/margin.schema';
+import { createGeneralDealHandler, deleteGeneralDealHandler, getGeneralDealHandler, getGeneralDealsHandler, updateGeneralDealHandler } from './controller/general-deal.controller';
+import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema } from './schema/general-deal.schema';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -468,6 +472,39 @@ export default function(app: Express) {
     )
 
     /**
+     * Flight Deals
+     */
+    app.post('/deals', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createGeneralDealSchema),
+        createGeneralDealHandler
+    )
+
+    app.get('/deals', 
+        getGeneralDealsHandler
+    )
+
+    app.get('/deals/:dealCode', 
+        validateRequest(getGeneralDealSchema),
+        getGeneralDealHandler
+    )
+
+    app.put('/deals/:dealCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updateGeneralDealSchema),
+        updateGeneralDealHandler
+    )
+        
+    app.delete('/deals/:dealCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(updateGeneralDealSchema),
+        deleteGeneralDealHandler
+    )
+
+    /**
      * Enquiries
      */
 
@@ -685,6 +722,25 @@ export default function(app: Express) {
         updatePriceHandler
     )
 
+    // prices
+    app.post("/settings/margins", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createMarginSchema),
+        createMarginHandler
+    )
+        
+    app.get("/settings/margins", 
+        getMarginsHandler
+    )
+        
+    app.put("/settings/margins/:marginId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getMarginSchema),
+        updateMarginHandler
+    )
+
     // Roles
     app.post("/settings/roles", 
         requiresUser,
@@ -815,10 +871,8 @@ export default function(app: Express) {
     app.post("/files/new/multiple", 
         requiresUser,
         upload.array("files", 10),
-        newFileHandler
+        newFilesHandler
     )
-    
-
 }
 
 

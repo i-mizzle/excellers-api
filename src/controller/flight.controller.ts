@@ -3,6 +3,7 @@ import { confirmFlightPrice, FlightSearch, searchForFlights } from "../service/i
 import * as response from '../responses'
 import { get } from "lodash";
 import { findExistingFlightDeal, findFlightDeal } from "../service/flight-deal.service";
+import { getMarginValue } from "../service/margin.service";
 
 const airports = require('airport-codes');
 
@@ -156,19 +157,40 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
 
         console.log('-> -> -> ', existingDeal, ' -> -> ', queryObject?.showDeal)
 
+        const margin = await getMarginValue(
+            confirmationData.documentRequired ? 'INTERNATIONAL' : 'LOCAL', confirmationData.pricing.payable
+        )
+
+        if(!margin) {
+            return response.notFound(res, {message: 'margin not found'})
+        }
+
         let discountedPrice = null
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'FIXED') {
-            discountedPrice = confirmationData.pricing.payable - existingDeal.discountValue/100
-            confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
+            discountedPrice = confirmationData.pricing.payable - (existingDeal.discountValue/100) + (margin/100)
+            confirmationData.pricing = {...confirmationData.pricing, ...{
+                discountedPrice: discountedPrice, 
+                payable: confirmationData.pricing.payable + (margin/100)
+            }}
         }
 
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'PERCENTAGE') {
             discountedPrice = confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)
-            confirmationData.pricing = {...confirmationData.pricing, ...{discountedPrice: discountedPrice}}
+            confirmationData.pricing = {...confirmationData.pricing, ...{
+                discountedPrice: discountedPrice, 
+                payable: confirmationData.pricing.payable + margin
+            }}
         }
         
         if(queryObject?.showDeal === 'true' && existingDeal) {
             confirmationData.deal = existingDeal
+        }
+
+        if(!queryObject?.showDeal || queryObject?.showDeal === 'false') {
+            confirmationData.pricing = {...confirmationData.pricing, ...{
+                discountedPrice: discountedPrice, 
+                payable: confirmationData.pricing.payable + margin
+            }}
         }
         
         return response.ok(res, confirmationData)

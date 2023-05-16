@@ -9,6 +9,7 @@ export interface InvoiceDocument extends mongoose.Document {
   invoiceCode: string;
   amount: number;
   invoiceFor: string,
+  partPayment: Boolean
   status?: string
   expiry: Date
   invoiceItem: mongoose.Schema.Types.ObjectId,
@@ -31,6 +32,10 @@ const InvoiceSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true
+    },
+    partPayment: {
+      type: Boolean,
+      default: false
     },
     status: {
       type: String,

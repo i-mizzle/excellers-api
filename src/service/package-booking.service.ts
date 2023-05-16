@@ -67,7 +67,7 @@ export async function findPackageBooking(
     }
 }
 
-export async function findAndUpdatePackage(
+export async function findAndUpdatePackageBooking(
     query: FilterQuery<PackageBookingDocument>,
     update: UpdateQuery<PackageBookingDocument>,
     options: QueryOptions

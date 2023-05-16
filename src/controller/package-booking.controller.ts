@@ -1,15 +1,19 @@
 import { Request, Response } from "express";
 import { get } from "lodash";
 import * as response from '../responses'
-import { createInvoice } from "../service/invoice.service";
-import { createPackageBooking, findAndUpdatePackage, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
+import { createInvoice, findAndUpdateInvoice } from "../service/invoice.service";
+import { createPackageBooking, findAndUpdatePackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
 import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 
 const parsePackageBookingFilters = (query: any) => {
-    const { packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
+    const { lockDown, packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
 
     const filters: any = {}; 
+      
+    if (lockDown) {
+        filters.lockDown = lockDown;
+    } 
       
     if (paymentStatus) {
         filters.paymentStatus = paymentStatus;
@@ -75,6 +79,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
             amount:invoicePrice,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
+            partPayment: body.lockDown && body.lockDown === true ? true : false,
             invoiceItem: bookingPackage._id
         }
 
@@ -84,10 +89,14 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
             bookedBy: userId,
             invoice: invoice._id,
             package:bookingPackage._id,
+            lockDown: body.lockDown,
             packageOwners: body.packageOwners
         }
 
         const packageBooking = await createPackageBooking(bookingInput)
+
+        await findAndUpdateInvoice({_id: invoice._id}, { invoiceItem: packageBooking._id }, { new: true })
+        
         return response.created(res, packageBooking)
     } catch (error: any) {
         return response.error(res, error)
@@ -171,7 +180,7 @@ export const updatePackageBookingsWithInvoiceStatuses = async (req: Request, res
             await Promise.all(bookings.packageBookings.map(async(booking) => {
                 console.log(booking.invoice)
                 if(booking.invoice && booking.invoice.status) {
-                    await findAndUpdatePackage({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
+                    await findAndUpdatePackageBooking({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
                     updatedCount ++
                 }
             }))

@@ -5,6 +5,7 @@ const payload = {
         name: string().required('package name (name) is required'),
         description: string().required('package description (description) is required'),
         packageType: string().required('package type (packageType) is required as enum [eg: PRIVATE, GROUP]'),
+        fulfilledBy: string().required('fulfilledBy is required'),
         price: number().required('package price (price) is required'),
         lockDownPrice: number().required('package lock down price (lockDownPrice) (price) is required'),
         inclusions: array().required('an array of inclusions is required for this package').min(1, 'provide at least one inclusion'),
@@ -17,7 +18,11 @@ const payload = {
         itinerary: array(object({
             title: string().required('itinerary.title is required'),
             description: string().required('itinerary.description is required'),
-        }))
+        })),
+        destination: object({
+            country: string().required('destination.country is required'),
+            city: string().required('destination.city is required'),
+        }).required('destination is required')
     })
 }
 

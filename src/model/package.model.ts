@@ -13,6 +13,11 @@ export interface PackageDocument extends mongoose.Document {
       title: string
       description: string
     }[]
+    destination: {
+      country: string
+      city: string
+    }
+    fulfilledBy: string
     price: number
     media: {
       type: string
@@ -35,9 +40,23 @@ const PackageSchema = new mongoose.Schema(
         type: String,
         required: true
     },
-    description: {
+    fulfilledBy: {
+      type: String,
+      required: true
+    },
+    destination: {
+      country: {
         type: String,
         required: true
+      },
+      city: {
+        type: String,
+        required: true
+      },
+    },
+    description: {
+      type: String,
+      required: true
     },
     packageType: {
       type: String,

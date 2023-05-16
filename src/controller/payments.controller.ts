@@ -9,7 +9,7 @@ import { generateCode, parseResponse } from "../utils/utils";
 import config from 'config';
 import { findAndUpdateInvoice, findInvoice } from "../service/invoice.service";
 import { findAndUpdateBooking } from "../service/booking.service";
-import { findAndUpdatePackage } from "../service/package-booking.service";
+import { findAndUpdatePackageBooking } from "../service/package-booking.service";
 import { findAndUpdateEnquiry } from "../service/enquiry.service";
 
 
@@ -43,7 +43,7 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
 
             
 
-        if(invoice.user.userType === 'AFFILIATE') {
+        if(invoice.user && invoice.user.userType === 'AFFILIATE') {
 
         }
         
@@ -124,7 +124,7 @@ export const verifyTransactionHandler = async (req: Request, res: Response) => {
             }
 
             if (invoice.invoiceFor === 'PACKAGE') {
-                await findAndUpdatePackage({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+                await findAndUpdatePackageBooking({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
             }
 
             if (invoice.invoiceFor === 'ENQUIRY') {

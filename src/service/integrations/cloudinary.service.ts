@@ -19,8 +19,14 @@ const storage = new CloudinaryStorage({
 
 export const upload = multer({ storage: storage });
 
+export const uploadMultiple = multer({ storage }).array('files');
+
 export interface MulterRequest extends Request {
     file: any;
+}
+
+export interface MulterMultipleRequest extends Request {
+    files: any;
 }
 
 // export const uploadFile = async (fileInput: any) => {
