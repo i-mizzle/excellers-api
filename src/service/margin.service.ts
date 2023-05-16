@@ -47,8 +47,8 @@ export const getMarginValue = async (flightType: string, flightPrice: number) =>
         if (margin.marginType === 'PERCENTAGE') {
             marginValue = (margin.value/100) * flightPrice
         }
-        if (margin.marginType === 'FIXED') {
-            marginValue = margin.value
+        if (margin.marginType === 'FLAT') {
+            marginValue = margin.value/100
         }
     
         return marginValue
