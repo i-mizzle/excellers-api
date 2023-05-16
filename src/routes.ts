@@ -80,13 +80,19 @@ import { createMarginHandler, getMarginsHandler, updateMarginHandler } from './c
 import { createMarginSchema, getMarginSchema } from './schema/margin.schema';
 import { createGeneralDealHandler, deleteGeneralDealHandler, getGeneralDealHandler, getGeneralDealsHandler, updateGeneralDealHandler } from './controller/general-deal.controller';
 import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema } from './schema/general-deal.schema';
+import { readLogFile } from './controller/log.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
-    app.get('/dot-env', (req: Request, res: Response) => res.send({
-        'success': true,
-        'data': require('config')
-    }))
+    app.get('/logs', 
+        requiresUser,
+        requiresAdministrator,
+        readLogFile
+    )
+    // app.get('/dot-env', (req: Request, res: Response) => res.send({
+    //     'success': true,
+    //     'data': require('config')
+    // }))
 
     // Register
     app.post('/auth/signup', 
