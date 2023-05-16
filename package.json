@@ -11,6 +11,7 @@
   "author": "Immanuel Onum",
   "license": "ISC",
   "dependencies": {
+    "@types/winston": "^2.4.4",
     "africastalking": "^0.5.5",
     "airport-codes": "^1.0.2",
     "axios": "^0.21.4",
@@ -38,9 +39,12 @@
     "npm": "^9.6.2",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0",
+    "pino-tee": "^0.3.0",
     "qrcode": "^1.5.1",
     "request-promise": "^4.2.6",
     "uuid": "^9.0.0",
+    "winston": "^3.8.2",
+    "winston-console-formatter": "^1.0.0-beta.3",
     "yup": "^0.32.9"
   },
   "devDependencies": {

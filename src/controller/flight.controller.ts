@@ -4,6 +4,7 @@ import * as response from '../responses'
 import { get } from "lodash";
 import { findExistingFlightDeal, findFlightDeal } from "../service/flight-deal.service";
 import { getMarginValue } from "../service/margin.service";
+import log from "../logger";
 
 const airports = require('airport-codes');
 
@@ -155,7 +156,7 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
             confirmationData.outbound[0].marketingAirline
         ) 
 
-        console.log('-> -> -> ', existingDeal, ' -> -> ', queryObject?.showDeal)
+        log.info('-> -> -> ', existingDeal, ' -> -> ', queryObject?.showDeal, '----------> --------> ',  confirmationData)
 
         const margin = await getMarginValue(
             confirmationData.documentRequired ? 'INTERNATIONAL' : 'LOCAL', confirmationData.pricing.payable

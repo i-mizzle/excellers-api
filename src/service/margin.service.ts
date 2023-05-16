@@ -1,5 +1,6 @@
 import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from 'mongoose';
 import Margin, { MarginDocument } from '../model/margin.model';
+import log from '../logger';
 
 export async function createMargin (input: DocumentDefinition<MarginDocument>) {
     return Margin.create(input)
@@ -32,19 +33,27 @@ export async function deleteMargin(
 }
 
 export const getMarginValue = async (flightType: string, flightPrice: number) => {
+    try {
+        const margin = await findMargin({flightType: flightType, active: true})
+        log.info('MARGIN -> -> ->') 
+        log.info(flightType)
+        log.info(flightPrice) 
+        log.info(margin)
+
+        if(!margin) {
+            return null
+        }
+        let marginValue = 0
+        if (margin.marginType === 'PERCENTAGE') {
+            marginValue = (margin.value/100) * flightPrice
+        }
+        if (margin.marginType === 'FIXED') {
+            marginValue = margin.value
+        }
     
-    const margin = await findMargin({flightType: flightType, active: true})
-    console.log('MARGIN -> -> -> ', flightType, flightPrice, margin)
-    if(!margin) {
+        return marginValue
+    } catch (error) {
+        log.error(error)
         return null
     }
-    let marginValue = 0
-    if (margin.marginType === 'PERCENTAGE') {
-        marginValue = (margin.value/100) * flightPrice
-    }
-    if (margin.marginType === 'FIXED') {
-        marginValue = margin.value
-    }
-
-    return marginValue
 }
