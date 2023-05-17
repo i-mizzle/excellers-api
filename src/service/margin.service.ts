@@ -51,7 +51,7 @@ export const getMarginValue = async (flightType: string, flightPrice: number) =>
             marginValue = margin.value/100
         }
     
-        return marginValue
+        return Math.trunc(marginValue)
     } catch (error) {
         log.error(error)
         return null

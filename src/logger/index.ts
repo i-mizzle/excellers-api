@@ -1,9 +1,9 @@
-// const pino = require('pino')
-// const log = pino({
-//   transport: {
-//     target: 'pino-pretty'
-//   },
-// })
+const pino = require('pino')
+const log = pino({
+  transport: {
+    target: 'pino-pretty'
+  },
+})
 
 // const log = pino({
 //   level: 'info', // Set the desired log level (e.g., info, debug, error)
@@ -17,7 +17,7 @@
 
 import winston from 'winston';
 
-const log = winston.createLogger({
+export const winstonLog = winston.createLogger({
   level: 'info', // Set the desired log level (e.g., info, debug, error)
   format: winston.format.json(), // Use JSON format for log entries
   transports: [

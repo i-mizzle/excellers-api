@@ -143,7 +143,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             flightPriceConfirmation!.data.outbound[0].marketingAirline
         )
 
-        const margin = getMarginValue(
+        const margin = await getMarginValue(
             flightPriceConfirmation?.data?.documentRequired ? 'INTERNATIONAL' : 'LOCAL', flightPriceConfirmation.data.pricing.payable
         )
 
@@ -177,6 +177,8 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             invoiceFor: invoiceItemType,
             invoiceItem: booking.data._id
         }
+
+        console.log('INVOICE INPUT---> ---> ', invoiceInput)
 
         const invoice = await createInvoice(invoiceInput)
 
