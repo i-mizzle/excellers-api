@@ -35,10 +35,10 @@ export async function deleteMargin(
 export const getMarginValue = async (flightType: string, flightPrice: number) => {
     try {
         const margin = await findMargin({flightType: flightType, active: true})
-        log.info('MARGIN -> -> ->') 
-        log.info(flightType)
-        log.info(flightPrice) 
-        log.info(margin)
+        // log.info('MARGIN -> -> ->') 
+        // log.info(flightType)
+        // log.info(flightPrice) 
+        // log.info(margin)
 
         if(!margin) {
             return null
@@ -50,6 +50,7 @@ export const getMarginValue = async (flightType: string, flightPrice: number) =>
         if (margin.marginType === 'FLAT') {
             marginValue = margin.value/100
         }
+        console.log('margin value ====== ', marginValue)
     
         return Math.trunc(marginValue)
     } catch (error) {

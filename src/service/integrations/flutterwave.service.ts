@@ -11,13 +11,18 @@ interface InitializeFlutterwavePurchaseObject  {
     customerName: String;
     customerPhone: String;
     redirectUrl: String;
-    meta: any
+    meta: any,
+    subaccounts?: {
+        id: string
+        transaction_charge_type: string
+        transaction_charge: number
+    }[]
 }
 export const initializePurchase = async (input: InitializeFlutterwavePurchaseObject) => {    
     let url = 'https://api.flutterwave.com/v3/payments';
     let verb = "POST";
 
-    const requestPayload = {
+    const requestPayload: any = {
         tx_ref: input.transactionReference,
         amount: input.amount/100,
         currency: "NGN",
@@ -36,6 +41,10 @@ export const initializePurchase = async (input: InitializeFlutterwavePurchaseObj
            description: "Pay for your flights or travel packages",
            logo: "https://gowithgeo.com/assets/images/wxhitelogo.png"
         }
+    }
+
+    if(input.subaccounts) {
+        requestPayload.subaccounts = input.subaccounts
     }
 
     console.log('----------------> ', requestPayload)

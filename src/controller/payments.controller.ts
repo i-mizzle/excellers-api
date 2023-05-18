@@ -8,9 +8,10 @@ import { createTransaction, findAndUpdateTransaction, findTransaction } from "..
 import { generateCode, parseResponse } from "../utils/utils";
 import config from 'config';
 import { findAndUpdateInvoice, findInvoice } from "../service/invoice.service";
-import { findAndUpdateBooking } from "../service/booking.service";
-import { findAndUpdatePackageBooking } from "../service/package-booking.service";
+import { findAndUpdateBooking, findBooking } from "../service/booking.service";
+import { findAndUpdatePackageBooking, findPackageBooking } from "../service/package-booking.service";
 import { findAndUpdateEnquiry } from "../service/enquiry.service";
+import { findAffiliateMarkup } from "../service/affiliate-markup.service";
 
 
 export const initializePaymentHandler = async (req: Request, res: Response) => {
@@ -22,6 +23,19 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
         
         if(!invoice) {
             return response.notFound(res, {message: "invoice not found"})
+        }
+
+        let invoiceBooking = null
+        let affiliateSplit = null
+        if(invoice.invoiceFor === 'FLIGHT') {
+            invoiceBooking = await findBooking({_id: invoice.invoiceItem})
+        }
+        if(invoice.invoiceFor === 'PACKAGE') {
+            invoiceBooking = await findPackageBooking({_id: invoice.invoiceItem})
+        }
+
+        if(invoiceBooking && invoiceBooking.affiliateBooking === true) {
+            affiliateSplit = await findAffiliateMarkup({user: invoiceBooking.bookedBy})
         }
 
         // TO DO
@@ -41,12 +55,7 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
             //   transaction_charge: 4200,
             // },
 
-            
-
-        if(invoice.user && invoice.user.userType === 'AFFILIATE') {
-
-        }
-        
+       
         if(new Date() > new Date(invoice.expiry)) {
             return response.notFound(res, {message: "invoice has expired and can no longer be paid for, please create booking again"})
         }
@@ -75,6 +84,16 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
                 transactionReference: transactionReference
             }
         }
+
+        // if(affiliateSplit) {
+        //     input.subaccounts = [
+        //         {
+        //             id: "RS_A8EB7D4D9C66C0B1C75014EE67D4D663",
+        //             transaction_charge_type: "flat_subaccount",
+        //             transaction_charge: 4200,
+        //         },
+        //     ]
+        // }
 
         const purchaseObject = await initializePurchase(input)
         return response.ok(res, purchaseObject.data)

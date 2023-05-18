@@ -9,6 +9,8 @@ import { AddonDocument } from "../model/addon.model";
 import { findExistingFlightDeal } from "../service/flight-deal.service";
 import mongoose from 'mongoose';
 import { findMargin, getMarginValue } from "../service/margin.service";
+import { findUser } from "../service/user.service";
+import { findAffiliateMarkup } from "../service/affiliate-markup.service";
 const parseBookingFilters = (query: any) => {
     const { hasDeal, deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
@@ -113,9 +115,6 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const body = req.body
         
-        const invoiceItemType = 'FLIGHT'       
-        const invoiceCode = generateCode(18, false).toUpperCase()
-
         const flightPriceConfirmation = await confirmFlightPrice(flightId)
 
         const passengersRequiringDocuments = findPassengersRequiringDocuments(body.passengers)
@@ -123,6 +122,28 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         if(flightPriceConfirmation && flightPriceConfirmation?.data?.documentRequired === true && passengersRequiringDocuments.length > 0) {
             return response.badRequest(res, {message: `The following passengers require a document for this trip: ${passengersRequiringDocuments.join(', ')}`})
         }
+
+        body.bookedBy = userId
+        
+        let affiliateMarkup = 0
+        if(userId && userId !== '') {
+            const user = await findUser({_id: userId})
+            if(user && user.userType === 'AFFILIATE') {
+                body.affiliateBooking = true
+                const markup = await findAffiliateMarkup({user: userId})
+                
+                if(markup && markup.markupType === 'PERCENTAGE') {
+                    affiliateMarkup = (markup.markup/100) * flightPriceConfirmation.data.pricing.payable
+                }
+                
+                if(markup && markup.markupType === 'FIXED') {
+                    affiliateMarkup = markup.markup
+                }
+            }
+        }
+
+        const invoiceItemType = 'FLIGHT'       
+        const invoiceCode = generateCode(18, false).toUpperCase()
         
         const booking = await createBooking(body, flightId, flightPriceConfirmation?.data?.documentRequired)
 
@@ -151,22 +172,26 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             return response.notFound(res, {message: 'margin not found'})
         }
 
-        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice + margin
+        console.log('AFFILIATE MONEY::::::> ', affiliateMarkup)
+
+        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice + (margin * 100) + (affiliateMarkup * 100)
 
         if(existingDeal && body?.bookAtDealPrice === true) {
 
             let discountedPrice: any = null
             if(existingDeal && existingDeal.discountType === 'FIXED') {
                 discountedPrice = flightPriceConfirmation.data.pricing.payable - existingDeal.discountValue/100
+                
                 flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
             }
 
             if(existingDeal && existingDeal.discountType === 'PERCENTAGE') {
                 discountedPrice = flightPriceConfirmation.data.pricing.payable - ((existingDeal.discountValue/100) * flightPriceConfirmation.data.pricing.payable)
+                
                 flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
             }
             
-            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice + margin 
+            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice + margin + affiliateMarkup
         }
 
         const invoiceInput = {

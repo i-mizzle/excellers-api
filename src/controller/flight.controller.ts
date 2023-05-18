@@ -5,6 +5,8 @@ import { get } from "lodash";
 import { findExistingFlightDeal, findFlightDeal } from "../service/flight-deal.service";
 import { getMarginValue } from "../service/margin.service";
 import log from "../logger";
+import { findUser } from "../service/user.service";
+import { findAffiliateMarkup } from "../service/affiliate-markup.service";
 
 const airports = require('airport-codes');
 
@@ -142,6 +144,8 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         const flightId = req.params.flightId
         const queryObject: any = req.query;
         const confirmation = await confirmFlightPrice(flightId)
+        const userId = get(req, 'user._id');
+
 
         if(confirmation.error === true) {
             return response.handleErrorResponse(res, {data: confirmation.data})
@@ -156,35 +160,64 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
             confirmationData.outbound[0].marketingAirline
         ) 
 
-        log.info('-> -> -> ', existingDeal, ' -> -> ', queryObject?.showDeal, '----------> --------> ',  confirmationData)
+        log.info('confirmationData ------------->')
+        log.info(confirmationData)
 
         const margin = await getMarginValue(
             confirmationData.documentRequired ? 'INTERNATIONAL' : 'LOCAL', confirmationData.pricing.payable
         )
 
-        log.info('=====================')
-        log.info(margin)
-        log.info('=====================')
+        let affiliateMarkup = 0
+        if(userId && userId !== '') {
+            const user = await findUser({_id: userId})
+
+            if(user && user.userType === 'AFFILIATE') {
+                const markup = await findAffiliateMarkup({user: userId})
+                
+                if(markup && markup.markupType === 'PERCENTAGE') {
+                    affiliateMarkup = (markup.markup/100) * confirmationData.pricing.payable
+                }
+                
+                if(markup && markup.markupType === 'FIXED') {
+                    affiliateMarkup = markup.markup
+                }
+            }
+        }
+
+        console.log('AFFILIATE MONEY::::::> ', affiliateMarkup)
 
         if(margin === null) {
             return response.notFound(res, {message: 'margin not found'})
         }
 
         let discountedPrice = null
+        if(queryObject?.showDeal === 'true' && !existingDeal ) {
+            confirmationData.pricing = {
+                ...confirmationData.pricing, 
+                ...{
+                    payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                }
+            }
+        }
+
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'FIXED') {
-            discountedPrice = confirmationData.pricing.payable - (existingDeal.discountValue/100) + (margin/100)
+            discountedPrice = (confirmationData.pricing.payable - (existingDeal.discountValue/100)) + margin + affiliateMarkup
             confirmationData.pricing = {...confirmationData.pricing, ...{
                 discountedPrice: discountedPrice, 
-                payable: confirmationData.pricing.payable + (margin/100)
+                payable: confirmationData.pricing.payable + margin + affiliateMarkup
             }}
         }
 
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'PERCENTAGE') {
-            discountedPrice = confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)
-            confirmationData.pricing = {...confirmationData.pricing, ...{
-                discountedPrice: discountedPrice, 
-                payable: confirmationData.pricing.payable + margin
-            }}
+            discountedPrice = (confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)) + margin + affiliateMarkup
+
+            confirmationData.pricing = {
+                ...confirmationData.pricing, 
+                ...{
+                    discountedPrice: discountedPrice, 
+                    payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                }
+            }
         }
         
         if(queryObject?.showDeal === 'true' && existingDeal) {
@@ -194,7 +227,7 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         if(!queryObject?.showDeal || queryObject?.showDeal === 'false') {
             confirmationData.pricing = {...confirmationData.pricing, ...{
                 discountedPrice: discountedPrice, 
-                payable: confirmationData.pricing.payable + margin
+                payable: confirmationData.pricing.payable + margin + affiliateMarkup
             }}
         }
         

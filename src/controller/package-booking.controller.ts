@@ -5,6 +5,8 @@ import { createInvoice, findAndUpdateInvoice } from "../service/invoice.service"
 import { createPackageBooking, findAndUpdatePackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
 import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
+import { findUser } from "../service/user.service";
+import { findAffiliateMarkup } from "../service/affiliate-markup.service";
 
 const parsePackageBookingFilters = (query: any) => {
     const { lockDown, packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
@@ -53,7 +55,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
     try {
         const userId = get(req, 'user._id');
         const body = req.body
-
+        body.bookedBy = userId
         const bookingPackage = await findPackage({_id: body.package})
         if(!bookingPackage) {
             return response.notFound(res, {message: 'package not found'})
@@ -73,6 +75,26 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
             invoicePrice = bookingPackage.price
         }
 
+        let affiliateBooking = false
+
+        if(userId && userId !== '') {
+            const user = await findUser({_id: userId})
+
+            if(user && user.userType === 'AFFILIATE') {
+                affiliateBooking = true
+                const markup = await findAffiliateMarkup({user: userId})
+                
+                if(markup && markup.markupType === 'PERCENTAGE') {
+                    invoicePrice += (markup.markup/100) * invoicePrice
+                }
+                
+                if(markup && markup.markupType === 'FIXED') {
+                    invoicePrice += markup.markup
+                }
+            }
+
+        }
+
         const invoiceInput = {
             user: userId,
             invoiceCode: invoiceCode,
@@ -80,7 +102,8 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             partPayment: body.lockDown && body.lockDown === true ? true : false,
-            invoiceItem: bookingPackage._id
+            invoiceItem: bookingPackage._id,
+            affiliateBooking
         }
 
         const invoice = await createInvoice(invoiceInput)

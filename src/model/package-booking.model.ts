@@ -7,6 +7,7 @@ export interface PackageBookingDocument extends mongoose.Document {
     bookedBy?: UserDocument['_id'];
     invoice: InvoiceDocument['_id']
     package: PackageDocument['_id']
+    affiliateBooking: Boolean
     lockDown: Boolean,
     bookingCode: String,
     paymentStatus: String
@@ -45,6 +46,10 @@ const PackageBookingSchema = new mongoose.Schema(
     },
     lockDown: {
         type: Boolean 
+    },
+    affiliateBooking : {
+        type: Boolean,
+        default: false
     },
     packageOwners: [
         {

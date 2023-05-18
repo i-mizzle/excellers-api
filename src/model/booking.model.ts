@@ -67,6 +67,7 @@ export interface BookingDocument extends mongoose.Document {
     reference: string
     totalDuration: number
     invoice: InvoiceDocument['_id'],
+    affiliateBooking: Boolean
     paymentStatus: string
     totalInboundDuration: number | null
     totalOutboundDuration: number | null
@@ -100,6 +101,10 @@ const BookingSchema = new mongoose.Schema(
     deal: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'FlightDeal' 
+    },
+    affiliateBooking:{
+      type: Boolean,
+      default: false
     },
     addonsTotal: {type: Number},
     passengers: [],
