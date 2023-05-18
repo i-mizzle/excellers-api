@@ -5,7 +5,7 @@ import { generateCode, getJsDate } from "../utils/utils";
 import { createGeneralDeal, findAndUpdateGeneralDeal, findGeneralDeal, findGeneralDeals } from "../service/general-deal.service";
 
 const parseGeneralDealFilters = (query: any) => {
-    const { title, minDealPrice, maxDealPrice, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { title, minDealPrice, vendor, maxDealPrice, minStartDate, maxStartDate, minEndDate, maxEndDate, active, createdBy } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
@@ -19,6 +19,10 @@ const parseGeneralDealFilters = (query: any) => {
     
     if (createdBy) {
       filters.createdBy = createdBy; 
+    }
+    
+    if (vendor) {
+      filters.vendor = vendor; 
     }
   
     if (minDealPrice && !maxDealPrice) {

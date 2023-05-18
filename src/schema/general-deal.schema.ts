@@ -7,6 +7,7 @@ const payload = {
         originalPrice: number().required('original price (originalPrice) of this item is required'),
         dealPrice: number().required('deal price (dealPrice) of this item is required'),
         description: string().required('description is required'),
+        vendor: string().required('vendor is required'),
         startDate: string().required('start date required in the format DD-MM-YYYY').test("validate-start-date", "start date must be today or after", function(value: any) {
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
