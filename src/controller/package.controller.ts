@@ -5,11 +5,15 @@ import { applyPackageDeals, createPackage, findAndUpdatePackage, findPackage, fi
 import { getJsDate } from "../utils/utils";
 
 const parsePackageFilters = (query: any) => {
-    const { active, packageType, minPrice, maxPrice, minLockDownPrice, maxLockDownPrice, createdBy, deal, minDate, maxDate } = query;
+    const { active, month, packageType, minPrice, maxPrice, minLockDownPrice, maxLockDownPrice, createdBy, deal, minDate, maxDate } = query;
 
     const filters: any = {}; 
   
     if (active) {
+      filters.active = active; 
+    }
+  
+    if (month) {
       filters.active = active; 
     }
     

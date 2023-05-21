@@ -5,9 +5,9 @@ const payload = {
         package: string().required('package is required'),
         lockDown: boolean().required('lockDown is required as a boolean'),
         packageOwners: array(object({
-            name: string().required('packagePlan.title is required'),
-            email: string().required('packagePlan.description is required'),
-            phone: string().required('packagePlan.description is required'),
+            name: string().required('packageOwners.name is required'),
+            email: string().required('packageOwners.email is required'),
+            phone: string().required('packageOwners.phone is required'),
         })).required('packageOwners is required as an array')
     })
 }

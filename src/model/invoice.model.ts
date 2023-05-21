@@ -45,7 +45,7 @@ const InvoiceSchema = new mongoose.Schema(
     },
     invoiceFor: {
       type: String,
-      enum: ['PACKAGE', 'FLIGHT', 'ENQUIRY'],
+      enum: ['PACKAGE', 'FLIGHT', 'ENQUIRY', 'DEAL'],
       default: 'PACKAGE',
       required: true
     },

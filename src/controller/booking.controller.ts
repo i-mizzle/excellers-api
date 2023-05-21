@@ -126,32 +126,32 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         body.bookedBy = userId
         
         let affiliateMarkup = 0
-        if(userId && userId !== '') {
-            const user = await findUser({_id: userId})
-            if(user && user.userType === 'AFFILIATE') {
-                body.affiliateBooking = true
-                const markup = await findAffiliateMarkup({user: userId})
+        // if(userId && userId !== '') {
+        //     const user = await findUser({_id: userId})
+        //     if(user && user.userType === 'AFFILIATE') {
+        //         body.affiliateBooking = true
+        //         const markup = await findAffiliateMarkup({user: userId})
                 
-                if(markup && markup.markupType === 'PERCENTAGE') {
-                    affiliateMarkup = (markup.markup/100) * flightPriceConfirmation.data.pricing.payable
-                }
+        //         if(markup && markup.markupType === 'PERCENTAGE') {
+        //             affiliateMarkup = (markup.markup/100) * flightPriceConfirmation.data.pricing.payable
+        //         }
                 
-                if(markup && markup.markupType === 'FIXED') {
-                    affiliateMarkup = markup.markup
-                }
-            }
-        }
+        //         if(markup && markup.markupType === 'FIXED') {
+        //             affiliateMarkup = markup.markup
+        //         }
+        //     }
+        // }
 
         const invoiceItemType = 'FLIGHT'       
         const invoiceCode = generateCode(18, false).toUpperCase()
         
-        const booking = await createBooking(body, flightId, flightPriceConfirmation?.data?.documentRequired)
+        const flightBooking = await createBooking(body, flightId, flightPriceConfirmation?.data?.documentRequired)
 
-        if(booking.error === true) {
-            return response.handleErrorResponse(res, {data: booking.data})
+        if(flightBooking.error === true) {
+            return response.handleErrorResponse(res, {data: flightBooking.data})
         }
 
-        const bookingWithAddons: any = await findBooking({_id:booking.data._id}, {}, "addons")
+        const bookingWithAddons: any = await findBooking({_id:flightBooking.data._id}, {}, "addons")
 
         const totalAddonsPrice = bookingWithAddons!.addons.reduce((accumulator: number, currentValue: AddonDocument) => {
             return accumulator + currentValue.price;
@@ -200,7 +200,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             amount: invoiceAmount,
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
-            invoiceItem: booking.data._id
+            invoiceItem: flightBooking.data._id
         }
 
         console.log('INVOICE INPUT---> ---> ', invoiceInput)
@@ -225,7 +225,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             bookingUpdatePayload.deal = existingDeal._id
         }
 
-        const bookingWithInvoice = await findAndUpdateBooking({_id: booking.data._id}, bookingUpdatePayload, {new: true})
+        const bookingWithInvoice = await findAndUpdateBooking({_id: flightBooking.data._id}, bookingUpdatePayload, {new: true})
 
         return response.created(res, bookingWithInvoice)
     } catch (error: any) {

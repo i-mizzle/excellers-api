@@ -58,7 +58,7 @@ export async function findGeneralDeals(
 
 export async function findGeneralDeal(
     query: FilterQuery<GeneralDealDocument>,
-    expand: string,
+    expand?: string,
     options: QueryOptions = { lean: true },
 ) {
     try {

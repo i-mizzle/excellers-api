@@ -2,27 +2,23 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import * as response from '../responses'
 import { createInvoice, findAndUpdateInvoice } from "../service/invoice.service";
-import { createPackageBooking, findAndUpdatePackageBooking, findPackageBooking, findPackageBookings } from "../service/package-booking.service";
-import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { findUser } from "../service/user.service";
 import { findAffiliateMarkup } from "../service/affiliate-markup.service";
+import { findGeneralDeal } from "../service/general-deal.service";
+import { createGeneralDealBooking, findAndUpdateGeneralDealBooking, findGeneralDealBooking, findGeneralDealBookings } from "../service/general-deal-booking.service";
 
-const parsePackageBookingFilters = (query: any) => {
-    const { lockDown, packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
+const parseGeneralDealBookingFilters = (query: any) => {
+    const { deal, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
 
     const filters: any = {}; 
-      
-    if (lockDown) {
-        filters.lockDown = lockDown;
-    } 
       
     if (paymentStatus) {
         filters.paymentStatus = paymentStatus;
     } 
 
-    if (packageId) {
-      filters.package = packageId; 
+    if (deal) {
+      filters.package = deal; 
     }
     
     if (invoice) {
@@ -51,29 +47,23 @@ const parsePackageBookingFilters = (query: any) => {
     return filters
 }
 
-export const createPackageBookingHandler = async (req: Request, res: Response) => {
+export const createGeneralDealBookingHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
         const body = req.body
         body.bookedBy = userId
-        const bookingPackage = await findPackage({_id: body.package})
-        if(!bookingPackage) {
-            return response.notFound(res, {message: 'package not found'})
+
+        console.log(body)
+        const bookingDeal = await findGeneralDeal({_id: body.deal, active:true})
+        console.log(bookingDeal)
+        if(!bookingDeal) {
+            return response.notFound(res, {message: 'deal not found or is inactive'})
         }
 
-        const invoiceItemType = 'PACKAGE'       
+        const invoiceItemType = 'DEAL'       
         const invoiceCode = generateCode(18, false).toUpperCase()
-        const packagePrice = await applyPackageDeals([bookingPackage])
 
-        let invoicePrice = 0
-
-        if(body.lockDown && body.lockDown === true) {
-            invoicePrice = bookingPackage.lockDownPrice
-        } else if ((!body.lockDown || body.lockDown === false) && body.bookAtDealPrice && body.bookAtDealPrice === true) {
-            invoicePrice = packagePrice[0].discountedPrice
-        } else if ((!body.lockDown || body.lockDown === false) && (!body.bookAtDealPrice || body.bookAtDealPrice === false)) {
-            invoicePrice = bookingPackage.price
-        }
+        let invoicePrice = bookingDeal.dealPrice
 
         let affiliateBooking = false
 
@@ -102,7 +92,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
             expiry: addMinutesToDate(new Date(), 1440), // 1 day
             invoiceFor: invoiceItemType,
             partPayment: body.lockDown && body.lockDown === true ? true : false,
-            invoiceItem: bookingPackage._id,
+            invoiceItem: bookingDeal._id,
             affiliateBooking
         }
 
@@ -111,27 +101,27 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
         const bookingInput = {
             bookedBy: userId,
             invoice: invoice._id,
-            package:bookingPackage._id,
-            lockDown: body.lockDown,
-            packageOwners: body.packageOwners,
+            deal: bookingDeal._id,
+            dealOwners: body.dealOwners,
+            paymentStatus: 'PENDING',
             affiliateBooking
         }
 
-        const packageBooking = await createPackageBooking(bookingInput)
+        const generalDealBooking = await createGeneralDealBooking(bookingInput)
 
-        await findAndUpdateInvoice({_id: invoice._id}, { invoiceItem: packageBooking._id }, { new: true })
+        await findAndUpdateInvoice({_id: invoice._id}, { invoiceItem: generalDealBooking._id }, { new: true })
         
-        return response.created(res, packageBooking)
+        return response.created(res, generalDealBooking)
     } catch (error: any) {
         return response.error(res, error)
     }
 }
 
-export const getPackageBookingsHandler = async (req: Request, res: Response) => {
+export const getGeneralDealBookingsHandler = async (req: Request, res: Response) => {
     try {
         const user: any = get(req, 'user');
         const queryObject: any = req.query;
-        const filters = parsePackageBookingFilters(queryObject)
+        const filters = parseGeneralDealBookingFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
         const page = +queryObject.page || 1; // Page 
         let expand = queryObject.expand || null
@@ -148,13 +138,13 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
             packagesBookingsQuery = {}
         }
 
-        const bookings = await findPackageBookings({...filters, ...packagesBookingsQuery}, resPerPage, page, expand)
+        const bookings = await findGeneralDealBookings({...filters, ...packagesBookingsQuery}, resPerPage, page, expand)
 
         const responseObject = {
             page,
             perPage: resPerPage,
             total: bookings.total,
-            bookings: bookings.packageBookings
+            bookings: bookings.generalDealBookings
         }
 
         return response.ok(res, responseObject)        
@@ -163,7 +153,7 @@ export const getPackageBookingsHandler = async (req: Request, res: Response) => 
     }
 }
 
-export const getPackageBookingHandler = async (req: Request, res: Response) => {
+export const getGeneralDealBookingHandler = async (req: Request, res: Response) => {
     try {
         const bookingCode = get(req, 'params.bookingCode');
 
@@ -176,42 +166,20 @@ export const getPackageBookingHandler = async (req: Request, res: Response) => {
 
         let booking = null
         if(ObjectId.isValid(bookingCode)) {
-            booking = await findPackageBooking({_id: bookingCode}, {lean: true}, expand)
+            booking = await findGeneralDealBooking({_id: bookingCode}, {lean: true}, expand)
         } else {
-            booking = await findPackageBooking({bookingCode: bookingCode}, {lean: true}, expand)
+            booking = await findGeneralDealBooking({bookingCode: bookingCode}, {lean: true}, expand)
         }
 
         // return res.send(post)
 
         if(!booking) {
-            return response.notFound(res, {message: 'package booking not found'})
+            return response.notFound(res, {message: 'booking not found'})
         }
-
 
         return response.ok(res, booking)
         
     } catch (error:any) {
-        return response.error(res, error)
-    }
-}
-
-export const updatePackageBookingsWithInvoiceStatuses = async (req: Request, res: Response) => {
-    try {
-        const bookings = await findPackageBookings({}, 0, 0, 'invoice')
-        console.log(bookings)
-        let updatedCount = 0
-        if(bookings.packageBookings) {
-            await Promise.all(bookings.packageBookings.map(async(booking) => {
-                console.log(booking.invoice)
-                if(booking.invoice && booking.invoice.status) {
-                    await findAndUpdatePackageBooking({_id: booking._id}, {paymentStatus: booking.invoice.status}, {new: true})
-                    updatedCount ++
-                }
-            }))
-        }
-        return response.ok(res, {message: `${updatedCount} out of ${bookings.packageBookings.length} package bookings updated`})
-
-    } catch (error: any) {
         return response.error(res, error)
     }
 }

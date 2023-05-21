@@ -9,6 +9,7 @@ interface PackageBookingInput {
     bookedBy: UserDocument['_id']
     invoice: InvoiceDocument['_id']
     package:PackageDocument['_id']
+    affiliateBooking: Boolean
     packageOwners: {
         name: string
         email: string

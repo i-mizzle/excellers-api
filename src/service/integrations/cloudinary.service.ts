@@ -13,7 +13,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: "mmsquare-files",
+        folder: "geotravel-assets",
     },
 });
 
@@ -28,35 +28,3 @@ export interface MulterRequest extends Request {
 export interface MulterMultipleRequest extends Request {
     files: any;
 }
-
-// export const uploadFile = async (fileInput: any) => {
-//     // cloudinary.uploader.upload(fileInput).then((result: any) => {
-//     //     return {
-//     //         error: false,
-//     //         errorType: "",
-//     //         data: result,
-//     //     }
-//     // }).catch((error: any) => {
-//     //     return {
-//     //         error: true,
-//     //         errorType: "error",
-//     //         data: error,
-//     //     }
-//     // });
-
-//     try {
-//         multer({ storage: storage });
-//         const result = await cloudinary.uploader.upload(fileInput)
-//         return {
-//             error: false,
-//             errorType: "",
-//             data: result
-//         }
-//     } catch (error: any) {
-//         return {
-//             error: true,
-//             errorType: "error",
-//             data: error.message,
-//         }
-//     }
-// }

@@ -20,10 +20,10 @@ export interface UserDocument extends mongoose.Document {
     accountPermissions?: [];
     avatar?: string
     approvedAsAffiliate?: Boolean
-    bvnValidated?: Boolean,
-    bvnValidationData?: {}
+    // bvnValidated?: Boolean,
+    // bvnValidationData?: {}
     affiliateMarkup?: AffiliateMarkupDocument["_id"]
-    wallet?: NairaWalletDocument["_id"]
+    // wallet?: NairaWalletDocument["_id"]
     businessName?: string,
     location?: string
     createdAt?: Date;
@@ -79,24 +79,24 @@ const UserSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
-        bvnValidated: {
-            type: Boolean,
-            default: false
-        },
-        bvnValidationReference: {
-            type: String,
-            unique: true,
-            immutable: true
-        },
-        bvnValidationData: {},
+        // bvnValidated: {
+        //     type: Boolean,
+        //     default: false
+        // },
+        // bvnValidationReference: {
+        //     type: String,
+        //     unique: true,
+        //     immutable: true
+        // },
+        // bvnValidationData: {},
         affiliateMarkup: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'AffiliateMarkup'
         },
-        wallet: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'NairaWallet'
-        },
+        // wallet: {
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'NairaWallet'
+        // },
         businessName: {
             type: String
         },

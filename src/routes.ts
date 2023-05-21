@@ -81,6 +81,8 @@ import { createMarginSchema, getMarginSchema } from './schema/margin.schema';
 import { createGeneralDealHandler, deleteGeneralDealHandler, getGeneralDealHandler, getGeneralDealsHandler, updateGeneralDealHandler } from './controller/general-deal.controller';
 import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema } from './schema/general-deal.schema';
 import { readLogFile } from './controller/log.controller';
+import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './schema/general-deal-booking.schema';
+import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGeneralDealBookingsHandler } from './controller/general-deal-booking.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -478,7 +480,7 @@ export default function(app: Express) {
     )
 
     /**
-     * Flight Deals
+     * General Deals
      */
     app.post('/deals', 
         requiresUser,
@@ -508,6 +510,37 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(updateGeneralDealSchema),
         deleteGeneralDealHandler
+    )
+
+    // Bookings
+    app.post('/deals/general/bookings', 
+        validateRequest(createGeneralDealBookingSchema),
+        createGeneralDealBookingHandler
+    )
+
+    app.get('/deals/general/bookings/:bookingCode', 
+        validateRequest(getGeneralDealBookingSchema),
+        getGeneralDealBookingHandler
+    )
+
+    app.get('/deals/general/bookings', 
+        requiresUser,
+        requiresAdministrator,
+        getGeneralDealBookingsHandler
+    )
+
+    // app.delete('/deals/bookings/cancel/:bookingCode', 
+    //     requiresUser,
+    //     requiresAdministrator,
+    //     validateRequest(getBookingSchema),
+    //     cancelBookingHandler
+    // )
+
+    app.get('/deals/bookings/issue-ticket/:bookingCode', 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(getBookingSchema),
+        issueTicketForBookingHandler
     )
 
     /**
@@ -584,39 +617,39 @@ export default function(app: Express) {
         approveAffiliateHandler
     )
 
-    app.post("/affiliates/validate-bvn", 
-        requiresUser,
-        requiresAffiliate,
-        validateRequest(validateBvnSchema),
-        verifyAffiliateBvnHandler
-    )
+    // app.post("/affiliates/validate-bvn", 
+    //     requiresUser,
+    //     requiresAffiliate,
+    //     validateRequest(validateBvnSchema),
+    //     verifyAffiliateBvnHandler
+    // )
 
-    app.get("/affiliates/wallets", 
-        requiresUser,
-        requiresAffiliate,
-        getWalletsHandler
-    )
+    // app.get("/affiliates/wallets", 
+    //     requiresUser,
+    //     requiresAffiliate,
+    //     getWalletsHandler
+    // )
 
-    app.get("/affiliates/wallets/:walletId", 
-        requiresUser,
-        requiresAffiliate,
-        validateRequest(getWalletDetailsSchema),
-        getWalletHandler
-    )
+    // app.get("/affiliates/wallets/:walletId", 
+    //     requiresUser,
+    //     requiresAffiliate,
+    //     validateRequest(getWalletDetailsSchema),
+    //     getWalletHandler
+    // )
 
-    app.get("/affiliates/wallets/:walletId/transactions", 
-        requiresUser,
-        requiresAffiliate,
-        validateRequest(getWalletDetailsSchema),
-        getWalletTransactionsHandler
-    )
+    // app.get("/affiliates/wallets/:walletId/transactions", 
+    //     requiresUser,
+    //     requiresAffiliate,
+    //     validateRequest(getWalletDetailsSchema),
+    //     getWalletTransactionsHandler
+    // )
 
-    app.get("/affiliates/wallets/:walletId/balance", 
-        requiresUser,
-        requiresAffiliateOrAdmin,
-        validateRequest(getWalletDetailsSchema),
-        getWalletBalanceHandler
-    )
+    // app.get("/affiliates/wallets/:walletId/balance", 
+    //     requiresUser,
+    //     requiresAffiliateOrAdmin,
+    //     validateRequest(getWalletDetailsSchema),
+    //     getWalletBalanceHandler
+    // )
 
     /**
      * FUNDS TRANSFER

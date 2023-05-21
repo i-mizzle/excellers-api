@@ -13,6 +13,7 @@ interface CreatePackageInput {
     description: string
     packageType: string
     inclusions: string[]
+    month: string
     itinerary?: {
       title: string
       description: string
