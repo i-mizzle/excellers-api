@@ -9,6 +9,7 @@ export interface PackageDocument extends mongoose.Document {
     description: string
     packageType: string
     inclusions: string[]
+    month: string
     itinerary: {
       title: string
       description: string
@@ -41,6 +42,10 @@ const PackageSchema = new mongoose.Schema(
         required: true
     },
     fulfilledBy: {
+      type: String,
+      required: true
+    },
+    month: {
       type: String,
       required: true
     },
