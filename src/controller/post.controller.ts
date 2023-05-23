@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import { createPost, findPost, findAndUpdate, deletePost, findPosts } from "../service/post.service";
 import * as response from '../responses'
-import { getJsDate } from "../utils/utils";
+import { getJsDate, slugify } from "../utils/utils";
 
 
 const parsePostFilters = (query: any) => {
@@ -45,6 +45,8 @@ export async function createPostHandler (req: Request, res: Response) {
         if(!body.excerpt || body.excerpt === '') {
             body.excerpt = body.body.substr(0, 250)
         }
+
+        body.slug = slugify(body.title) + '-' + (new Date()).getTime()
 
         const post = await createPost({ ...body, user: userId })
         // return res.send(post)
@@ -105,13 +107,26 @@ export async function getPostHandler (req: Request, res: Response) {
     const user: any = get(req, 'user')
     const postId = get(req, 'params.postId');
 
+    const ObjectId = require('mongoose').Types.ObjectId;
+
+    let post = null
     let postsQuery: any = {_id: postId, published: true, deleted: false}
 
-    if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
+    if(!ObjectId.isValid(postId)) {
+        postsQuery = {slug: postId, published: true, deleted: false}
+    } 
+
+    if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' && !ObjectId.isValid(postId)) {
+        postsQuery = {slug: postId, deleted: false}
+    }
+
+    if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' && ObjectId.isValid(postId)) {
         postsQuery = {_id: postId, deleted: false}
     }
 
-    const post = await findPost(postsQuery);
+    console.log(postsQuery)
+
+    post = await findPost(postsQuery);
     if(!post) {
         return response.notFound(res, { message: `post not found` })
     } 

@@ -10,6 +10,11 @@ export interface PackageDocument extends mongoose.Document {
     packageType: string
     inclusions: string[]
     month: string
+    activities: {
+      imageUrl: string
+      title: string
+      description: string
+    }[]
     itinerary: {
       title: string
       description: string
@@ -74,6 +79,19 @@ const PackageSchema = new mongoose.Schema(
     ],
     itinerary: [
       {
+        title: {
+          type: String
+        }, 
+        description: {
+          type: String
+        }
+      }
+    ],
+    activities: [
+      {
+        imageUrl: {
+          type: String
+        }, 
         title: {
           type: String
         }, 

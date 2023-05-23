@@ -5,6 +5,7 @@ import { UserDocument } from "./user.model";
 export interface PostDocument extends mongoose.Document {
   user: UserDocument["_id"];
   title: string;
+  slug: string;
   body: string;
   authors: {
     name: string
@@ -38,6 +39,10 @@ const PostSchema = new mongoose.Schema(
         },
       }
     ],
+    slug: {
+      type: String,
+      required: true
+    },
     excerpt: {
       type: String, 
       required: true 

@@ -20,6 +20,13 @@ const payload = {
             title: string().required('itinerary.title is required'),
             description: string().required('itinerary.description is required'),
         })),
+        activities: array(object({
+            imageUrl:  string().matches(
+                /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
+                'Please use a valid url for activity imageUrl'),
+            title: string().required('activity title is required'),
+            description: string().required('activity description is required'),
+        })).required('an array of activities is required for this package'),
         destination: object({
             country: string().required('destination.country is required'),
             city: string().required('destination.city is required'),
