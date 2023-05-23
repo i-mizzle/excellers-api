@@ -8,6 +8,7 @@ const payload = {
         dealPrice: number().required('deal price (dealPrice) of this item is required'),
         description: string().required('description is required'),
         vendor: string().required('vendor is required'),
+        dealType: string().required('dealType is required'),
         startDate: string().required('start date required in the format DD-MM-YYYY').test("validate-start-date", "start date must be today or after", function(value: any) {
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)
@@ -41,6 +42,7 @@ const editPayload = {
         originalPrice: number(),
         dealPrice: number(),
         description: string(),
+        dealType: string(),
         startDate: string().test("validate-start-date", "start date must be today or after", function(value: any) {
             const yesterday = new Date()
             yesterday.setDate(yesterday.getDate() - 1)

@@ -7,6 +7,7 @@ export interface GeneralDealDocument extends mongoose.Document {
     dealPrice: number,
     title: string
     dealCode: string
+    dealType: string,
     description: string,
     vendor: string,
     startDate: Date,
@@ -39,6 +40,10 @@ const GeneralDealSchema = new mongoose.Schema(
         type: String,
         required: true,
         immutable: true
+    },
+    dealType: {
+        type: String,
+        required: true
     },
     title: {
         type: String,
