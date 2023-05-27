@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { get } from "lodash";
 import { createPost, findPost, findAndUpdate, deletePost, findPosts } from "../service/post.service";
 import * as response from '../responses'
-import { getJsDate, slugify } from "../utils/utils";
+import { PostMeta, getJsDate, getPostMeta, slugify } from "../utils/utils";
 
 
 const parsePostFilters = (query: any) => {
@@ -48,7 +48,9 @@ export async function createPostHandler (req: Request, res: Response) {
 
         body.slug = slugify(body.title) + '-' + (new Date()).getTime()
 
-        const post = await createPost({ ...body, user: userId })
+        const meta: PostMeta = getPostMeta(body.body) 
+
+        const post = await createPost({ ...body, ...{user: userId, meta} })
         // return res.send(post)
         return response.created(res, post)
     } catch (error:any) {
@@ -149,4 +151,22 @@ export async function deletePostHandler (req: Request, res: Response) {
     // await deletePost({ postId });
     await findAndUpdate({_id: postId }, {deleted: true}, { new: true })
     return response.ok(res, {message: 'post deleted successfully'});
+}
+
+export const createPostsMetaHandler = async (req: Request, res: Response) => {
+    const posts = await findPosts({}, 0, 0, '')
+        console.log(posts)
+        let updatedCount = 0
+        if(posts.posts) {
+            await Promise.all(posts.posts.map(async(post) => {
+                const postData = await findPost({_id: post._id})
+                if(postData && postData.body) {
+                    const postMeta = await getPostMeta(postData.body)
+                    await findAndUpdate({_id: post._id}, {meta: postMeta}, {new: true})
+                    updatedCount ++
+                }
+            }))
+        }
+
+        return response.ok(res, {message: `${updatedCount} out of ${posts.posts.length} posts updated`})
 }

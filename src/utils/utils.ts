@@ -1,4 +1,5 @@
 import { StringDate } from "./types";
+const config = require('config');
 
 export const generateCode = (length: number, isNumeric: Boolean): string => {
     if (!isNumeric) { isNumeric = false }
@@ -290,4 +291,30 @@ export const formatBizgemDate = (date: Date): string => {
   const formatted = (date.getDate().toString().length != 2 ?"0" + date.getDate() : date.getDate()) + "-" +((date.getMonth()+1).toString().length != 2 ? "0" + (date.getMonth() + 1) : (date.getMonth()+1)) + "-" + date.getFullYear();
 
   return formatted
+}
+
+export interface PostMeta {
+  wordCount: number
+  readTime: number
+  readTimeUnit: string
+  readTimeBasis: string
+}
+
+export const getPostMeta = (postBody: string): PostMeta => {
+  const stringWithoutTags = postBody.replace(/(<([^>]+)>)/gi, '');
+  config.geoTravelSettings.forbiddenUserFields
+
+  // Remove special characters using regex
+  const stringWithoutSpecialChars = stringWithoutTags.replace(/[^\w\s]/gi, '');
+  const readRate = config.geoTravelSettings.postReadRate
+  const wordCount = stringWithoutSpecialChars.split('').length
+  const readTimeInMinutes = wordCount/readRate
+
+  return {
+    wordCount,
+    readTime: readTimeInMinutes,
+    readTimeBasis: readRate,
+    readTimeUnit: 'minutes'
+  }
+
 }

@@ -43,6 +43,7 @@ export default {
         BASE_WALLET: process.env.BIZGEM_BASE_WALLET,
     },
     geoTravelSettings: {
-        forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'confirmationCode', 'approvedAsAffiliate', 'bvnValidated', 'affiliateMarkup', 'role']
+        forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'confirmationCode', 'approvedAsAffiliate', 'bvnValidated', 'affiliateMarkup', 'role'],
+        postReadRate: 255
     }
 }

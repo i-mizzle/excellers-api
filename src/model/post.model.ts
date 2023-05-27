@@ -16,6 +16,12 @@ export interface PostDocument extends mongoose.Document {
     url: string
   }[]
   excerpt: string
+  meta: {
+    wordCount: number
+    readTime: number
+    readTimeUnit: string
+    readTimeBasis: string
+  }
   coverImageUrl: string
   published: Boolean,
   deleted: Boolean
@@ -78,6 +84,24 @@ const PostSchema = new mongoose.Schema(
         }
       }
     ],
+    meta: {
+      wordCount: {
+        type: Number,
+        required: true
+      },
+      readTime: {
+        type: Number,
+        required: true
+      },
+      readTimeUnit: {
+        type: String,
+        required: true
+      },
+      readTimeBasis: {
+        type: String,
+        required: true
+      }
+    }
   },
   { timestamps: true }
 );

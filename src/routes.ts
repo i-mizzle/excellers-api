@@ -65,7 +65,7 @@ import { createPriceSchema, updatePriceSchema } from './schema/price.schema';
 import { createPriceHandler, getPricesHandler, updatePriceHandler } from './controller/price.controller';
 import { createPackageRequestSchema, getPackageRequestSchema } from './schema/package-request.schema';
 import { createPackageRequestHandler, deletePackageRequestHandler, getPackageRequestHandler, getPackageRequestsHandler, updatePackageRequestHandler } from './controller/package-request.controller';
-import { createPostHandler, deletePostHandler, getPostHandler, getPostsHandler, updatePostHandler } from './controller/post.controller';
+import { createPostHandler, createPostsMetaHandler, deletePostHandler, getPostHandler, getPostsHandler, updatePostHandler } from './controller/post.controller';
 import { createPostSchema, deletePostSchema, getPostSchema, updatePostSchema } from './schema/post.schema';
 import { createPostCommentSchema, deletePostCommentSchema, getPostCommentsSchema, updatePostCommentSchema } from './schema/post-comment.schema';
 import { createPostCommentHandler, deletePostCommentHandler, getPostCommentsHandler, publishPostCommentHandler } from './controller/post-comment.controller';
@@ -844,6 +844,12 @@ export default function(app: Express) {
     /**
      * BLOG ENDPOINTS
      */
+
+    app.get("/blog/posts/generate-meta",
+        requiresUser,
+        requiresAdministrator,
+        createPostsMetaHandler
+    )
 
     app.post("/blog/posts", 
         requiresUser,
