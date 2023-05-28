@@ -62,8 +62,8 @@ export const createGeneralDealBookingHandler = async (req: Request, res: Respons
 
         const invoiceItemType = 'DEAL'       
         const invoiceCode = generateCode(18, false).toUpperCase()
-
-        let invoicePrice = bookingDeal.dealPrice
+        const priceMultiplier = body.dealOwners.length / bookingDeal.dealPricing.numberPerUnit
+        let invoicePrice = bookingDeal.dealPricing.pricePerUnit * priceMultiplier
 
         let affiliateBooking = false
 

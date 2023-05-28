@@ -3,8 +3,13 @@ import { UserDocument } from "./user.model";
 
 export interface GeneralDealDocument extends mongoose.Document {
     createdBy: UserDocument['_id'];
-    originalPrice: number,
-    dealPrice: number,
+    originalPrice?: number | null,
+    originalPricePerUnit: number,
+    dealPrice?: number | null,
+    dealPricing: {
+      pricePerUnit: number,
+      numberPerUnit: number,
+    }
     title: string
     dealCode: string
     dealType: string,
@@ -28,13 +33,24 @@ const GeneralDealSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId, 
         ref: "User" 
     },
-    originalPrice: {
+    originalPricePerUnit: {
         type: Number,
         required: true
     },
-    dealPrice: {
+    // dealPrice: {
+    //     type: Number,
+    //     required: true
+    // },
+    // price?: number | null
+    dealPricing: {
+      pricePerUnit: {
         type: Number,
         required: true
+      },
+      numberPerUnit: {
+        type: Number,
+        required: true
+      },
     },
     dealCode: {
         type: String,

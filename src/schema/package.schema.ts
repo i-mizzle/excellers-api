@@ -6,9 +6,13 @@ const payload = {
         description: string().required('package description (description) is required'),
         packageType: string().required('package type (packageType) is required as enum [eg: PRIVATE, GROUP]'),
         fulfilledBy: string().required('fulfilledBy is required'),
-        price: number().required('package price (price) is required'),
+        // price: number().required('package price (price) is required'),
+        pricing: object({
+            pricePerUnit: number().required('pricing.pricingPerUnit is required'),
+            numberPerUnit: number().required('pricing.numberPerUnit is required'),
+        }).required('pricing object is required for the package'),
         month: string().required('month is required'),
-        lockDownPrice: number().required('package lock down price (lockDownPrice) (price) is required'),
+        lockDownPricePerUnit: number().required('package lock down price (lockDownPricePerUnit) is required'),
         inclusions: array().required('an array of inclusions is required for this package').min(1, 'provide at least one inclusion'),
         media: array(object({
             type: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),

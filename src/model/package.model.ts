@@ -24,12 +24,17 @@ export interface PackageDocument extends mongoose.Document {
       city: string
     }
     fulfilledBy: string
-    price: number
+    price?: number | null
+    pricing: {
+      pricePerUnit: number,
+      numberPerUnit: number,
+    }
     media: {
       type: string
       url: string
     }[]
-    lockDownPrice: number
+    lockDownPrice?: number | null
+    lockDownPricePerUnit: number
     deleted: Boolean
     active: Boolean
     createdAt?: Date;
@@ -112,13 +117,23 @@ const PackageSchema = new mongoose.Schema(
         }
       }
     ],
-    price: {
+    // price: {
+    //   type: Number,
+    //   required: true
+    // },
+    lockDownPricePerUnit: {
       type: Number,
       required: true
     },
-    lockDownPrice: {
-      type: Number,
-      required: true
+    pricing: {
+      pricePerUnit: {
+        type: Number,
+        required: true
+      },
+      numberPerUnit: {
+        type: Number,
+        required: true
+      },
     },
     deleted: {
       type: Boolean,

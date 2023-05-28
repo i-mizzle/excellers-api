@@ -26,15 +26,15 @@ const parseGeneralDealFilters = (query: any) => {
     }
   
     if (minDealPrice && !maxDealPrice) {
-      filters.dealPrice = { $gte: +minDealPrice }; 
+      filters['dealPricing.pricePerUnit'] = { $gte: +minDealPrice }; 
     }
   
     if (maxDealPrice && !minDealPrice) {
-      filters.dealPrice = { $lte: +maxDealPrice }; 
+      filters['dealPricing.pricePerUnit'] = { $lte: +maxDealPrice }; 
     }
 
     if (minDealPrice && maxDealPrice) {
-      filters.dealPrice = { $gte: +minDealPrice, $lte: maxDealPrice  }; 
+      filters['dealPricing.pricePerUnit'] = { $gte: +minDealPrice, $lte: maxDealPrice  }; 
     }
   
     if (minStartDate && !maxStartDate) {
@@ -191,6 +191,40 @@ export const deleteGeneralDealHandler = async (req: Request, res: Response) => {
         
         
     } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+
+export const updateGeneralDealPricingStructureHandler = async (req: Request, res: Response) => {
+    try {
+        const deals = await findGeneralDeals({}, 0, 0, '')
+
+        let updatedCount = 0
+        if(deals.deals) {
+            await Promise.all(deals.deals.map(async(deal) => {
+                const pricing = deal.dealPrice
+                const originalPricing = deal.originalPrice
+                if(deal.dealPrice && deal.dealPrice !== undefined && deal.dealPrice !== null) {
+                    await findAndUpdateGeneralDeal(
+                        {_id: deal._id}, {
+                            dealPricing: {
+                                pricePerUnit:pricing || 0,
+                                numberPerUnit: 1,
+                            },
+                            originalPricePerUnit: originalPricing || 0,
+                            dealPrice: null,
+                            originalPrice: null
+                        }, 
+                        {new: true}
+                    )
+                    updatedCount ++
+                }
+            }))
+        }
+        return response.ok(res, {message: `${updatedCount} out of ${deals.deals.length} deals updated`})
+
+    } catch (error: any) {
         return response.error(res, error)
     }
 }

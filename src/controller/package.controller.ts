@@ -22,19 +22,23 @@ const parsePackageFilters = (query: any) => {
     }
     
     if (minPrice) {
-        filters.price = { $gte: +minPrice }; 
+        filters['pricing.pricePerUnit'] = { $gte: +minPrice }; 
     }
 
     if (maxPrice) {
-        filters.price = { $lt: +maxPrice }; 
+        filters['pricing.pricePerUnit'] = { $lt: +maxPrice }; 
+    }
+
+    if (minPrice && maxPrice) {
+        filters['pricing.pricePerUnit'] = { $gte: +minPrice, $lte: maxPrice  }; 
     }
     
     if (minLockDownPrice) {
-        filters.price = { $gte: +minLockDownPrice }; 
+        filters.lockDownPricePerUnit = { $gte: +minLockDownPrice }; 
     }
 
     if (maxLockDownPrice) {
-        filters.lockDownPrice = { $lt: +maxLockDownPrice }; 
+        filters.lockDownPricePerUnit = { $lt: +maxLockDownPrice }; 
     }
 
     if (createdBy) {
@@ -45,12 +49,16 @@ const parsePackageFilters = (query: any) => {
       filters.deal = deal; 
     }
   
-    if (minDate) {
-      filters.createdAt = { $lte: getJsDate(minDate) }; 
+    if (minDate && !maxDate) {
+      filters.createdAt = { $gte: getJsDate(minDate) }; 
+    }
+  
+    if (maxDate && !minDate) {
+      filters.createdAt = { $lte: getJsDate(maxDate) }; 
     }
   
     if (maxDate) {
-      filters.createdAt = { $lte: getJsDate(maxDate) }; 
+      filters.createdAt = { $lte: getJsDate(maxDate), $gte: getJsDate(minDate) }; 
     }
     return filters
 }
@@ -167,6 +175,37 @@ export const deletePackageHandler = async (req: Request, res: Response) => {
         
         
     } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+export const updatePackagePricingStructureHandler = async (req: Request, res: Response) => {
+    try {
+        const packages = await findPackages({}, 0, 0, '')
+        console.log(packages)
+        let updatedCount = 0
+        if(packages.packages) {
+            await Promise.all(packages.packages.map(async(pack) => {
+                if(pack.price && pack.price !== undefined && pack.price !== null) {
+                    await findAndUpdatePackage(
+                        {_id: pack._id}, {
+                            pricing: {
+                                pricePerUnit: pack!.price || 0,
+                                numberPerUnit: 1,
+                            },
+                            lockDownPricePerUnit: pack!.lockDownPrice || 0,
+                            lockDownPrice: null,
+                            price: null
+                        }, 
+                        {new: true}
+                    )
+                    updatedCount ++
+                }
+            }))
+        }
+        return response.ok(res, {message: `${updatedCount} out of ${packages.packages.length} packages updated`})
+
+    } catch (error: any) {
         return response.error(res, error)
     }
 }

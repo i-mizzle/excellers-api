@@ -38,7 +38,7 @@ import { createTripSchema, getTripSchema, updateTripSchema } from './schema/trip
 import { createNewsletterSubscriptionHandler, deleteNewsletterSubscriptionHandler, getNewsletterSubscriptionHandler, getNewsletterSubscriptionsHandler, updateNewsletterSubscriptionHandler } from './controller/newsletter-subscription.controller';
 import { createNewsletterSubscriptionSchema, getNewsletterSubscriptionSchema } from './schema/newsletter-subscription.schema';
 import { createPackageSchema, getPackageSchema } from './schema/package.schema';
-import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler } from './controller/package.controller';
+import { createPackageHandler, deletePackageHandler, getPackageHandler, getPackagesHandler, updatePackageHandler, updatePackagePricingStructureHandler } from './controller/package.controller';
 import { createPackageDealSchema, getPackageDealSchema, updatePackageDealSchema } from './schema/package-deal.schema';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiriesWithInvoiceStatuses, updateEnquiryHandler } from './controller/enquiry.controller';
@@ -78,7 +78,7 @@ import { fundsTransferHandler, getBanksHandler, validateBankAccountHandler } fro
 import { fundsTransferSchema, validateBankAccountSchema } from './schema/funds-transfer.schema';
 import { createMarginHandler, getMarginsHandler, updateMarginHandler } from './controller/margin.controller';
 import { createMarginSchema, getMarginSchema } from './schema/margin.schema';
-import { createGeneralDealHandler, deleteGeneralDealHandler, getGeneralDealHandler, getGeneralDealsHandler, updateGeneralDealHandler } from './controller/general-deal.controller';
+import { createGeneralDealHandler, deleteGeneralDealHandler, getGeneralDealHandler, getGeneralDealsHandler, updateGeneralDealHandler, updateGeneralDealPricingStructureHandler } from './controller/general-deal.controller';
 import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema } from './schema/general-deal.schema';
 import { readLogFile } from './controller/log.controller';
 import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './schema/general-deal-booking.schema';
@@ -199,11 +199,6 @@ export default function(app: Express) {
     )
 
     // FLIGHTS
-    app.get('/flights/bookings/update-scripts/invoice-status',
-        requiresUser,
-        requiresAdministrator,
-        updateBookingsWithInvoiceStatuses
-    )
 
     app.post('/flights/search', 
         validateRequest(searchFlightSchema),
@@ -343,11 +338,6 @@ export default function(app: Express) {
     )
 
     // Package bookings
-    app.get('/packages/bookings/update-scripts/invoice-status',
-        requiresUser,
-        requiresAdministrator,
-        updatePackageBookingsWithInvoiceStatuses
-    )
 
     app.post('/bookings/packages',
         validateRequest(createPackageBookingSchema),
@@ -546,13 +536,6 @@ export default function(app: Express) {
     /**
      * Enquiries
      */
-
-
-    app.get('/enquiries/update-scripts/invoice-status',
-        requiresUser,
-        requiresAdministrator,
-        updateEnquiriesWithInvoiceStatuses
-    )
     app.post('/enquiries', 
         validateRequest(createEnquirySchema),
         createEnquiryHandler
@@ -845,12 +828,6 @@ export default function(app: Express) {
      * BLOG ENDPOINTS
      */
 
-    app.get("/blog/posts/generate-meta",
-        requiresUser,
-        requiresAdministrator,
-        createPostsMetaHandler
-    )
-
     app.post("/blog/posts", 
         requiresUser,
         requiresAdministrator,
@@ -903,6 +880,44 @@ export default function(app: Express) {
         requiresAdministrator,
         validateRequest(deletePostCommentSchema),
         deletePostCommentHandler
+    )
+
+    // SCRIPTS
+
+    app.get("/scripts/blog/posts/generate-meta",
+        requiresUser,
+        requiresAdministrator,
+        createPostsMetaHandler
+    )
+
+    app.get('/scripts/flights/bookings/invoice-status',
+        requiresUser,
+        requiresAdministrator,
+        updateBookingsWithInvoiceStatuses
+    )
+
+    app.get('/scripts/packages/bookings/update-invoice-status',
+        requiresUser,
+        requiresAdministrator,
+        updatePackageBookingsWithInvoiceStatuses
+    )
+
+    app.get('/scripts/enquiries/update-status',
+        requiresUser,
+        requiresAdministrator,
+        updateEnquiriesWithInvoiceStatuses
+    )
+
+    app.get('/scripts/packages/update-pricing-structure',
+        requiresUser,
+        requiresAdministrator,
+        updatePackagePricingStructureHandler
+    )
+
+    app.get('/scripts/general-deals/update-pricing-structure',
+        requiresUser,
+        requiresAdministrator,
+        updateGeneralDealPricingStructureHandler
     )
 
     // UPLOAD FILE

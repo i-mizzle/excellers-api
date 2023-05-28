@@ -18,12 +18,15 @@ interface CreatePackageInput {
       title: string
       description: string
     }[]
-    price: number
+    pricing: {
+        pricePerUnit: number,
+        numberPerUnit: number,
+    }
     media?: {
       type: string
       url: string
     }[]
-    lockDownPrice: number
+    lockDownPricePerUnit: number
 }
 
 export const createPackage = async (
@@ -109,7 +112,7 @@ export const applyPackageDeals = async (packages: PackageDocument[]) => {
 
     const mutatedPackages = await Promise.all(packages.map(async (pack: PackageDocument) => {
         let existingDeal = {}
-        let currentPrice = pack.price
+        let currentPrice = pack.pricing.pricePerUnit
         const packageDeal = deals.deals.find((deal) => {
             return deal.package.toString() === pack._id.toString()
         })
@@ -119,19 +122,19 @@ export const applyPackageDeals = async (packages: PackageDocument[]) => {
         }
 
         if(packageDeal && packageDeal.discountType === 'PERCENTAGE') {
-            const discount = pack.price * (packageDeal.discountValue / 100)
-            currentPrice = pack.price - discount
+            const discount = pack.pricing.pricePerUnit * (packageDeal.discountValue / 100)
+            currentPrice = pack.pricing.pricePerUnit - discount
         }
 
         if(packageDeal && packageDeal.discountType === 'FIXED') {
-            currentPrice = pack.price - packageDeal.discountValue
+            currentPrice = pack.pricing.pricePerUnit - packageDeal.discountValue
         }
 
         return {
             ...pack,
             ...{
                 deal: existingDeal,
-                discountedPrice: currentPrice
+                discountedPricePerUnit: currentPrice
             }
         }
     }))

@@ -4,8 +4,12 @@ import { getJsDate } from "../utils/utils";
 const payload = {
     body: object({
         title: string().required('title is required'),
-        originalPrice: number().required('original price (originalPrice) of this item is required'),
-        dealPrice: number().required('deal price (dealPrice) of this item is required'),
+        originalPricePerUnit: number().required('original price (originalPrice) of this item is required'),
+        // dealPrice: number().required('deal price (dealPrice) of this item is required'),
+        dealPricing: object({
+            pricePerUnit: number().required('pricing.pricingPerUnit is required'),
+            numberPerUnit: number().required('pricing.numberPerUnit is required'),
+        }).required('dealPricing object is required for the deal'),
         description: string().required('description is required'),
         vendor: string().required('vendor is required'),
         dealType: string().required('dealType is required'),
@@ -39,8 +43,12 @@ const editPayload = {
     body: object({
         title: string(),
         package: string(),
-        originalPrice: number(),
-        dealPrice: number(),
+        originalPricePerUnit: number(),
+        // dealPrice: number(),
+        dealPricing: object({
+            pricePerUnit: number(),
+            numberPerUnit: number(),
+        }),
         description: string(),
         dealType: string(),
         startDate: string().test("validate-start-date", "start date must be today or after", function(value: any) {
