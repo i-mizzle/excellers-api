@@ -19,6 +19,10 @@ interface CreateFlightDealInput {
     startDate: StringDate,
     endDate: StringDate
     active?: Boolean
+    media?: {
+      type: string
+      url: string  
+    }[]
 }
 
 
@@ -36,7 +40,8 @@ export const createFlightDeal = async (
             airlines: input.airlines,
             startDate: getJsDate(input.startDate),
             endDate: getJsDate(input.endDate),
-            active: input.active || true
+            active: input.active || true,
+            media: input.media
         })
         return deal
     } catch (error: any) {
