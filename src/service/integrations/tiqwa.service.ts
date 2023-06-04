@@ -30,6 +30,9 @@ export const searchForFlights = async (input: FlightSearch ) => {
         if(input.infants && input.infants > 0) {
             params += `&infants=${input.infants}`
         }
+        if(input.return_date && input.return_date !== '') {
+            params += `&return_date=${input.return_date }`
+        }
         const response = await axios.get(`${tiqwaConfig.baseUrl}/flight/search?${params}`, { headers })
 
         // console.log("TIQWA RESPONSE ===> ", response.data)
