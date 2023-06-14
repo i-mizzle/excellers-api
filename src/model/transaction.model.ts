@@ -5,8 +5,9 @@ import { InvoiceDocument } from "./invoice.model";
 import { UserDocument } from "./user.model";
 
 export interface TransactionDocument extends mongoose.Document {
-  user: UserDocument["_id"];
+  user?: UserDocument["_id"];
   invoice: InvoiceDocument["_id"];
+  userType?: string
   transactionReference: string;
   amount: number;
   channel: string;
@@ -36,6 +37,9 @@ const TransactionSchema = new mongoose.Schema(
     user: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'User',
+    },
+    userType: { 
+        type: String, 
     },
     amount: {
       type: Number,

@@ -9,6 +9,7 @@ import { PasswordResetEmailTemplate } from '../static/email-templates/password-r
 import { AffiliateApprovalConfirmationTemplate } from '../static/email-templates/affiliate-confirmation-template';
 import { AffiliateWalletNotificationTemplate } from '../static/email-templates/affiliate-wallet-notification-template';
 import { AdminInvitationTemplate } from '../static/email-templates/admin-invitation-template';
+import { FlightBookingNotificationTemplate } from '../static/email-templates/flight-booking-notification-template';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -45,6 +46,18 @@ export interface InvitationMailParams extends MailParams {
 export interface PasswordResetMailParams extends MailParams {
     firstName: String
     resetUrl: String
+}
+
+export interface FlightBookingNotificationMailParams extends MailParams {
+    firstName: String
+    airline: String
+    invoiceUrl: String
+    invoiceCode: String
+    bookingCode: String
+    origin: String
+    destination: String
+    date: String
+    time: String
 }
 
 export async function sendEmailConfirmation (mailParams: ConfirmationMailParams) {
@@ -193,6 +206,38 @@ export async function sendWalletCreationNotification (mailParams: WalletCreation
             //     firstName: mailParams.firstName,
             // })
             text: `Please log in to your geo travel account to see your affiliate wallet details`,
+            html: html,
+        };
+        await mg.messages().send(data);
+        console.log('Sent!');
+        return {
+            error: false,
+            errorType: '',
+            data: {message: `mail sent to ${mailParams.mailTo}`}
+        }
+    } catch (error) {
+        console.log('error in mailer function ', error)
+        return {
+            error: true,
+            errorType: 'error',
+            data: error
+        }
+    }
+}
+
+export async function sendFlightBookingConfirmation (mailParams: FlightBookingNotificationMailParams) {
+    try {
+        const template = FlightBookingNotificationTemplate(mailParams);
+        const html = await inlineCSS(template, { url: 'fake' });
+        const data = {
+            from: 'GeoTravels <no-reply@geotravels.com>',
+            to: mailParams.mailTo,
+            subject: 'Your flight booking has been created',
+            // template: 'password_reset',
+            // "h:X-Mailgun-Variables": JSON.stringify({
+            //     firstName: mailParams.firstName,
+            // })
+            text: ``,
             html: html,
         };
         await mg.messages().send(data);

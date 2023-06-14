@@ -12,12 +12,19 @@ import { findAndUpdateBooking, findBooking } from "../service/booking.service";
 import { findAndUpdatePackageBooking, findPackageBooking } from "../service/package-booking.service";
 import { findAndUpdateEnquiry } from "../service/enquiry.service";
 import { findAffiliateMarkup } from "../service/affiliate-markup.service";
+import { findUser } from "../service/user.service";
 
 
 export const initializePaymentHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
         const invoiceCode = req.body.invoiceCode
+
+        const user = await findUser({_id: userId})
+        let userType = ""
+        if(user) {
+            userType = user.userType
+        }
 
         const invoice = await findInvoice({invoiceCode}, 'user')
         
@@ -67,6 +74,7 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
         const newTransaction = await createTransaction({
             transactionReference,
             user: userId,
+            userType: userType,
             invoice: invoice._id,
             amount: invoice.amount,
             processor: transactionProcessor,

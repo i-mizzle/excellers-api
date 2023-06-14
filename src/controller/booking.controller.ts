@@ -11,6 +11,7 @@ import mongoose from 'mongoose';
 import { findMargin, getMarginValue } from "../service/margin.service";
 import { findUser } from "../service/user.service";
 import { findAffiliateMarkup } from "../service/affiliate-markup.service";
+import { sendFlightBookingConfirmation } from "../service/mailer.service";
 const parseBookingFilters = (query: any) => {
     const { hasDeal, deal, documentRequired, ticketed, cancelled, minDate, maxDate, minAmount, maxAmount, addons, airportFrom, airportTo, passengerEmail, passengerPhone, passengerFirstName, passengerLastName, paymentStatus } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
@@ -226,6 +227,23 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
         }
 
         const bookingWithInvoice = await findAndUpdateBooking({_id: flightBooking.data._id}, bookingUpdatePayload, {new: true})
+        const user = await findUser({_id: userId})
+
+        const userName = user ? user.firstName : req.body.passengers[0].firstName
+        const userEmail = user ? user.email : req.body.passengers[0].email
+        
+        await sendFlightBookingConfirmation({
+            mailTo: userEmail,
+            firstName: userName,
+            airline: flightPriceConfirmation!.data.outbound[0].marketingAirline,
+            invoiceUrl: req.body.confirmationUrl + invoice.invoiceCode,
+            invoiceCode: invoice.invoiceCode,
+            bookingCode: flightBooking.data.bookingCode,
+            origin: flightPriceConfirmation!.data.outbound[0].airportFrom,
+            destination: flightPriceConfirmation!.data.outbound[0].airportTo,
+            date: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0],
+            time: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[1]
+        })
 
         return response.created(res, bookingWithInvoice)
     } catch (error: any) {

@@ -8,10 +8,14 @@ import { createUser, findUser } from "../service/user.service";
 import { getJsDate } from "../utils/utils";
 
 const parseTransactionFilters = (query: any) => {
-    const { status, invoice, minAmount, maxAmount, minDate, maxDate, channel } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { userType, status, invoice, minAmount, maxAmount, minDate, maxDate, channel } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
   
+    if (userType) {
+      filters.userType = userType; 
+    }
+
     if (channel) {
       filters.channel = channel; 
     }

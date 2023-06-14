@@ -11,6 +11,7 @@ interface CreateFlightDealInput {
         origin: string
         destination: string
     }
+    fromPrice: number,
     discountValue: number,
     airlines: string[],
     discountType: string,
@@ -38,6 +39,7 @@ export const createFlightDeal = async (
             discountValue: input.discountValue,
             discountType: input.discountType,
             airlines: input.airlines,
+            fromPrice: input.fromPrice,
             startDate: getJsDate(input.startDate),
             endDate: getJsDate(input.endDate),
             active: input.active || true,

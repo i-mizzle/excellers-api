@@ -7,6 +7,7 @@ const payload = {
     body: object({
         title: string().required('title is required'),
         description: string().required('description is required'),
+        fromPrice: number().required('fromPrice is required'),
         discountValue: number().required('discountValue is required'),
         discountType: string().required('type is required as enum [eg: PERCENTAGE, FIXED]'),
         startDate: string().required('start date required in the format DD-MM-YYYY').test("validate-start-date", "start date must be today or after", function(value: any) {
