@@ -5,7 +5,7 @@ import { applyPackageDeals, createPackage, findAndUpdatePackage, findPackage, fi
 import { getJsDate } from "../utils/utils";
 
 const parsePackageFilters = (query: any) => {
-    const { active, month, packageType, minPrice, maxPrice, minLockDownPrice, maxLockDownPrice, createdBy, deal, minDate, maxDate } = query;
+    const { minStartDate, maxStartDate, minEndDate, maxEndDate, active, month, packageType, minPrice, maxPrice, minLockDownPrice, maxLockDownPrice, createdBy, deal, minDate, maxDate } = query;
 
     const filters: any = {}; 
   
@@ -49,7 +49,27 @@ const parsePackageFilters = (query: any) => {
       filters.deal = deal; 
     }
   
-    if (minDate && !maxDate) {
+    if (minStartDate && !maxStartDate) {
+      filters.startDate = { $gte: getJsDate(minStartDate) }; 
+    }
+  
+    if (maxStartDate && !minStartDate) {
+      filters.startDate = { $lte: getJsDate(maxStartDate) }; 
+    }
+
+    if (minStartDate && maxStartDate) {
+        filters.startDate = { $lte: getJsDate(maxStartDate), $gte: getJsDate(minStartDate) }; 
+    }
+  
+    if (minEndDate && !maxEndDate) {
+      filters.endDate = { $gte: getJsDate(minEndDate) }; 
+    }
+  
+    if (maxEndDate && !minEndDate) {
+      filters.endDate = { $lte: getJsDate(maxEndDate) }; 
+    }
+  
+    if (minEndDate && !maxEndDate) {
       filters.createdAt = { $gte: getJsDate(minDate) }; 
     }
   
@@ -57,7 +77,7 @@ const parsePackageFilters = (query: any) => {
       filters.createdAt = { $lte: getJsDate(maxDate) }; 
     }
   
-    if (maxDate) {
+    if (maxDate && minDate) {
       filters.createdAt = { $lte: getJsDate(maxDate), $gte: getJsDate(minDate) }; 
     }
     return filters

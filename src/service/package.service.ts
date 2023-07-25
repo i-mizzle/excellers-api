@@ -4,7 +4,6 @@ import { getJsDate } from '../utils/utils';
 import { StringDate } from '../utils/types';
 import { UserDocument } from '../model/user.model';
 import Package, { PackageDocument } from '../model/package.model';
-import { TripDocument } from '../model/trip.model';
 import { findPackageDeals } from './package-deal.service';
 
 interface CreatePackageInput {
@@ -14,6 +13,8 @@ interface CreatePackageInput {
     packageType: string
     inclusions: string[]
     month: string
+    startDate: StringDate
+    endDate: StringDate
     itinerary?: {
       title: string
       description: string
@@ -32,7 +33,13 @@ interface CreatePackageInput {
 export const createPackage = async (
     input: CreatePackageInput) => {
     try {
-        const newPackage = await Package.create(input)
+        const newPackage = await Package.create({
+            ...input,
+            ...{
+                startDate: getJsDate(input.startDate),
+                endDate: getJsDate(input.endDate)
+            }
+        })
 
         return newPackage
     } catch (error: any) {

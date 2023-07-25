@@ -35,6 +35,8 @@ export interface PackageDocument extends mongoose.Document {
     }[]
     lockDownPrice?: number | null
     lockDownPricePerUnit: number
+    startDate: Date,
+    endDate: Date,
     deleted: Boolean
     active: Boolean
     createdAt?: Date;
@@ -142,6 +144,14 @@ const PackageSchema = new mongoose.Schema(
     active: {
         type: Boolean,
         default: true
+    },
+    startDate: {
+      type: Date,
+      required: true
+    },
+    endDate: {
+      type: Date,
+      required: true
     },
   },
   { timestamps: true }

@@ -7,6 +7,8 @@ const payload = {
         packageType: string().required('package type (packageType) is required as enum [eg: PRIVATE, GROUP]'),
         fulfilledBy: string().required('fulfilledBy is required'),
         // price: number().required('package price (price) is required'),
+        startDate: string().required('start date required in the format DD-MM-YYYY'),
+        endDate: string().required('end date required in the format DD-MM-YYYY'),
         pricing: object({
             pricePerUnit: number().required('pricing.pricingPerUnit is required'),
             numberPerUnit: number().required('pricing.numberPerUnit is required'),
