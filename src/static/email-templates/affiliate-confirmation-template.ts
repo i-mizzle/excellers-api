@@ -17,7 +17,7 @@ export const AffiliateApprovalConfirmationTemplate = (input: AffiliateApprovalMa
 
             <p>Your affiliate account on Geotravels has been approved successfully. Click the link below to access your account and continue your onboarding process</p>
 
-            <button href="">Log in to your account</button>
+            <button href="${input.confirmationUrl}">Log in to your account</button>
         </div>
     `
 }

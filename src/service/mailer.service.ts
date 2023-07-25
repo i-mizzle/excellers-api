@@ -23,11 +23,17 @@ interface MailParams {
     mailTo: String,
 }
 
-export interface AffiliateApprovalMailParams extends MailParams {
+export interface SubscriptionConfirmationMailParams extends MailParams {
     firstName: String
 }
 
-export interface WalletCreationMailParams extends MailParams, AffiliateApprovalMailParams {
+export interface AffiliateApprovalMailParams extends MailParams {
+    firstName: String
+    confirmationUrl: String
+}
+
+export interface WalletCreationMailParams extends MailParams {
+    firstName: String
     accountName: String
     accountNumber: String
     bank: String
@@ -257,7 +263,7 @@ export async function sendFlightBookingConfirmation (mailParams: FlightBookingNo
     }
 }
 
-export async function sendSubscriptionConfirmation (mailParams: AffiliateApprovalMailParams) {
+export async function sendSubscriptionConfirmation (mailParams: SubscriptionConfirmationMailParams) {
     try {
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',

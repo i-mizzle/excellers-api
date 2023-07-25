@@ -45,7 +45,8 @@ export const approveAffiliateHandler = async (req: Request, res: Response) => {
 
         await sendAffiliateApprovalConfirmation({
             mailTo: affiliate.email,
-            firstName: affiliate.firstName
+            firstName: affiliate.firstName,
+            confirmationUrl: body.confirmationUrl
         })
 
         return response.ok(res, {message: "Affiliate account has been approved successfully"})
