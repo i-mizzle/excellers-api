@@ -7,6 +7,7 @@ export interface PostDocument extends mongoose.Document {
   title: string;
   slug: string;
   body: string;
+  readTimeOverride?: number;
   authors: {
     name: string
     designation: string
@@ -84,6 +85,9 @@ const PostSchema = new mongoose.Schema(
         }
       }
     ],
+    readTimeOverride: {
+      type: Number
+    },
     meta: {
       wordCount: {
         type: Number,

@@ -155,18 +155,18 @@ export async function deletePostHandler (req: Request, res: Response) {
 
 export const createPostsMetaHandler = async (req: Request, res: Response) => {
     const posts = await findPosts({}, 0, 0, '')
-        console.log(posts)
-        let updatedCount = 0
-        if(posts.posts) {
-            await Promise.all(posts.posts.map(async(post) => {
-                const postData = await findPost({_id: post._id})
-                if(postData && postData.body) {
-                    const postMeta = await getPostMeta(postData.body)
-                    await findAndUpdate({_id: post._id}, {meta: postMeta}, {new: true})
-                    updatedCount ++
-                }
-            }))
-        }
+    console.log(posts)
+    let updatedCount = 0
+    if(posts.posts) {
+        await Promise.all(posts.posts.map(async(post) => {
+            const postData = await findPost({_id: post._id})
+            if(postData && postData.body) {
+                const postMeta = await getPostMeta(postData.body)
+                await findAndUpdate({_id: post._id}, {meta: postMeta}, {new: true})
+                updatedCount ++
+            }
+        }))
+    }
 
-        return response.ok(res, {message: `${updatedCount} out of ${posts.posts.length} posts updated`})
+    return response.ok(res, {message: `${updatedCount} out of ${posts.posts.length} posts updated`})
 }
