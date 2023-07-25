@@ -184,7 +184,7 @@ export default function(app: Express) {
     )
 
     // Delete user account
-    app.delete('/users/delete/:userCode', 
+    app.delete('/users/delete/:userId', 
         requiresUser, 
         requiresAdministrator,
         deleteUserHandler
