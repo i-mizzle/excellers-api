@@ -32,6 +32,10 @@ export async function deleteMargin(
     return Margin.deleteOne(query)
 }
 
+
+// interface MarginResponse {
+
+// }
 export const getMarginValue = async (flightType: string, flightPrice: number) => {
     try {
         const margin = await findMargin({flightType: flightType, active: true})
@@ -52,7 +56,10 @@ export const getMarginValue = async (flightType: string, flightPrice: number) =>
         }
         console.log('margin value ====== ', marginValue)
     
-        return Math.trunc(marginValue)
+        return {
+            marginValue: Math.trunc(marginValue),
+            margin: margin._id
+        }
     } catch (error) {
         log.error(error)
         return null

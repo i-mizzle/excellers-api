@@ -3,6 +3,7 @@ import { InvoiceDocument } from "./invoice.model";
 import { AddonDocument } from "./addon.model";
 import { FlightDealDocument } from "./flight-deal.model";
 import { UserDocument } from "./user.model";
+import { MarginDocument } from "./margin.model";
 
 export interface Passenger {
     passengerType: string
@@ -48,6 +49,7 @@ export interface BookingDocument extends mongoose.Document {
     bookingCode: string
     flightId: string
     passengers: Array<Passenger>
+    margin: MarginDocument['_id']
     addons: Array<AddonDocument['_id']>
     deal?: FlightDealDocument['_id']
     addonsTotal: number,
@@ -108,6 +110,10 @@ const BookingSchema = new mongoose.Schema(
     },
     addonsTotal: {type: Number},
     passengers: [],
+    margin: { 
+      type:  mongoose.Schema.Types.ObjectId, 
+      ref: 'Margin'
+    },
     amount: {type: Number},
     ticketed: {type: Boolean, default: false},
     cancelled: {type: Boolean, default: false},

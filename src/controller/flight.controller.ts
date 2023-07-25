@@ -195,27 +195,27 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
             confirmationData.pricing = {
                 ...confirmationData.pricing, 
                 ...{
-                    payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                    payable: confirmationData.pricing.payable + margin.marginValue + affiliateMarkup
                 }
             }
         }
 
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'FIXED') {
-            discountedPrice = (confirmationData.pricing.payable - (existingDeal.discountValue/100)) + margin + affiliateMarkup
+            discountedPrice = (confirmationData.pricing.payable - (existingDeal.discountValue/100)) + margin.marginValue + affiliateMarkup
             confirmationData.pricing = {...confirmationData.pricing, ...{
                 discountedPrice: discountedPrice, 
-                payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                payable: confirmationData.pricing.payable + margin.marginValue + affiliateMarkup
             }}
         }
 
         if(queryObject?.showDeal === 'true' && existingDeal && existingDeal.discountType === 'PERCENTAGE') {
-            discountedPrice = (confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)) + margin + affiliateMarkup
+            discountedPrice = (confirmationData.pricing.payable - ((existingDeal.discountValue/100) * confirmationData.pricing.payable)) + margin.marginValue + affiliateMarkup
 
             confirmationData.pricing = {
                 ...confirmationData.pricing, 
                 ...{
                     discountedPrice: discountedPrice, 
-                    payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                    payable: confirmationData.pricing.payable + margin.marginValue + affiliateMarkup
                 }
             }
         }
@@ -227,7 +227,7 @@ export const confirmFlightPriceHandler = async (req: Request, res: Response) => 
         if(!queryObject?.showDeal || queryObject?.showDeal === 'false') {
             confirmationData.pricing = {...confirmationData.pricing, ...{
                 discountedPrice: discountedPrice, 
-                payable: confirmationData.pricing.payable + margin + affiliateMarkup
+                payable: confirmationData.pricing.payable + margin.marginValue + affiliateMarkup
             }}
         }
         

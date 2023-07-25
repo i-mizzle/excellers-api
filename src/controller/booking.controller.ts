@@ -175,7 +175,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
 
         console.log('AFFILIATE MONEY::::::> ', affiliateMarkup)
 
-        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice + (margin * 100) + (affiliateMarkup * 100)
+        let invoiceAmount = (flightPriceConfirmation.data.pricing.payable * 100) + totalAddonsPrice + (margin.marginValue * 100) + (affiliateMarkup * 100)
 
         if(existingDeal && body?.bookAtDealPrice === true) {
 
@@ -192,7 +192,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
                 flightPriceConfirmation.data.pricing = {...flightPriceConfirmation.data.pricing, ...{discountedPrice: discountedPrice}}
             }
             
-            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice + margin + affiliateMarkup
+            invoiceAmount = (discountedPrice * 100) + totalAddonsPrice + margin.marginValue + affiliateMarkup
         }
 
         const invoiceInput = {
@@ -219,6 +219,7 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             paymentStatus: invoice.status,
             addonsTotal: totalAddonsPrice/100,
             pricing: updatedPricing,
+            margin: margin.margin,
             deal: null
         }
 
