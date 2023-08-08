@@ -18,158 +18,93 @@ export const UserEmailConfirmationTemplate = (input: ConfirmationMailParams) => 
 
     //     <button href="${input.confirmationUrl}">Confirm account</button>
     // </div>
-    return `
-        <div>
-            <style>
-                * {
-                    font-family: Arial, Helvetica, sans-serif;
-                }
-                
-                .container {
-                    width: 95%;
-                    max-width: 32rem;
-                    margin: 0 auto;
-                    display: flex;
-                    flex-direction: column;
-                    padding: 1.2rem;
-                    flex: 1;
-                    position: relative;
-                    overflow: hidden;
-                }
-                .container::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    z-index: -1;
-                    left: 0;
-                    border-style: solid;
-                    border-width: 10vw 20vw;
-                    border-color: rgba(207, 207, 211, 0.353) transparent transparent rgba(207, 207, 211, 0.353);
-                }
-                .container::after {
-                    content: '';
-                    position: absolute;
-                    top: -1rem;
-                    z-index: -1;
-                    left: 0;
-                    border-style: solid;
-                    border-width: 10vw 20vw;
-                    border-color: rgba(207, 207, 211, 0.353) transparent transparent rgba(207, 207, 211, 0.353);
-                }
-
-                .footer-icons {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 2rem;
-                }
-
-                .footer-icons>a>img {
-                    width: 1.5rem;
-                    height: 1.5rem;
-                }
-
-                .footer-links {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 2rem 0;
-                }
-
-                .footer-links>a {
-                    font-size: 0.8rem;
-                    color: rgb(4, 4, 224);
-                    text-transform: capitalize;
-                    border-right: 1px solid rgb(4, 4, 224);
-                    text-align: center;
-                    padding: 0 1rem;
-                }
-
-                .footer-links>a:last-child {
-                    border-right: none;
-                }
-
-                a {
-                    text-decoration: none;
-                }
-                .subject {
-                    font-size: 2rem;
-                    color: rgb(60, 58, 58);
-                    font-weight: 550;
-                }
-                .title {
-                    font-size: 1.3rem;
-                    font-weight: 550;
-                    margin: 3rem 0;
-                }
-                .par {
-                    color: rgb(60, 58, 58);
-                }
-                .pad1 {
-                    padding-bottom: 1rem;
-                }
-                .button {
-                    margin: 2rem 0;
-                }
-                .button>a {
-                    padding: 1.2rem 2rem;
-                    background-color: rgb(1, 1, 189);
-                    color: white;
-                    text-transform: uppercase;
-                    font-size: 0.9rem;
-                    border-radius: 0.6rem;
-                    cursor: pointer
-                    box-shadow: 3px 6px 10px rgb(162, 160, 160);
-                }
-                .brand {
-                    margin-bottom: 2rem;
-                }
-                .brand img {
-                    width: 7rem;
-                }
-            </style>
-
-            <div class="container">
-                <div class="">
-                    <div class="brand">
-                        <a href="https://www.gowithgeo.com/">
-                            <img src="https://res.cloudinary.com/travel-wahoo/image/upload/v1688224783/geotravel-assets/g98j5fwmwolopcfclfy9.png" alt="">
-                        </a>
-                    </div>
-                </div>
-                <div class="subject">Welcome to GeoTravel – Activate Your Account</div>
-
-                <div class="title">Dear ${input.firstName},</div>
-
-                <div class="par pad1">We are happy to have you here!</div>
-            <div class="par pad1"> Please click on the below button to activate your account.</div>
-
-            <div class="button">
-                <a href="${input.confirmationUrl}">activate account</a>
-            </div>
-                <div class="par">Best Regards,</div>
-                <div class="par">The GeoTravel Team</div>
-
-                <div class="footer-links">
-                    <a href="https://www.gowithgeo.com/privacy-policy">privacy policy</a>
-                    <a href="https://www.gowithgeo.com/terms-and-conditions">terms and conditions</a>
-                    <a href="https://www.gowithgeo.com/about-us">about us</a>
-                </div>
-                <div class="footer-icons">
-                    <a href="https://www.facebook.com/TravelwithGeo">
-                        <img src="https://cdn-icons-png.flaticon.com/128/733/733547.png" alt="" class="">
-                    </a>
-                    <a href="https://twitter.com/travelwithgeo">
-                        <img src="https://cdn-icons-png.flaticon.com/128/733/733579.png" alt="" class="">
-                    </a>
-                    <a href="https://www.instagram.com/geotravels/">
-                        <img src="https://cdn-icons-png.flaticon.com/128/2111/2111463.png" alt="" class="">
-                    </a>
-                    <a href="https://ng.linkedin.com/company/geo-travel-tours">
-                        <img src="https://cdn-icons-png.flaticon.com/128/3536/3536505.png" alt="" class="">
-                    </a>
-                </div>
-            </div>
-        </div>
-    `
+    return `<!DOCTYPE html>
+    <html style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+    <head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Actionable emails e.g. reset password</title>
+    
+    
+    <style type="text/css">
+    img {
+    max-width: 100%;
+    }
+    body {
+    -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em;
+    }
+    body {
+    background-color: #f6f6f6;
+    }
+    @media only screen and (max-width: 640px) {
+      body {
+        padding: 0 !important;
+      }
+      h1 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h2 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h3 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h4 {
+        font-weight: 800 !important; margin: 20px 0 5px !important;
+      }
+      h1 {
+        font-size: 22px !important;
+      }
+      h2 {
+        font-size: 18px !important;
+      }
+      h3 {
+        font-size: 16px !important;
+      }
+      .container {
+        padding: 0 !important; width: 100% !important;
+      }
+      .content {
+        padding: 0 !important;
+      }
+      .content-wrap {
+        padding: 10px !important;
+      }
+      .invoice {
+        width: 100% !important;
+      }
+    }
+    </style>
+    </head>
+    
+    <body itemscope itemtype="http://schema.org/EmailMessage" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6">
+    
+    <table class="body-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+        <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
+          <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">
+            <a href="https://www.gowithgeo.com/">
+                <img src="https://res.cloudinary.com/travel-wahoo/image/upload/v1688224783/geotravel-assets/g98j5fwmwolopcfclfy9.png" alt="">
+            </a>
+            <table class="main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 20px;" valign="top">
+                  <meta itemprop="name" content="Confirm Email" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;" /><table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        Hello ${input.firstName}, Please confirm your email address by clicking the link below.
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        We may need to send you critical information about our service and it is important that we have an accurate email address.
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        <a href="${input.confirmationUrl}" class="btn-primary" itemprop="url" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">Confirm email address</a>
+                      </td>
+                    </tr><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        &mdash; The GeoTravel Team
+                      </td>
+                    </tr></table></td>
+              </tr></table><div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">
+              <table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">Follow <a href="http://twitter.com/" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">@GeoTravels</a> on Twitter.</td>
+                </tr></table></div></div>
+        </td>
+        <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+      </tr></table></body>
+    </html>`
 }
+
