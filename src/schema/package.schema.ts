@@ -11,8 +11,9 @@ const payload = {
         endDate: string().required('end date required in the format DD-MM-YYYY'),
         pricing: object({
             pricePerUnit: number().required('pricing.pricingPerUnit is required'),
-            numberPerUnit: number().required('pricing.numberPerUnit is required'),
+            numberPerUnit: number(),
         }).required('pricing object is required for the package'),
+        pricingText: string().required('pricingText is required'),
         month: string().required('month is required'),
         lockDownPricePerUnit: number().required('package lock down price (lockDownPricePerUnit) is required'),
         inclusions: array().required('an array of inclusions is required for this package').min(1, 'provide at least one inclusion'),
@@ -33,10 +34,11 @@ const payload = {
             title: string().required('activity title is required'),
             description: string().required('activity description is required'),
         })).required('an array of activities is required for this package'),
-        destination: object({
+        destination: array(object({
             country: string().required('destination.country is required'),
             city: string().required('destination.city is required'),
-        }).required('destination is required')
+            order: number(),
+        })).required('at least destination is required in tn the destination array')
     })
 }
 

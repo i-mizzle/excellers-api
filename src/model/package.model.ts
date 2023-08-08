@@ -22,7 +22,8 @@ export interface PackageDocument extends mongoose.Document {
     destination: {
       country: string
       city: string
-    }
+      order: number
+    }[]
     fulfilledBy: string
     price?: number | null
     pricing: {
@@ -61,16 +62,22 @@ const PackageSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    destination: {
-      country: {
-        type: String,
-        required: true
-      },
-      city: {
-        type: String,
-        required: true
-      },
-    },
+    destination: [
+      {
+        country: {
+          type: String,
+          required: true
+        },
+        city: {
+          type: String,
+          required: true
+        },
+        order: {
+          type: Number,
+          required: true
+        },
+      }
+    ],
     description: {
       type: String,
       required: true
@@ -134,8 +141,12 @@ const PackageSchema = new mongoose.Schema(
       },
       numberPerUnit: {
         type: Number,
-        required: true
+        default: 1
       },
+    },
+    pricingText: {
+      type: String,
+      required: true
     },
     deleted: {
       type: Boolean,
