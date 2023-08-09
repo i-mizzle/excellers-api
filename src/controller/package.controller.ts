@@ -162,7 +162,7 @@ export const updatePackageHandler = async (req: Request, res: Response) => {
         }
 
         if(update.endDate) {
-            update = {...update, ...{startDate: getJsDate(update.endDate)}}
+            update = {...update, ...{endDate: getJsDate(update.endDate)}}
         }
 
         const trip = await findPackage({_id: packageId}, '')
