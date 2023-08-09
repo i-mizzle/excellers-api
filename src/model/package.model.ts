@@ -22,7 +22,7 @@ export interface PackageDocument extends mongoose.Document {
     destination: {
       country: string
       city: string
-      order: number
+      order?: number
     }[]
     fulfilledBy: string
     price?: number | null
@@ -73,8 +73,7 @@ const PackageSchema = new mongoose.Schema(
           required: true
         },
         order: {
-          type: Number,
-          required: true
+          type: Number
         },
       }
     ],
