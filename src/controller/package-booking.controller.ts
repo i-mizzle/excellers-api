@@ -64,7 +64,7 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
         const invoiceItemType = 'PACKAGE'       
         const invoiceCode = generateCode(18, false).toUpperCase()
         const packagePrice = await applyPackageDeals([bookingPackage])
-        const priceMultiplier = body.packageOwners.length / bookingPackage.pricing.numberPerUnit
+        const priceMultiplier = body.packageOwners.length / bookingPackage.pricing.numberPerUnit || 1
         let invoicePrice = 0
 
         if(body.lockDown && body.lockDown === true) {
