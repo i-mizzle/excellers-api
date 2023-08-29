@@ -83,6 +83,8 @@ import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema 
 import { readLogFile } from './controller/log.controller';
 import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './schema/general-deal-booking.schema';
 import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGeneralDealBookingsHandler } from './controller/general-deal-booking.controller';
+import { createEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
+import { resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -191,10 +193,12 @@ export default function(app: Express) {
     )
 
     app.post('/auth/password-reset/request', 
+        validateRequest(resetRequestSchema),
         requestPasswordResetHandler
-    )
+        )
 
     app.post('/auth/password-reset', 
+        validateRequest(resetPasswordSchema),
         resetPasswordHandler
     )
 
@@ -790,6 +794,30 @@ export default function(app: Express) {
         validateRequest(deleteRoleSchema),
         deleteRoleHandler
     )
+
+    app.post("/settings/email", 
+        requiresUser,
+        requiresAdministrator,
+        createEmailSettingHandler
+    )  
+
+    app.get("/settings/email", 
+        requiresUser,
+        requiresAdministrator,
+        getEmailSettingsHandler
+    )  
+
+    app.put("/settings/email/:settingId", 
+        requiresUser,
+        requiresAdministrator,
+        updateEmailSettingHandler
+    )  
+
+    app.post("/settings/email/:settingId/test", 
+        requiresUser,
+        requiresAdministrator,
+        testEmailSettingHandler
+    )  
 
     // CALENDAR?APPOINTMENTS
     app.post("/appointments", 

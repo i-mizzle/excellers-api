@@ -51,7 +51,7 @@ export async function inviteUserHandler(req: Request, res: Response) {
         await sendInvitation({
             mailTo: invitation.email,
             firstName: invitation.firstName,
-            invitationUrl: req.body.invitationUrl + invitationCode
+            activationCode: invitationCode.code
         })
 
         return response.created(res, {message: 'invitation sent successfully'})

@@ -28,7 +28,7 @@ export const resendInvitation = async (invitationCode: InvitationDocument['email
         await sendInvitation({
             mailTo: invitation.email,
             firstName: invitation.firstName,
-            invitationUrl: invitationUrl + newInvitationCode
+            activationCode: newInvitationCode
         })
         return {
             error: false,

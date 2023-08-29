@@ -237,7 +237,6 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             mailTo: userEmail,
             firstName: userName,
             airline: flightPriceConfirmation!.data.outbound[0].marketingAirline,
-            invoiceUrl: req.body.confirmationUrl + invoice.invoiceCode,
             invoiceCode: invoice.invoiceCode,
             bookingCode: flightBooking.data.bookingCode,
             origin: flightPriceConfirmation!.data.outbound[0].airportFrom,

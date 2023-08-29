@@ -318,3 +318,16 @@ export const getPostMeta = (postBody: string): PostMeta => {
   }
 
 }
+
+export const replaceEmailVariables = (input: string, variableValues: Record<string, string>): string => {
+  const regex = /\[\[\s*([\w\s]+)\s*\]\]/g;
+
+  const replacedString = input.replace(regex, (match, variableName) => {
+    if (variableValues.hasOwnProperty(variableName)) {
+      return variableValues[variableName];
+    }
+    return match; // Keep unchanged if value not found in the map
+  });
+
+  return replacedString;
+}

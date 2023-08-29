@@ -117,7 +117,7 @@ export async function createUserHandler(req: Request, res: Response) {
         await sendEmailConfirmation({
             mailTo: user.email,
             firstName: user.firstName,
-            confirmationUrl: req.body.confirmationUrl + confirmationCode.code
+            activationCode: confirmationCode.code
         })
 
         return response.created(res, 

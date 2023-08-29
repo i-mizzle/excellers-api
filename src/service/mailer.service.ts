@@ -10,6 +10,7 @@ import { AffiliateApprovalConfirmationTemplate } from '../static/email-templates
 import { AffiliateWalletNotificationTemplate } from '../static/email-templates/affiliate-wallet-notification-template';
 import { AdminInvitationTemplate } from '../static/email-templates/admin-invitation-template';
 import { FlightBookingNotificationTemplate } from '../static/email-templates/flight-booking-notification-template';
+import { findEmailSetting } from './email-setting.service';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -20,63 +21,68 @@ const mg = mailgun({
 });
 
 interface MailParams {
-    mailTo: String,
+    mailTo: string,
 }
 
 export interface SubscriptionConfirmationMailParams extends MailParams {
-    firstName: String
+    firstName: string
 }
 
 export interface AffiliateApprovalMailParams extends MailParams {
-    firstName: String
-    confirmationUrl: String
+    firstName: string
+    activationCode?: String
 }
 
 export interface WalletCreationMailParams extends MailParams {
-    firstName: String
-    accountName: String
-    accountNumber: String
-    bank: String
+    firstName: string
+    accountName: string
+    accountNumber: string
+    bank: string
 }
 
 export interface ConfirmationMailParams extends MailParams {
-    firstName: String
-    confirmationUrl: String
+    firstName: string
+    activationCode?: string
 }
 
 export interface InvitationMailParams extends MailParams {
-    firstName: String
-    invitationUrl: String
+    firstName: string
+    activationCode?: string
 }
 
 export interface PasswordResetMailParams extends MailParams {
-    firstName: String
-    resetUrl: String
+    firstName: string
+    resetCode: string
 }
 
 export interface FlightBookingNotificationMailParams extends MailParams {
-    firstName: String
-    airline: String
-    invoiceUrl: String
-    invoiceCode: String
-    bookingCode: String
-    origin: String
-    destination: String
-    date: String
-    time: String
+    firstName: string
+    airline: string
+    // invoiceUrl: string
+    invoiceCode: string
+    bookingCode: string
+    origin: string
+    destination: string
+    date: string
+    time: string
 }
 
 export async function sendEmailConfirmation (mailParams: ConfirmationMailParams) {
-    console.log('MAILGUN --->', mg)
     try {
-        const template = UserEmailConfirmationTemplate(mailParams);
+        const emailSettings = await findEmailSetting({slug: 'email-confirmation'})
+        
+        if(!emailSettings) {
+            return
+        }
+
+        const template = UserEmailConfirmationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
-            subject: 'Welcome to GeoTravels',
+            subject: emailSettings.mailSubject || 'Welcome to GeoTravels',
             // template: 'email_confirmation',
-            text: `Validate your email using this link - ${mailParams.confirmationUrl}`,
+            text: `Validate your email using this link - ${emailSettings.emailAction.buttonUrl + mailParams?.activationCode}`,
             html: html,
             // "",
             // "h:X-Mailgun-Variables": JSON.stringify({
@@ -84,7 +90,7 @@ export async function sendEmailConfirmation (mailParams: ConfirmationMailParams)
             //     confirmationUrl: mailParams.confirmationUrl
             // })
         };
-        console.log(mg)
+
         await mg.messages().send(data);
         console.log('Sent!');
         return {
@@ -104,18 +110,23 @@ export async function sendEmailConfirmation (mailParams: ConfirmationMailParams)
 
 export async function sendInvitation (mailParams: InvitationMailParams) {
     try {
-        const template = AdminInvitationTemplate(mailParams);
+        const emailSettings = await findEmailSetting({slug: 'admin-invitation'})
+        
+        if(!emailSettings) {
+            return
+        }
+        const template = AdminInvitationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
-            subject: `You've been invited to GeoTravels Admin`,
+            subject: emailSettings.mailSubject || `You've been invited to GeoTravels Admin`,
             // template: 'admin_invitation',
             // "h:X-Mailgun-Variables": JSON.stringify({
             //     firstName: mailParams.firstName,
             //     invitationUrl: mailParams.invitationUrl
             // })
-            text: `Follow this link to accept your invitation to Geotravels - ${mailParams.invitationUrl}`,
+            text: `Follow this link to accept your invitation to Geotravels - ${emailSettings.emailAction.buttonUrl + mailParams?.activationCode}`,
             html: html,
         };
         await mg.messages().send(data);
@@ -137,18 +148,20 @@ export async function sendInvitation (mailParams: InvitationMailParams) {
 
 export async function sendPasswordResetEmail (mailParams: PasswordResetMailParams) {
     try {
-        const template = PasswordResetEmailTemplate(mailParams);
+        const emailSettings = await findEmailSetting({slug: 'password-reset-request'})
+        
+        if(!emailSettings) {
+            return
+        }
+
+        const template = PasswordResetEmailTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
-            subject: 'Reset your password',
-            text: `Reset your password using this link - ${mailParams.resetUrl}`,
+            subject: emailSettings.mailSubject || `Reset your Geotravels password`,
+            text: `Follow this link to reset your password - ${emailSettings.emailAction.buttonUrl + mailParams?.resetCode}`,
             html: html,
-            "h:X-Mailgun-Variables": JSON.stringify({
-                firstName: mailParams.firstName,
-                resetUrl: mailParams.resetUrl
-            })
         };
         await mg.messages().send(data);
         console.log('Sent!');
@@ -169,16 +182,17 @@ export async function sendPasswordResetEmail (mailParams: PasswordResetMailParam
 
 export async function sendAffiliateApprovalConfirmation (mailParams: AffiliateApprovalMailParams) {
     try {
-        const template = AffiliateApprovalConfirmationTemplate(mailParams);
+        const emailSettings = await findEmailSetting({slug: 'affiliate-approval-confirmation'})
+        
+        if(!emailSettings) {
+            return
+        }
+        const template = AffiliateApprovalConfirmationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
-            subject: 'Your Affiliate account has been approved',
-            // template: 'password_reset',
-            // "h:X-Mailgun-Variables": JSON.stringify({
-            //     firstName: mailParams.firstName,
-            // })
+            subject: emailSettings.mailSubject || 'Your Affiliate account has been approved',
             text: `Your account has been approved`,
             html: html,
         };
@@ -233,16 +247,19 @@ export async function sendWalletCreationNotification (mailParams: WalletCreation
 
 export async function sendFlightBookingConfirmation (mailParams: FlightBookingNotificationMailParams) {
     try {
-        const template = FlightBookingNotificationTemplate(mailParams);
+        const emailSettings = await findEmailSetting({slug: 'flight-booking-notification'})
+        
+        if(!emailSettings) {
+            return
+        }
+
+        const template = FlightBookingNotificationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
             from: 'GeoTravels <no-reply@geotravels.com>',
             to: mailParams.mailTo,
-            subject: 'Your flight booking has been created',
-            // template: 'password_reset',
-            // "h:X-Mailgun-Variables": JSON.stringify({
-            //     firstName: mailParams.firstName,
-            // })
+            // subject: 'Your flight booking has been created',
+            subject: emailSettings.mailSubject || 'Your flight booking has been created',
             text: ``,
             html: html,
         };

@@ -34,11 +34,11 @@ export const requestPasswordResetHandler = async (req: Request, res: Response) =
             resetCode: resetCode._id
         })
 
-        // await sendPasswordResetEmail({
-        //     mailTo: user.email,
-        //     firstName: user.name.split(' ')[0] || user.name,
-        //     resetUrl: req.body.confirmationUrl + code
-        // })
+        await sendPasswordResetEmail({
+            mailTo: user.email,
+            firstName: user.firstName,
+            resetCode: resetCode.code
+        })
 
         // await sendToKafka(JSON.stringify({
         //     message: {
