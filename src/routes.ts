@@ -28,7 +28,7 @@ import { createInvitationSchema, getInvitationSchema } from './schema/invitation
 // import { getInvitationHandler, InviteUserHandler } from './controller/invitation.controller';
 import { confirmationSchema } from './schema/confirmation-code.schema';
 import { requestPasswordResetHandler, resetPasswordHandler } from './controller/password-reset.controller';
-import { getAllInvitationsHandler, inviteUserHandler } from './controller/invitation.controller';
+import { acceptInvitationHandler, getAllInvitationsHandler, getInvitationByInviteeHandler, inviteUserHandler } from './controller/invitation.controller';
 import { confirmFlightPriceHandler, flightSearchHandler } from './controller/flight.controller';
 import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
 import { bookingSchema, getBookingSchema } from './schema/booking.schema';
@@ -83,7 +83,7 @@ import { createGeneralDealSchema, getGeneralDealSchema, updateGeneralDealSchema 
 import { readLogFile } from './controller/log.controller';
 import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './schema/general-deal-booking.schema';
 import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGeneralDealBookingsHandler } from './controller/general-deal-booking.controller';
-import { createEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
+import { createEmailSettingHandler, getEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
 import { resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
 
 export default function(app: Express) {
@@ -123,6 +123,14 @@ export default function(app: Express) {
         requiresUser, 
         requiresAdministrator,
         getAllInvitationsHandler
+    )
+
+    app.get('/auth/invitations/:inviteCode', 
+        getInvitationByInviteeHandler
+    )
+
+    app.post('/auth/invitations/:inviteCode', 
+        acceptInvitationHandler
     )
 
     // Login
@@ -805,6 +813,12 @@ export default function(app: Express) {
         requiresUser,
         requiresAdministrator,
         getEmailSettingsHandler
+    )  
+
+    app.get("/settings/email/:settingId", 
+        requiresUser,
+        requiresAdministrator,
+        getEmailSettingHandler
     )  
 
     app.put("/settings/email/:settingId", 

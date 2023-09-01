@@ -30,6 +30,31 @@ export const getEmailSettingsHandler = async (req: Request, res: Response) => {
     }
 }
 
+export const getEmailSettingHandler = async (req: Request, res: Response) => {
+    try {
+
+        const settingId = get(req, 'params.settingId');
+
+        const ObjectId = require('mongoose').Types.ObjectId;
+
+        let setting = null
+
+        if(ObjectId.isValid(settingId)) {
+            setting = await findEmailSetting({_id: settingId})
+        } else {
+            setting = await findEmailSetting({slug: settingId})
+        }
+
+        if(!setting || setting === null) {
+            return response.notFound(res, {message: 'setting not found'})
+        }
+
+        return response.ok(res, {emailSetting: setting})        
+    } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
 export const updateEmailSettingHandler = async (req: Request, res: Response) => {
     try {
         const updateObject = req.body

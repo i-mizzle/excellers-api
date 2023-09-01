@@ -5,8 +5,8 @@ import * as response from "../responses/index";
 import log from "../logger";
 import { sendInvitation } from "../service/mailer.service";
 import { nanoid } from "nanoid";
-import { createInvitation, findAllInvitations, findInvitation, resendInvitation } from "../service/invitation.service";
-import { createConfirmationCode } from "../service/confirmation-code.service";
+import { createInvitation, deleteInvitation, findAllInvitations, findInvitation, resendInvitation } from "../service/invitation.service";
+import { createConfirmationCode, findAndUpdateConfirmation, findConfirmationCode } from "../service/confirmation-code.service";
 import { addMinutesToDate } from "../utils/utils";
 import config from 'config';
 
@@ -64,24 +64,40 @@ export async function inviteUserHandler(req: Request, res: Response) {
 export async function acceptInvitationHandler (req: Request, res: Response) {
     try {
         const body = req.body;
-        const invitation = await findInvitation({ invitationCode: body.invitationCode, accepted: false });
+        const inviteCode = get(req, 'params.inviteCode');
 
-        if (!invitation) {
-            return response.notFound(res, { message: `invitation not found or already accepted` })
-        } 
+        const invitation = await findConfirmationCode({code: inviteCode})
 
-        // const userId = invitation.user;
-        // let updateQuery = invitation
-        // updateQuery.emailConfirmed = true
-        // updateQuery.confirmationToken = ''
+        if (!invitation || invitation.type !== 'ADMIN_INVITATION') {
+            return response.notFound(res, {message: `invitation with invite code: ${inviteCode} not found`})
+        }
 
-        // const updatedUser = await findAndUpdate({ _id: userId }, updateQuery, { new: true })
+        const invitee = await findInvitation({code: invitation._id})
 
-        // if(!updatedUser) {
-        //     return response.error(res, {message: 'Sorry there was an error updating the user'})
-        // }
+        if (!invitee) {
+            return response.notFound(res, {message: `invitee not found, invitation may already be accepted`})
+        }
+
+        const input = {...req.body, ...{
+            emailConfirmed: true,
+            email: invitee.email,
+            firstName: invitee.firstName,
+            lastName: invitee.lastName,
+            userType: invitee.userType,
+            role: invitee.role
+
+        }}
+
+        const user = await createUser(input)
+
+        await deleteInvitation({_id: invitee._id})
+        await findAndUpdateConfirmation({_id: invitee._id}, {valid: false}, {new: true})
         
-        // return response.ok(res, {message: 'email address has been confirmed successfully'})
+        return response.ok(res, {
+            message: 'Invitation accepted successfully, you can now log in', 
+            user:  omit(user.toJSON(), ['_id', 'password'])
+        })
+
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
@@ -98,7 +114,34 @@ export async function getInvitationHandler (req: Request, res: Response) {
             return response.notFound(res, {message: `invitation with invitation code: ${invitationCode} not found`})
         }
 
-        return response.ok(res, omit(invitation, ['_id']))
+        return response.ok(res, omit(invitation, ['_id, __v']))
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
+export async function getInvitationByInviteeHandler (req: Request, res: Response) {
+    try {
+        const inviteCode = get(req, 'params.inviteCode');
+        const invitation = await findConfirmationCode({code: inviteCode})
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        if (!invitation || invitation.type !== 'ADMIN_INVITATION') {
+            return response.notFound(res, {message: `invitation with invite code: ${inviteCode} not found`})
+        }
+        
+        const invitee = await findInvitation({code: invitation._id}, expand)
+        if (!invitee) {
+            return response.notFound(res, {message: `invitee not found, invitation may already be accepted`})
+        }
+
+        return response.ok(res, {invitation: omit(invitee, ['_id', 'code', '__v'])})
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)

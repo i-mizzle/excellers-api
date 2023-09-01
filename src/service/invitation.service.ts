@@ -53,8 +53,11 @@ export async function createInvitation(input: DocumentDefinition<InvitationDocum
     }
 }
 
-export async function findInvitation( query: FilterQuery<InvitationDocument>) {
-    return Invitation.findOne(query).lean();
+export async function findInvitation( 
+    query: FilterQuery<InvitationDocument>,
+    expand?: string,
+) {
+    return Invitation.findOne(query).populate(expand).lean();
 }
 
 export async function findAllInvitations(

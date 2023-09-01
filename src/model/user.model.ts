@@ -56,7 +56,6 @@ const UserSchema = new mongoose.Schema(
         confirmationCode: {
             type: mongoose.Schema.Types.ObjectId, 
             ref: "ConfirmationCode",
-            required: true
         },
         password: {
             type: String,
