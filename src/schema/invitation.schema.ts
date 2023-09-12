@@ -8,7 +8,7 @@ export const createInvitationSchema = object({
             .email('must be a valid email')
             .required('email is required'),
         userType: string().required('userType is required'),
-        invitationUrl: string().required('please provide url for confirmation link (confirmationUrl)')
+        // invitationUrl: string().required('please provide url for confirmation link (confirmationUrl)')
     })
 });
 
