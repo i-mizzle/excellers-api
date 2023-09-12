@@ -209,8 +209,14 @@ export async function confirmEmailHandler (req: Request, res: Response) {
 export async function getUserProfileHandler (req: Request, res: Response) {
     try {
         const userId = get(req, 'user._id');
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
 
-        let user = await findUser({_id: userId})
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        let user = await findUser({_id: userId}, expand)
 
         return response.ok(res, omit(user, ['_id', 'password', 'confirmationToken']))
     } catch (error: any) {
