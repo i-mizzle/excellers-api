@@ -70,7 +70,7 @@ import { createPostSchema, deletePostSchema, getPostSchema, updatePostSchema } f
 import { createPostCommentSchema, deletePostCommentSchema, getPostCommentsSchema, updatePostCommentSchema } from './schema/post-comment.schema';
 import { createPostCommentHandler, deletePostCommentHandler, getPostCommentsHandler, publishPostCommentHandler } from './controller/post-comment.controller';
 import { createRoleSchema, deleteRoleSchema } from './schema/role.schema';
-import { createRoleHandler, deleteRoleHandler, getRoleHandler, getRolesHandler } from './controller/role.controller';
+import { createRoleHandler, deleteRoleHandler, getRoleHandler, getRolesHandler, updateRoleHandler } from './controller/role.controller';
 import { getWalletBalanceHandler, getWalletHandler, getWalletTransactionsHandler, getWalletsHandler } from './controller/naira-wallet.controller';
 import { getWalletDetailsSchema } from './schema/naira-wallet.schema';
 import requiresAffiliateOrAdmin from './middleware/requiresAffiliateOrAdmin';
@@ -85,6 +85,11 @@ import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './s
 import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGeneralDealBookingsHandler } from './controller/general-deal-booking.controller';
 import { createEmailSettingHandler, getEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
 import { resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
+import { getTiqwaWalletBalanceHandler } from './controller/wallet-balance.controller';
+import { createPageSchema, deletePageSchema, getPageSchema, updatePageSchema } from './schema/page.schema';
+import { createPageHandler, deletePageHandler, getPageHandler, getPagesHandler, updatePageHandler } from './controller/page.controller';
+import { createBannerSchema, deleteBannerSchema, getBannerSchema, updateBannerSchema } from './schema/banner.schema';
+import { createBannerHandler, deleteBannerHandler, getBannerHandler, getBannersHandler, updateBannerHandler } from './controller/banner.controller';
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
@@ -789,11 +794,18 @@ export default function(app: Express) {
         getRolesHandler
     )
         
-    app.get("/settings/roles/:roleId", 
+    app.get("/settings/roles/update/:roleId", 
         requiresUser,
         requiresAdministrator,
         validateRequest(deleteRoleSchema),
-        getRoleHandler
+        updateRoleHandler
+    )
+
+    app.delete("/settings/roles/:roleId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deleteRoleSchema),
+        deleteRoleHandler
     )
 
     app.delete("/settings/roles/:roleId", 
@@ -867,15 +879,79 @@ export default function(app: Express) {
     )
 
     /**
-     * BLOG ENDPOINTS
+     * BANNER ENDPOINTS
+     */
+
+    app.post("/banners", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createBannerSchema),
+        createBannerHandler
+    )
+
+    app.get("/banners", 
+        getBannersHandler
+    )
+
+    app.get("/banners/:bannerId", 
+        validateRequest(getBannerSchema),
+        getBannerHandler
+    )
+
+    app.put("/banners/update/:bannerId", 
+        validateRequest(updateBannerSchema),
+        updateBannerHandler
+    )
+
+    app.delete("/banners/delete/:bannerId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deleteBannerSchema),
+        deleteBannerHandler
+    )
+
+    /**
+     * PAGE ENDPOINTS
+     */
+
+    app.post("/pages", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(createPageSchema),
+        createPageHandler
+    )
+
+    app.get("/pages", 
+        getPagesHandler
+    )
+
+    app.get("/pages/:pageId", 
+        validateRequest(getPageSchema),
+        getPageHandler
+    )
+
+    app.put("/pages/update/:pageId", 
+        validateRequest(updatePageSchema),
+        updatePageHandler
+    )
+
+    app.delete("/pages/delete/:pageId", 
+        requiresUser,
+        requiresAdministrator,
+        validateRequest(deletePageSchema),
+        deletePageHandler
+    )
+
+    /**
+     * PAGE ENDPOINTS
      */
 
     app.post("/blog/posts", 
-        requiresUser,
-        requiresAdministrator,
-        validateRequest(createPostSchema),
-        createPostHandler
-    )
+    requiresUser,
+    requiresAdministrator,
+    validateRequest(createPostSchema),
+    createPostHandler
+)
 
     app.get("/blog/posts", 
         getPostsHandler
@@ -960,6 +1036,12 @@ export default function(app: Express) {
         requiresUser,
         requiresAdministrator,
         updateGeneralDealPricingStructureHandler
+    )
+
+    app.get('/wallet-balance',
+        requiresUser,
+        requiresAdministrator,
+        getTiqwaWalletBalanceHandler
     )
 
     // UPLOAD FILE

@@ -188,3 +188,24 @@ export const cancelBooking = async (reference: string) => {
         } 
     }
 }
+
+export const getWalletBalance = async () => {
+    try {
+        const response = await axios.get(`${tiqwaConfig.baseUrl}/wallet`, { headers })
+
+        console.log(response.data)
+        
+        return {
+            error: false,
+            data: snakeToCamel(response.data.data),
+            errorType: '',
+        }
+    } catch (error: any) {
+        console.error('---> ERROR BLOCK --->', error)  
+        return {
+            error: true,
+            errorType: 'error',
+            data: error.response.data
+        } 
+    }
+}

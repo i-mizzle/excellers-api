@@ -9,7 +9,7 @@ const requestResetPayload = {
 const resetPasswordPayload = {
     body: object({
         resetCode: string().required('resetCode is required'),
-        email: string().required('email is required'),
+        password: string().required('password is required'),
     })
 }
 

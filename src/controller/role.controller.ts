@@ -58,6 +58,18 @@ export async function getRoleHandler (req: Request, res: Response) {
     return response.ok(res, role)
 }
 
+export async function updateRoleHandler (req: Request, res: Response) {
+    const roleId = get(req, 'params.roleId');
+    const updateQuery = req.body
+    const role = await findRole({ _id: roleId }, '');
+    if (!role) {
+        return response.notFound(res, { message: `role not found` })
+    }
+
+    const updated = await findAndUpdateRole({ _id: roleId }, updateQuery, {new: true});
+    return response.ok(res, {message: 'role updated successfully', role: updated});
+}
+
 export async function deleteRoleHandler (req: Request, res: Response) {
     const roleId = get(req, 'params.roleId');
 
