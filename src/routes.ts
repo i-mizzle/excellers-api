@@ -794,7 +794,7 @@ export default function(app: Express) {
         getRolesHandler
     )
         
-    app.get("/settings/roles/update/:roleId", 
+    app.put("/settings/roles/update/:roleId", 
         requiresUser,
         requiresAdministrator,
         validateRequest(deleteRoleSchema),
