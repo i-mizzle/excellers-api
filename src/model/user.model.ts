@@ -4,6 +4,7 @@ import config from 'config';
 import { ConfirmationCodeDocument } from './confirmation-code.model';
 import { AffiliateMarkupDocument } from './affiliate-markup.model';
 import { NairaWalletDocument } from './naira-wallet.model';
+import { RoleDocument } from './role.model';
 
 export interface UserDocument extends mongoose.Document {
     email: string;
@@ -13,11 +14,12 @@ export interface UserDocument extends mongoose.Document {
     phone: string;
     userCode?:string,
     emailConfirmed: Boolean;
+    role: RoleDocument["_id"]
     confirmationCode: ConfirmationCodeDocument["_id"]
     password: string;
     userType: string;
     bvnValidationReference?: string;
-    accountPermissions?: [];
+    // accountPermissions?: [];
     avatar?: string
     approvedAsAffiliate?: Boolean
     // bvnValidated?: Boolean,

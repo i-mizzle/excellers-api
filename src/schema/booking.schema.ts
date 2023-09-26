@@ -18,7 +18,7 @@ const payload = {
 
 const params = {
     params: object({
-        bookingCode: string().required('id is required')
+        bookingCode: string().required('bookingCode is required as a path param')
     })
 }
 

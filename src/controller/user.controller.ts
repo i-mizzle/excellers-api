@@ -9,6 +9,7 @@ import { createConfirmationCode, findAndUpdateConfirmation, findConfirmationCode
 import config from 'config';
 import { nanoid } from "nanoid";
 import { sendEmailConfirmation } from "../service/mailer.service";
+import { findRole } from "../service/role.service";
 // import { sendToKafka } from "../kafka/kafka";
 const tokenTtl = config.get('resetTokenTtl') as number
 
@@ -216,9 +217,17 @@ export async function getUserProfileHandler (req: Request, res: Response) {
             expand = expand.split(',')
         }
 
-        let user = await findUser({_id: userId}, expand)
+        let user = await findUser({_id: userId})
 
-        return response.ok(res, omit(user, ['_id', 'password', 'confirmationToken']))
+        if(!user) {
+            return response.notFound(res, {message: 'User not found'})
+        }
+
+        const role = await findRole({_id: user.role}, 'permissions')
+
+        const userDetails = omit(user, ['_id', 'password', 'confirmationToken'])
+
+        return response.ok(res, {...userDetails, ...{role: role}})
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
