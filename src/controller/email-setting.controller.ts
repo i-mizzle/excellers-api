@@ -21,7 +21,7 @@ export const getEmailSettingsHandler = async (req: Request, res: Response) => {
         const emailSettings = await findEmailSettings({deleted:false})
         const responseObject = {
             total: emailSettings.total,
-            enquiries: emailSettings.emailSettings
+            emailSettings: emailSettings.emailSettings
         }
 
         return response.ok(res, responseObject)        

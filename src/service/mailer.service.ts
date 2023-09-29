@@ -118,7 +118,7 @@ export async function sendInvitation (mailParams: InvitationMailParams) {
         const template = AdminInvitationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: emailSettings.mailSubject || `You've been invited to GeoTravels Admin`,
             // template: 'admin_invitation',
@@ -157,7 +157,7 @@ export async function sendPasswordResetEmail (mailParams: PasswordResetMailParam
         const template = PasswordResetEmailTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: emailSettings.mailSubject || `Reset your Geotravels password`,
             text: `Follow this link to reset your password - ${emailSettings.emailAction.buttonUrl + mailParams?.resetCode}`,
@@ -190,7 +190,7 @@ export async function sendAffiliateApprovalConfirmation (mailParams: AffiliateAp
         const template = AffiliateApprovalConfirmationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: emailSettings.mailSubject || 'Your Affiliate account has been approved',
             text: `Your account has been approved`,
@@ -218,7 +218,7 @@ export async function sendWalletCreationNotification (mailParams: WalletCreation
         const template = AffiliateWalletNotificationTemplate(mailParams);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: 'Your Geotravel Affiliate Wallet has been created',
             // template: 'password_reset',
@@ -256,7 +256,7 @@ export async function sendFlightBookingConfirmation (mailParams: FlightBookingNo
         const template = FlightBookingNotificationTemplate(mailParams, emailSettings);
         const html = await inlineCSS(template, { url: 'fake' });
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             // subject: 'Your flight booking has been created',
             subject: emailSettings.mailSubject || 'Your flight booking has been created',
@@ -283,7 +283,7 @@ export async function sendFlightBookingConfirmation (mailParams: FlightBookingNo
 export async function sendSubscriptionConfirmation (mailParams: SubscriptionConfirmationMailParams) {
     try {
         const data = {
-            from: 'GeoTravels <no-reply@geotravels.com>',
+            from: 'GeoTravels <no-reply@bcf.ng>',
             to: mailParams.mailTo,
             subject: 'Your Affiliate account has been approved',
             template: 'password_reset',
