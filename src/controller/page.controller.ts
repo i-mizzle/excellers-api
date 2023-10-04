@@ -131,6 +131,21 @@ export async function getPageHandler (req: Request, res: Response) {
     return response.ok(res, page)
 }
 
+export async function getPageByTypeHandler (req: Request, res: Response) {
+    const user: any = get(req, 'user')
+    const pageId = get(req, 'params.type');
+
+    const pagesQuery = {type: pageId, deleted: false}
+
+    console.log(pagesQuery)
+
+    const page = await findPage(pagesQuery);
+    if(!page) {
+        return response.notFound(res, { message: `page not found` })
+    } 
+    return response.ok(res, page)
+}
+
 export async function deletePageHandler (req: Request, res: Response) {
     const pageId = get(req, 'params.pageId');
     const userId = get(req, 'user._id');

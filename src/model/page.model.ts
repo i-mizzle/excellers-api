@@ -29,6 +29,11 @@ const PageSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    type: {
+      type: String,
+      enum: ['ABOUT', 'CONTACT', 'FAQ', 'TERMS-CONDITIONS', 'PRIVACY-POLICY'],
+      required: true
+    },
     // excerpt: {
     //   type: String, 
     //   required: true 

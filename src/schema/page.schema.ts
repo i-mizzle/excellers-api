@@ -3,6 +3,7 @@ import { object, string, ref, array } from "yup";
 const payload = {
     body: object({
         title: string().required('title is required'),
+        type: string().required("type is required as one of ABOUT, CONTACT, FAQ, TERMS-CONDITIONS, PRIVACY-POLICY"),
         media: array(object({
             type: string().required('media.type is required as enum [eg: VIDEO, IMAGE, DOCUMENT]'),
             url: string().matches(
@@ -22,6 +23,12 @@ const params = {
     })
 }
 
+const pageByTypeParams = {
+    params: object({
+        type: string().required('post id is required')
+    })
+}
+
 export const createPageSchema = object({
    ...payload
 });
@@ -33,6 +40,11 @@ export const updatePageSchema = object({
 
 export const getPageSchema = object({
     ...params,
+    // ...payload
+})
+
+export const getPageByTypeSchema = object({
+    ...pageByTypeParams,
     // ...payload
 })
     

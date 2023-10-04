@@ -86,8 +86,8 @@ import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGener
 import { createEmailSettingHandler, getEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
 import { resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
 import { getTiqwaWalletBalanceHandler } from './controller/wallet-balance.controller';
-import { createPageSchema, deletePageSchema, getPageSchema, updatePageSchema } from './schema/page.schema';
-import { createPageHandler, deletePageHandler, getPageHandler, getPagesHandler, updatePageHandler } from './controller/page.controller';
+import { createPageSchema, deletePageSchema, getPageByTypeSchema, getPageSchema, updatePageSchema } from './schema/page.schema';
+import { createPageHandler, deletePageHandler, getPageByTypeHandler, getPageHandler, getPagesHandler, updatePageHandler } from './controller/page.controller';
 import { createBannerSchema, deleteBannerSchema, getBannerSchema, updateBannerSchema } from './schema/banner.schema';
 import { createBannerHandler, deleteBannerHandler, getBannerHandler, getBannersHandler, updateBannerHandler } from './controller/banner.controller';
 
@@ -928,6 +928,11 @@ export default function(app: Express) {
     app.get("/pages/:pageId", 
         validateRequest(getPageSchema),
         getPageHandler
+    )
+
+    app.get("/pages/type/:type", 
+        validateRequest(getPageByTypeSchema),
+        getPageByTypeHandler
     )
 
     app.put("/pages/update/:pageId", 
