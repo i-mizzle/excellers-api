@@ -44,7 +44,7 @@ import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler, getEnquiryHandler, updateEnquiriesWithInvoiceStatuses, updateEnquiryHandler } from './controller/enquiry.controller';
 import { createPackageBookingSchema, getPackageBookingSchema } from './schema/package-booking.schema';
 import { createPackageBookingHandler, getPackageBookingHandler, getPackageBookingsHandler, updatePackageBookingsWithInvoiceStatuses } from './controller/package-booking.controller';
-import { getInvoiceHandler, getInvoicesHandler } from './controller/invoice.controller';
+import { getInvoiceHandler, getInvoicesHandler, updateInvoiceHandler } from './controller/invoice.controller';
 import { initializePaymentSchema, verifyPaymentSchema } from './schema/payment.schema';
 import { flutterwaveWebhookHandler, initializePaymentHandler, verifyTransactionHandler } from './controller/payments.controller';
 import { getAllTransactionsHandler, getTransactionHandler } from './controller/transaction.controller';
@@ -384,6 +384,12 @@ export default function(app: Express) {
     app.get('/invoices/:invoiceId',
         // requiresUser,
         getInvoiceHandler
+    )
+
+    app.put('/invoices/update/:invoiceId',
+        requiresUser,
+        requiresAdministrator,
+        updateInvoiceHandler
     )
 
     /**

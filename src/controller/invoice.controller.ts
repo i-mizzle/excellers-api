@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { createInvoice, findInvoice, findInvoices } from "../service/invoice.service";
+import { createInvoice, findAndUpdateInvoice, findInvoice, findInvoices } from "../service/invoice.service";
 import * as response from '../responses'
 import { get } from "lodash";
 import { findPrice } from "../service/price.service";
 import { generateCode } from "../utils/utils";
 import { getJsDate } from "../utils/utils";
+import { findAndUpdateBooking } from "../service/booking.service";
+import { findAndUpdatePackageBooking } from "../service/package-booking.service";
+import { findAndUpdateEnquiry } from "../service/enquiry.service";
 
 const parseInvoiceFilters = (query: any) => {
     const { status, invoiceFor, invoiceItem, minExpiry, maxExpiry, minDate, maxDate } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
@@ -138,6 +141,55 @@ export const getInvoiceHandler = async (req: Request, res: Response) => {
         }
 
         return response.ok(res, invoice)
+        
+    } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+export const updateInvoiceHandler = async (req: Request, res: Response) => {
+    try {
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const invoiceId = get(req, 'params.invoiceId');
+
+        const ObjectId = require('mongoose').Types.ObjectId;
+
+        let invoice = null
+        if(ObjectId.isValid(invoiceId)) {
+            invoice = await findInvoice({_id: invoiceId}, expand)
+        } else {
+            invoice = await findInvoice({invoiceCode: invoiceId}, expand)
+        }
+
+        if(!invoice) {
+            return response.notFound(res, {message: 'invoice not found'})
+        }
+
+        const invoiceUpdate = {
+            status: req.body.status
+        }
+
+        const updatedInvoice = await findAndUpdateInvoice({_id: invoice._id}, invoiceUpdate, {new: true})
+
+        if (invoice.invoiceFor === 'FLIGHT') {
+            await findAndUpdateBooking({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+        }
+
+        if (invoice.invoiceFor === 'PACKAGE') {
+            await findAndUpdatePackageBooking({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+        }
+
+        if (invoice.invoiceFor === 'ENQUIRY') {
+            await findAndUpdateEnquiry({_id: invoice.invoiceItem}, {paymentStatus: invoiceUpdate.status}, {new: true})
+        }
+
+        return response.ok(res, {message: 'invoice status updated.', updatedInvoice})
         
     } catch (error:any) {
         return response.error(res, error)

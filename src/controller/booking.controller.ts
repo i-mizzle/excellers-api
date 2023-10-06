@@ -289,7 +289,16 @@ export const getBookingHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const booking = await findBooking({bookingCode}, {lean: true}, expand)
+        const ObjectId = require('mongoose').Types.ObjectId;
+
+        let booking = null
+        if(ObjectId.isValid(bookingCode)) {
+            booking = await findBooking({_id: bookingCode}, expand)
+        } else {
+            booking = await findBooking({bookingCode}, expand)
+        }
+
+        // const booking = await findBooking({bookingCode}, {lean: true}, expand)
         // return res.send(post)
 
         if(!booking) {
