@@ -52,6 +52,9 @@ export interface BookingDocument extends mongoose.Document {
     margin: MarginDocument['_id']
     addons: Array<AddonDocument['_id']>
     deal?: FlightDealDocument['_id']
+    twBookingId: string,
+    pnr: string,
+    provider: string,
     addonsTotal: number,
     ticketed: Boolean
     cancelled: Boolean
@@ -87,6 +90,9 @@ const BookingSchema = new mongoose.Schema(
       immutable: true
     },
     flightId: {type: String},
+    provider: {type: String},
+    twBookingId: {type: String},
+    pnr: {type: String},
     invoice: { 
       type:  mongoose.Schema.Types.ObjectId, 
       ref: 'Invoice'

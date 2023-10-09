@@ -13,6 +13,7 @@ export const createBooking = async (
     ) => {
     try {
         const booking = await bookFlight(input, flightId)
+        const bookingProvider = flightId?.split('_')[0] === 'amaaqc' ? 'AQC' : 'TIQWA'
         const bookingCode = generateCode(16, false).toUpperCase()
 
         if(booking.error) {
@@ -23,7 +24,9 @@ export const createBooking = async (
             ...input, 
             ...{
                 bookingCode: bookingCode,
-                flightId: flightId
+                flightId: flightId,
+                provider: bookingProvider,
+                twBookingId: booking.data.id
             }, 
             ...{documentRequired: documentRequirement},
             ...booking.data
