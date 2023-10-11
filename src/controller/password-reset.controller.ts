@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import config from 'config';
 import { get, omit } from "lodash";
 import { createConfirmationCode, findAndUpdateConfirmation, findConfirmationCode } from "../service/confirmation-code.service";
-import { changePassword, findUser } from "../service/user.service";
+import { changePassword, findUser, validatePassword } from "../service/user.service";
 import * as response from "../responses/index";
 import { sendPasswordResetEmail } from "../service/mailer.service";
 import log from "../logger";
@@ -11,6 +11,7 @@ import { addMinutesToDate } from "../utils/utils";
 import { nanoid } from "nanoid";
 import { createResetRequest, findResetRequest } from "../service/password-reset.service";
 // import { sendToKafka } from "../kafka/kafka";
+import mongoose from "mongoose";
 
 const tokenTtl = config.get('resetTokenTtl') as number
 
@@ -110,6 +111,32 @@ export async function resetPasswordHandler(req: Request, res: Response) {
         await changePassword(resetRequest!.user, newPassword)
         await findAndUpdateConfirmation({ _id: code._id }, { valid: false }, { new: true })
         return response.ok(res, 'password updated successfully')
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
+export async function changePasswordHandler(req: Request, res: Response) {
+    try {
+        const password= req.body.password
+        const newPassword = req.body.newPassword
+        const userId = get(req, 'user._id');
+
+        const user = await findUser({_id: userId}) 
+
+        if(!user) {
+            return response.notFound(res, 'user not found')
+        }
+        // const user = await findUser({_id: userId})
+        
+        const validated = await validatePassword({email: user.email, password});
+        if (!validated) {
+            return response.unAuthorized(res, { message: "invalid username or password" })
+        }
+
+        await changePassword(mongoose.Types.ObjectId((user._id)), newPassword)
+        return response.ok(res, {message: 'Password updated successfully'})
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)

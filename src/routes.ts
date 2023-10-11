@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { checkExistingUserHandler, confirmEmailHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
+import { adminUpdateUserHandler, checkExistingUserHandler, confirmEmailHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
 import { 
     createUserSessionHandler,
     invalidateUserSessionHandler,
@@ -27,7 +27,7 @@ import requiresAdministrator from './middleware/requiresAdministrator';
 import { createInvitationSchema, getInvitationSchema } from './schema/invitation.schema';
 // import { getInvitationHandler, InviteUserHandler } from './controller/invitation.controller';
 import { confirmationSchema } from './schema/confirmation-code.schema';
-import { requestPasswordResetHandler, resetPasswordHandler } from './controller/password-reset.controller';
+import { changePasswordHandler, requestPasswordResetHandler, resetPasswordHandler } from './controller/password-reset.controller';
 import { acceptInvitationHandler, getAllInvitationsHandler, getInvitationByInviteeHandler, inviteUserHandler } from './controller/invitation.controller';
 import { confirmFlightPriceHandler, flightSearchHandler } from './controller/flight.controller';
 import { priceConfirmationSchema, searchFlightSchema } from './schema/flight.schema';
@@ -84,7 +84,7 @@ import { readLogFile } from './controller/log.controller';
 import { createGeneralDealBookingSchema, getGeneralDealBookingSchema } from './schema/general-deal-booking.schema';
 import { createGeneralDealBookingHandler, getGeneralDealBookingHandler, getGeneralDealBookingsHandler } from './controller/general-deal-booking.controller';
 import { createEmailSettingHandler, getEmailSettingHandler, getEmailSettingsHandler, testEmailSettingHandler, updateEmailSettingHandler } from './controller/email-setting.controller';
-import { resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
+import { changePasswordSchema, resetPasswordSchema, resetRequestSchema } from './schema/password-reset.schema';
 import { getTiqwaWalletBalanceHandler } from './controller/wallet-balance.controller';
 import { createPageSchema, deletePageSchema, getPageByTypeSchema, getPageSchema, updatePageSchema } from './schema/page.schema';
 import { createPageHandler, deletePageHandler, getPageByTypeHandler, getPageHandler, getPagesHandler, updatePageHandler } from './controller/page.controller';
@@ -180,7 +180,7 @@ export default function(app: Express) {
         requiresUser, 
         requiresAdministrator, 
         validateRequest(getUserDetailsSchema),
-        updateUserHandler
+        adminUpdateUserHandler
     )
 
     // Get all users 
@@ -213,6 +213,12 @@ export default function(app: Express) {
     app.post('/auth/password-reset', 
         validateRequest(resetPasswordSchema),
         resetPasswordHandler
+    )
+
+    app.post('/auth/change-password', 
+        requiresUser,
+        validateRequest(changePasswordSchema),
+        changePasswordHandler
     )
 
     // FLIGHTS

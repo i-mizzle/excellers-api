@@ -360,41 +360,41 @@ export async function deleteUserHandler (req: Request, res: Response) {
 //     }
 // }
 
-// const checkUpdateObject = (update: any, currentUser: any) : { error: Boolean, message: string } => {
-//     if(update.userType && update.userType !== '' && currentUser.userType !== 'SUPER_ADMINISTRATOR') {
-//         return {error: true, message: "You are not allowed to update account type"}
-//     }else if(update.userCode && update.userCode !== '') {
-//         return {error: true, message: "You are not allowed to update user code"}
-//     }else if(update.emailConfirmed && currentUser.accountType !== 'SUPER_ADMINISTRATOR' ) {
-//         return {error: true, message: "You are not allowed to update confirmation status"}
-//     }else if(update.deactivated && currentUser.accountType !== 'SUPER_ADMINISTRATOR') {
-//         return {error: true, message: "You are not allowed to update active status"}
-//     }else if(update.devices) {
-//         return {error: true, message: "You are not allowed to update devices"}
-//     }else if(update.bvnValidationData) {
-//         return {error: true, message: "You are not allowed to update bvn data"}
-//     }else if(update.bvnValidated) {
-//         return {error: true, message: "You are not allowed to update bvn validation status"}
-//     } else {
-//         return {error: false, message: ''}
-//     }
-// }
+const checkUpdateObject = (update: any, currentUser: any) : { error: Boolean, message: string } => {
+    if(update.userType && update.userType !== '' && currentUser.userType !== 'SUPER_ADMINISTRATOR') {
+        return {error: true, message: "You are not allowed to update account type"}
+    }else if(update.userCode && update.userCode !== '') {
+        return {error: true, message: "You are not allowed to update user code"}
+    }else if(update.emailConfirmed && currentUser.accountType !== 'SUPER_ADMINISTRATOR' ) {
+        return {error: true, message: "You are not allowed to update confirmation status"}
+    }else if(update.deactivated && currentUser.accountType !== 'SUPER_ADMINISTRATOR') {
+        return {error: true, message: "You are not allowed to update active status"}
+    }else if(update.devices) {
+        return {error: true, message: "You are not allowed to update devices"}
+    }else if(update.bvnValidationData) {
+        return {error: true, message: "You are not allowed to update bvn data"}
+    }else if(update.bvnValidated) {
+        return {error: true, message: "You are not allowed to update bvn validation status"}
+    } else {
+        return {error: false, message: ''}
+    }
+}
 
 
 
 export async function adminUpdateUserHandler (req: Request, res: Response) {
     try {
         const currentUser = get(req, 'user')
-        const user = await findUser({userCode: req.params.userCode})
+        const user = await findUser({_id: req.params.userId})
         const update = req.body;
 
         if(!user) {
             return response.notFound(res, {message: "User not found"})
         }
-        // const updateObjectCheck = checkUpdateObject(update, currentUser)
-        // if(updateObjectCheck.error) {
-        //     return response.badRequest(res, {message: updateObjectCheck.message})
-        // }
+        const updateObjectCheck = checkUpdateObject(update, currentUser)
+        if(updateObjectCheck.error) {
+            return response.badRequest(res, {message: updateObjectCheck.message})
+        }
     
         const updatedUser = await findAndUpdateUser({ _id: user._id }, {role: update.role}, { new: true })
         return response.ok(res, updatedUser)
