@@ -241,8 +241,14 @@ export const bookFlightHandler = async (req: Request, res: Response) => {
             bookingCode: flightBooking.data.bookingCode,
             origin: flightPriceConfirmation!.data.outbound[0].airportFrom,
             destination: flightPriceConfirmation!.data.outbound[0].airportTo,
-            date: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0],
-            time: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[1]
+            outboundDepartureDate: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[0],
+            outboundDepartureTime: flightPriceConfirmation!.data.outbound[0].departureTime.toString().split('T')[1],
+            outboundArrivalDate: flightPriceConfirmation!.data.outbound[flightPriceConfirmation!.data.outbound.length - 1].arrivalTime.toString().split('T')[0],
+            outboundArrivalTime: flightPriceConfirmation!.data.outbound[flightPriceConfirmation!.data.outbound.length - 1].arrivalTime.toString().split('T')[1],
+            inboundDepartureDate: flightPriceConfirmation!.data.inbound[0].departureTime.toString().split('T')[0],
+            inboundDepartureTime: flightPriceConfirmation!.data.inbound[0].departureTime.toString().split('T')[1],
+            inboundArrivalDate: flightPriceConfirmation!.data.inbound[flightPriceConfirmation!.data.inbound.length - 1].arrivalTime.toString().split('T')[0],
+            inboundArrivalTime: flightPriceConfirmation!.data.inbound[flightPriceConfirmation!.data.inbound.length - 1].arrivalTime.toString().split('T')[1]
         })
 
         return response.created(res, bookingWithInvoice)

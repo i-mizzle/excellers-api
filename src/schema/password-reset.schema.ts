@@ -15,8 +15,8 @@ const resetPasswordPayload = {
 
 const changePasswordPayload = {
     body: object({
-        resetCode: string().required('resetCode is required'),
         password: string().required('password is required'),
+        newPassword: string().required('newPassword is required'),
     })
 }
 

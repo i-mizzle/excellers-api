@@ -1,9 +1,8 @@
-import { EmailSettingDocument } from "../../model/email-setting.model"
-import { FlightBookingNotificationMailParams } from "../../service/mailer.service"
-import { replaceEmailVariables } from "../../utils/utils"
+import { EmailSettingDocument } from "../../model/email-setting.model";
+import { EnquiryConfirmationMailParams } from "../../service/mailer.service";
+import { replaceEmailVariables } from "../../utils/utils";
 
-
-export const FlightBookingNotificationTemplate = (input: FlightBookingNotificationMailParams, settings: EmailSettingDocument) => {
+export const EnquiryConfirmationEmailTemplate = (input: EnquiryConfirmationMailParams, settings: EmailSettingDocument) => {
     // return `
     //     <div>
     //         <style>
@@ -18,19 +17,9 @@ export const FlightBookingNotificationTemplate = (input: FlightBookingNotificati
 
     //         <h1>Hello, ${input.firstName}</h1>
 
-    //         <p>Your flight booking on Geotravel has been created successfully with the following details.</p>
+    //         <p>Reset your password by clicking the button below</p>
 
-    //         <p>Booking code: <strong>${input.bookingCode}</strong></p>
-    //         <p>Origin: <strong>${input.origin}</strong></p>
-    //         <p>Destination: <strong>${input.destination}</strong></p>
-    //         <p>Date: <strong>${input.date}</strong></p>
-    //         <p>Time: <strong>${input.time}</strong></p>
-    //         <br>
-    //         <p>Invoice code: <strong>${input.invoiceCode}</strong></p>
-
-
-
-    //         <button href="${input.invoiceUrl}">Click here to pay for your invoice </button>
+    //         <button href="${input.resetUrl}">Confirm account</button>
     //     </div>
     // `
 
@@ -98,12 +87,11 @@ export const FlightBookingNotificationTemplate = (input: FlightBookingNotificati
     <table class="body-wrap" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;" bgcolor="#f6f6f6"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
         <td class="container" width="600" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; margin: 0 auto;" valign="top">
           <div class="content" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0 auto; padding: 20px;">`
-
-        if(settings.logoUrl && settings.logoUrl !== ''){
-            emailTemplate += `<a href="https://www.gowithgeo.com/">
-            <img src="${settings.logoUrl}" alt="" style="width:150px">
-        </a>`
-        }
+if(settings.logoUrl && settings.logoUrl !== ''){
+    emailTemplate += `<a href="https://www.gowithgeo.com/">
+      <img src="${settings.logoUrl}" alt="" style="width:150px">
+  </a>`
+}
 
 emailTemplate += `
       <table class="main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; border: 1px solid #e9e9e9;" bgcolor="#fff">
@@ -115,10 +103,10 @@ emailTemplate += `
                 <meta itemprop="name" content="Confirm Email" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;" /><table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">`
 
                 if(settings.topBannerUrl && settings.topBannerUrl !== ''){
-                    emailTemplate += `<tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                    <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                    <img src="${settings.topBannerUrl}" alt="">
-                    </td>
+                  emailTemplate += `<tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                  <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                  <img src="${settings.topBannerUrl}" alt="">
+                  </td>
                 </tr>`
                 }
 
@@ -126,54 +114,25 @@ emailTemplate += `
 
                   if(settings.mailBody && settings.mailBody !== ''){
                     emailTemplate += replaceEmailVariables(settings.mailBody, {
-                        firstName: input.firstName,
-                        airline: input.airline,
-                        invoiceCode: input.invoiceCode,
-                        bookingCode: input.bookingCode,
-                        origin: input.origin,
-                        destination: input.destination,
-                        outboundDepartureDate: input.outboundDepartureDate,
-                        outboundDepartureTime: input.outboundDepartureTime,
-                        outboundArrivalDate: input.outboundArrivalDate,
-                        outboundArrivalTime: input.outboundArrivalTime,
-                        inboundDepartureDate: input.inboundDepartureDate || '',
-                        inboundDepartureTime: input.inboundDepartureTime || '',
-                        inboundArrivalDate: input.inboundArrivalDate || '',
-                        inboundArrivalTime: input.inboundArrivalTime || ''
+                      firstName: input.firstName
                     })
-                    
                   } else {
-                    emailTemplate += `Hello ${input.firstName},
-
-                    <p>Your flight booking on Geotravel has been created successfully with the following details.</p>
-        
-                    <p>Booking code: <strong>${input.bookingCode}</strong></p>
-                    <p>Origin: <strong>${input.origin}</strong></p>
-                    <p>Destination: <strong>${input.destination}</strong></p>
-                    <p>Date: <strong>${input.outboundDepartureDate}</strong></p>
-                    <p>Time: <strong>${input.inboundDepartureTime}</strong></p>
-                    <br>
-                    <p>Invoice code: <strong>${input.invoiceCode}</strong></p>
-                    `
+                    emailTemplate += `Hello ${input.firstName}, Your enquiry was received.`
                   }
                   emailTemplate += `</td>
                 </tr>
                 `
                 if(settings.emailAction.showActionButton === true){
                 emailTemplate += `<tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                    <a href="${settings.emailAction.buttonUrl + input?.invoiceCode}" class="btn-primary" itemprop="url" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">${settings.emailAction.buttonLabel}</a>
-                    </td>
-                </tr>
-                `}
-              emailTemplate += `<tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-              &mdash; The GeoTravel Team
-            </td>
-          </tr></table></td>
-    </tr>
-    </table>
-    
-    <div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">`
-
+                        <a href="${settings.emailAction.buttonUrl}" class="btn-primary" itemprop="url" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: #348eda; margin: 0; border-color: #348eda; border-style: solid; border-width: 10px 20px;">${settings.emailAction.buttonLabel}</a>
+                      </td>
+                    </tr>
+                    <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        &mdash; The GeoTravel Team
+                      </td>
+                    </tr></table></td>
+              </tr>`}
+              emailTemplate += `</table><div class="footer" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">`
             if(settings.socialMedia.showSocialLinks === true){
               emailTemplate += `<table width="100%" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                   <td class="aligncenter content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">`

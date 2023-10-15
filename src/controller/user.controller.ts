@@ -396,7 +396,7 @@ export async function adminUpdateUserHandler (req: Request, res: Response) {
             return response.badRequest(res, {message: updateObjectCheck.message})
         }
     
-        const updatedUser = await findAndUpdateUser({ _id: user._id }, {role: update.role}, { new: true })
+        const updatedUser = await findAndUpdateUser({ _id: user._id }, update, { new: true })
         return response.ok(res, updatedUser)
     } catch (error: any) {
         log.error(error)

@@ -11,6 +11,7 @@ import { AffiliateWalletNotificationTemplate } from '../static/email-templates/a
 import { AdminInvitationTemplate } from '../static/email-templates/admin-invitation-template';
 import { FlightBookingNotificationTemplate } from '../static/email-templates/flight-booking-notification-template';
 import { findEmailSetting } from './email-setting.service';
+import { EnquiryConfirmationEmailTemplate } from '../static/email-templates/enquiry-confirmation-template';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -25,6 +26,10 @@ interface MailParams {
 }
 
 export interface SubscriptionConfirmationMailParams extends MailParams {
+    firstName: string
+}
+
+export interface EnquiryConfirmationMailParams extends MailParams {
     firstName: string
 }
 
@@ -63,8 +68,14 @@ export interface FlightBookingNotificationMailParams extends MailParams {
     bookingCode: string
     origin: string
     destination: string
-    date: string
-    time: string
+    outboundDepartureDate: string
+    outboundDepartureTime: string
+    outboundArrivalDate: string
+    outboundArrivalTime: string
+    inboundDepartureDate?: string
+    inboundDepartureTime?: string
+    inboundArrivalDate?: string
+    inboundArrivalTime?: string
 }
 
 export async function sendEmailConfirmation (mailParams: ConfirmationMailParams) {
@@ -161,6 +172,40 @@ export async function sendPasswordResetEmail (mailParams: PasswordResetMailParam
             to: mailParams.mailTo,
             subject: emailSettings.mailSubject || `Reset your Geotravels password`,
             text: `Follow this link to reset your password - ${emailSettings.emailAction.buttonUrl + mailParams?.resetCode}`,
+            html: html,
+        };
+        await mg.messages().send(data);
+        console.log('Sent!');
+        return {
+            error: false,
+            errorType: '',
+            data: {message: `mail sent to ${mailParams.mailTo}`}
+        }
+    } catch (error) {
+        console.log('error in mailer function ', error)
+        return {
+            error: true,
+            errorType: 'error',
+            data: error
+        }
+    }
+}
+
+export async function sendEnquiryConfirmation (mailParams: EnquiryConfirmationMailParams) {
+    try {
+        const emailSettings = await findEmailSetting({slug: 'enquiry-confirmation'})
+        
+        if(!emailSettings) {
+            return
+        }
+
+        const template = EnquiryConfirmationEmailTemplate(mailParams, emailSettings);
+        const html = await inlineCSS(template, { url: 'fake' });
+        const data = {
+            from: 'GeoTravels <no-reply@bcf.ng>',
+            to: mailParams.mailTo,
+            subject: emailSettings.mailSubject || `Enquiry received`,
+            text: `Your enquiry has been received`,
             html: html,
         };
         await mg.messages().send(data);

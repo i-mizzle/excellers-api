@@ -3,7 +3,7 @@ import { createEmailSetting, findAndUpdateEmailSetting, findEmailSetting, findEm
 import * as response from '../responses'
 import { get } from "lodash"
 import { slugify } from "../utils/utils"
-import { sendAffiliateApprovalConfirmation, sendEmailConfirmation, sendFlightBookingConfirmation, sendInvitation, sendPasswordResetEmail } from "../service/mailer.service"
+import { sendAffiliateApprovalConfirmation, sendEmailConfirmation, sendEnquiryConfirmation, sendFlightBookingConfirmation, sendInvitation, sendPasswordResetEmail } from "../service/mailer.service"
 
 export const createEmailSettingHandler = async (req: Request, res: Response) => {
     try {
@@ -58,9 +58,9 @@ export const getEmailSettingHandler = async (req: Request, res: Response) => {
 export const updateEmailSettingHandler = async (req: Request, res: Response) => {
     try {
         const updateObject = req.body
-        if(updateObject.allowedVariables){
-            return response.badRequest(res, {message: 'Sorry, you cannot update allowedVariables field.'})
-        }
+        // if(updateObject.allowedVariables){
+        //     return response.badRequest(res, {message: 'Sorry, you cannot update allowedVariables field.'})
+        // }
 
         const settingId = get(req, 'params.settingId');
 
@@ -137,6 +137,14 @@ export const testEmailSettingHandler = async (req: Request, res: Response) => {
             })
         }
 
+        if(setting.slug === 'enquiry-confirmation') {
+            await sendEnquiryConfirmation({
+                mailTo: body.recipientEmail,
+                firstName: body.variables.firstName,
+                // resetCode: "eduwgtd78423ryhde2q"
+            })
+        }
+
         if(setting.slug === 'flight-booking-notification') {
             await sendFlightBookingConfirmation({
                 mailTo: body.recipientEmail,
@@ -146,8 +154,14 @@ export const testEmailSettingHandler = async (req: Request, res: Response) => {
                 bookingCode: '987564535',
                 origin: body.origin,
                 destination: body.destination,
-                date: body.data,
-                time: body.time
+                outboundDepartureDate: body.outboundDepartureDate,
+                outboundDepartureTime: body.outboundDepartureTime,
+                outboundArrivalDate: body.outboundArrivalDate,
+                outboundArrivalTime: body.outboundArrivalTime,
+                inboundDepartureDate: body.inboundDepartureDate,
+                inboundDepartureTime: body.inboundDepartureTime,
+                inboundArrivalDate: body.inboundArrivalDate,
+                inboundArrivalTime: body.inboundArrivalTime
             })
         }
 
