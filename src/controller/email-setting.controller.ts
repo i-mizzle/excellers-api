@@ -58,9 +58,9 @@ export const getEmailSettingHandler = async (req: Request, res: Response) => {
 export const updateEmailSettingHandler = async (req: Request, res: Response) => {
     try {
         const updateObject = req.body
-        // if(updateObject.allowedVariables){
-        //     return response.badRequest(res, {message: 'Sorry, you cannot update allowedVariables field.'})
-        // }
+        if(updateObject.allowedVariables){
+            return response.badRequest(res, {message: 'Sorry, you cannot update allowedVariables field.'})
+        }
 
         const settingId = get(req, 'params.settingId');
 
