@@ -12,6 +12,7 @@ import { AdminInvitationTemplate } from '../static/email-templates/admin-invitat
 import { FlightBookingNotificationTemplate } from '../static/email-templates/flight-booking-notification-template';
 import { findEmailSetting } from './email-setting.service';
 import { EnquiryConfirmationEmailTemplate } from '../static/email-templates/enquiry-confirmation-template';
+import { PackageBookingNotificationTemplate } from '../static/email-templates/package-booking-notification-template';
 
 const mailgunConfig: any = config.get('mailgun');
 
@@ -58,6 +59,13 @@ export interface InvitationMailParams extends MailParams {
 export interface PasswordResetMailParams extends MailParams {
     firstName: string
     resetCode: string
+}
+
+export interface PackageBookingNotificationMailParams extends MailParams {
+    firstName: string
+    invoiceCode: string
+    bookingCode: string
+    packageName: string
 }
 
 export interface FlightBookingNotificationMailParams extends MailParams {
@@ -305,6 +313,41 @@ export async function sendFlightBookingConfirmation (mailParams: FlightBookingNo
             to: mailParams.mailTo,
             // subject: 'Your flight booking has been created',
             subject: emailSettings.mailSubject || 'Your flight booking has been created',
+            text: ``,
+            html: html,
+        };
+        await mg.messages().send(data);
+        console.log('Sent!');
+        return {
+            error: false,
+            errorType: '',
+            data: {message: `mail sent to ${mailParams.mailTo}`}
+        }
+    } catch (error) {
+        console.log('error in mailer function ', error)
+        return {
+            error: true,
+            errorType: 'error',
+            data: error
+        }
+    }
+}
+
+export async function sendPackageBookingConfirmation (mailParams: PackageBookingNotificationMailParams) {
+    try {
+        const emailSettings = await findEmailSetting({slug: 'package-booking-notification'})
+        
+        if(!emailSettings) {
+            return
+        }
+
+        const template = PackageBookingNotificationTemplate(mailParams, emailSettings);
+        const html = await inlineCSS(template, { url: 'fake' });
+        const data = {
+            from: 'GeoTravels <no-reply@bcf.ng>',
+            to: mailParams.mailTo,
+            // subject: 'Your flight booking has been created',
+            subject: emailSettings.mailSubject || 'Your package booking has been created',
             text: ``,
             html: html,
         };

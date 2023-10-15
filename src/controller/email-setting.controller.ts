@@ -3,7 +3,7 @@ import { createEmailSetting, findAndUpdateEmailSetting, findEmailSetting, findEm
 import * as response from '../responses'
 import { get } from "lodash"
 import { slugify } from "../utils/utils"
-import { sendAffiliateApprovalConfirmation, sendEmailConfirmation, sendEnquiryConfirmation, sendFlightBookingConfirmation, sendInvitation, sendPasswordResetEmail } from "../service/mailer.service"
+import { sendAffiliateApprovalConfirmation, sendEmailConfirmation, sendEnquiryConfirmation, sendFlightBookingConfirmation, sendInvitation, sendPackageBookingConfirmation, sendPasswordResetEmail } from "../service/mailer.service"
 
 export const createEmailSettingHandler = async (req: Request, res: Response) => {
     try {
@@ -149,9 +149,9 @@ export const testEmailSettingHandler = async (req: Request, res: Response) => {
             await sendFlightBookingConfirmation({
                 mailTo: body.recipientEmail,
                 firstName: body.variables.firstName,
-                invoiceCode: "eduwgtd78423ryhde2q",
+                invoiceCode: body.invoiceCode,
                 airline: body.airline,
-                bookingCode: '987564535',
+                bookingCode: body.bookingCode,
                 origin: body.origin,
                 destination: body.destination,
                 outboundDepartureDate: body.outboundDepartureDate,
@@ -162,6 +162,16 @@ export const testEmailSettingHandler = async (req: Request, res: Response) => {
                 inboundDepartureTime: body.inboundDepartureTime,
                 inboundArrivalDate: body.inboundArrivalDate,
                 inboundArrivalTime: body.inboundArrivalTime
+            })
+        }
+
+        if(setting.slug === 'package-booking-notification') {
+            await sendPackageBookingConfirmation({
+                mailTo: body.recipientEmail,
+                firstName: body.variables.firstName,
+                invoiceCode: body.variables.invoiceCode,
+                packageName: body.variables.packageName,
+                bookingCode: body.variables.bookingCode,
             })
         }
 

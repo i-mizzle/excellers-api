@@ -9,8 +9,8 @@ export interface PackageBookingDocument extends mongoose.Document {
     package: PackageDocument['_id']
     affiliateBooking: Boolean
     lockDown: Boolean,
-    bookingCode: String,
-    paymentStatus: String
+    bookingCode: string,
+    paymentStatus: string
     packageOwners: {
         name: string
         email: string

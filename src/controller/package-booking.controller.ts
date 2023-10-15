@@ -7,6 +7,7 @@ import { applyPackageDeals, findPackage } from "../service/package.service";
 import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { findUser } from "../service/user.service";
 import { findAffiliateMarkup } from "../service/affiliate-markup.service";
+import { sendPackageBookingConfirmation } from "../service/mailer.service";
 
 const parsePackageBookingFilters = (query: any) => {
     const { lockDown, packageId, invoice, ownerName, ownerEmail, ownerPhone, minDate, maxDate, paymentStatus } = query;
@@ -120,6 +121,17 @@ export const createPackageBookingHandler = async (req: Request, res: Response) =
         const packageBooking = await createPackageBooking(bookingInput)
 
         await findAndUpdateInvoice({_id: invoice._id}, { invoiceItem: packageBooking._id }, { new: true })
+
+        const user = await findUser({_id: userId})
+        const userName = user ? user.firstName : req.body.packageOwners[0].firstName
+        const userEmail = user ? user.email : req.body.packageOwners[0].email
+        await sendPackageBookingConfirmation({
+            mailTo: userEmail,
+            firstName: userName,
+            invoiceCode: invoice.invoiceCode,
+            packageName: bookingPackage.name,
+            bookingCode: packageBooking.bookingCode,
+        })
         
         return response.created(res, packageBooking)
     } catch (error: any) {
