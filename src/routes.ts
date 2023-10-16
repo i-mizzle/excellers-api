@@ -3,16 +3,23 @@ import {
     Request,
     Response 
 } from 'express';
+import { pullDataHandler, pushDataHandler } from './controller/store-data.controller';
 
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
     
-    // app.get('/logs', 
-    //     requiresUser,
-    //     requiresAdministrator,
-    //     readLogFile
-    // )
+    app.post('/store-data/push', 
+        // requiresUser,
+        // requiresAdministrator,
+        pushDataHandler
+    )
+
+    app.get('/store-data/pull', 
+        // requiresUser,
+        // requiresAdministrator,
+        pullDataHandler
+    )
 
 //     app.post('/auth/signup', 
 //         checkUserType,

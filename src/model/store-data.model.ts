@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 // import bcrypt from 'bcrypt';
 // import config from 'config';
-import { UserDocument } from "./user.model";
+// import { UserDocument } from "./user.model";
 
 export interface StoreDataDocument extends mongoose.Document {
     localId: string;
@@ -24,6 +24,6 @@ const StoreDataSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const StoreData = mongoose.model<StoreDataDocument>('Session', StoreDataSchema);
+const StoreData = mongoose.model<StoreDataDocument>('StoreData', StoreDataSchema);
 
 export default StoreData;
