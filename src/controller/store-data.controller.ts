@@ -11,14 +11,15 @@ export const pushDataHandler = async (req: Request, res: Response) => {
         let created = 0
         await Promise.all(body.data.map(async (item: any) => {
             console.log('items in map => => ', item)
-            const existingItem = await findStoreData({localId: item.id})
-            if(existingItem && existingItem.document !== item.doc) {
-                await findAndUpdateStoreData({_id: existingItem._id}, {document: item.doc}, {new: true})
+            const existingItem = await findStoreData({localId: item._id})
+            if(existingItem && existingItem.document !== item) {
+                await findAndUpdateStoreData({_id: existingItem._id}, {document: item}, {new: true})
                 updated += 1
             } else {
+
                 await createStoreData({
-                    localId: item.id,
-                    document: item.doc
+                    localId: item._id,
+                    document: item
                 })
                 created += 1
             }
