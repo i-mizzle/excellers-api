@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
-// import bcrypt from 'bcrypt';
-// import config from 'config';
-// import { UserDocument } from "./user.model";
-
+import { StoreDocument } from './store.model';
+import { UserDocument } from './user.model';
 export interface StoreDataDocument extends mongoose.Document {
-    localId: string;
+    localId?: string;
+    documentType: string;
+    createdBy: UserDocument['_id'];
+    store: StoreDocument['_id']
     document: object;
     createdAt?: Date;
     updatedAt?: Date;
@@ -14,8 +15,19 @@ const StoreDataSchema = new mongoose.Schema(
     {
         localId: {
             type: String,
-            required: true,
-            unique: true
+            // required: true,
+            // unique: true
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'User'
+        },
+        documentType: {
+            type: String,
+            required: true
+        },
+        store: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'Store',
+            required: true
         },
         document: {
             type: Object

@@ -49,33 +49,33 @@ export const getTransactionSummary = (transactions: any[]) => {
     });
   
     transactions.forEach((transaction) => {
-        const transactionDate = new Date(transaction.dateCreated);
+        const transactionDate = new Date(transaction.createdAt);
         const dayKey = transactionDate.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' });
         const weekKey = `${transactionDate.getMonth() + 1}/${transactionDate.getDate()}/${transactionDate.getFullYear()}`;
         const monthKey = transactionDate.toLocaleString('en-US', { month: 'short' });
     
         if (dayTransactions[dayKey]) {
-            dayTransactions[dayKey].amount += transaction.amount;
-            if (!dayTransactions[dayKey].transactionsByChannel[transaction.channel]) {
-                dayTransactions[dayKey].transactionsByChannel[transaction.channel] = 0;
+            dayTransactions[dayKey].amount += transaction.document.amount;
+            if (!dayTransactions[dayKey].transactionsByChannel[transaction.document.channel]) {
+                dayTransactions[dayKey].transactionsByChannel[transaction.document.channel] = 0;
             }
-            dayTransactions[dayKey].transactionsByChannel[transaction.channel] += transaction.amount;
+            dayTransactions[dayKey].transactionsByChannel[transaction.document.channel] += transaction.document.amount;
         }
     
         if (weekTransactions[weekKey]) {
-            weekTransactions[weekKey].amount += transaction.amount;
-            if (!weekTransactions[weekKey].transactionsByChannel[transaction.channel]) {
-                weekTransactions[weekKey].transactionsByChannel[transaction.channel] = 0;
+            weekTransactions[weekKey].amount += transaction.document.amount;
+            if (!weekTransactions[weekKey].transactionsByChannel[transaction.document.channel]) {
+                weekTransactions[weekKey].transactionsByChannel[transaction.document.channel] = 0;
             }
-            weekTransactions[weekKey].transactionsByChannel[transaction.channel] += transaction.amount;
+            weekTransactions[weekKey].transactionsByChannel[transaction.document.channel] += transaction.document.amount;
         }
     
         if (monthTransactions[monthKey]) {
-            monthTransactions[monthKey].amount += transaction.amount;
-            if (!monthTransactions[monthKey].transactionsByChannel[transaction.channel]) {
-                monthTransactions[monthKey].transactionsByChannel[transaction.channel] = 0;
+            monthTransactions[monthKey].amount += transaction.document.amount;
+            if (!monthTransactions[monthKey].transactionsByChannel[transaction.document.channel]) {
+                monthTransactions[monthKey].transactionsByChannel[transaction.document.channel] = 0;
             }
-            monthTransactions[monthKey].transactionsByChannel[transaction.channel] += transaction.amount;
+            monthTransactions[monthKey].transactionsByChannel[transaction.channel] += transaction.document.amount;
         }
     });
   
@@ -113,28 +113,28 @@ export const getTransactionsByChannel = (transactions: any[]) => {
     };
   
     transactions.forEach((transaction) => {
-        const transactionDate = new Date(transaction.dateCreated);
-        const transactionChannel = transaction.channel;
+        const transactionDate = new Date(transaction.createdAt);
+        const transactionChannel = transaction.document.channel;
     
         if (transactionDate.toDateString() === currentDay) {
             if (!transactionsByChannel.currentDay[transactionChannel]) {
                 transactionsByChannel.currentDay[transactionChannel] = 0;
             }
-            transactionsByChannel.currentDay[transactionChannel] += transaction.amount;
+            transactionsByChannel.currentDay[transactionChannel] += transaction.document.amount;
         }
     
         if (transactionDate >= currentWeekStart && transactionDate <= today) {
             if (!transactionsByChannel.currentWeek[transactionChannel]) {
                 transactionsByChannel.currentWeek[transactionChannel] = 0;
             }
-            transactionsByChannel.currentWeek[transactionChannel] += transaction.amount;
+            transactionsByChannel.currentWeek[transactionChannel] += transaction.document.amount;
         }
     
         if (transactionDate >= currentMonthStart && transactionDate <= today) {
             if (!transactionsByChannel.currentMonth[transactionChannel]) {
                 transactionsByChannel.currentMonth[transactionChannel] = 0;
             }
-            transactionsByChannel.currentMonth[transactionChannel] += transaction.amount;
+            transactionsByChannel.currentMonth[transactionChannel] += transaction.document.amount;
         }
     });
   
@@ -165,7 +165,7 @@ export const calculateMetrics = (orders: any[]) => {
     };
   
     for (const order of orders) {
-        const { total, dateCreated, status, paymentStatus, orderItems } = order;
+        const { total, dateCreated, status, paymentStatus, orderItems } = order.document;
         const orderDate = new Date(dateCreated);
   
         // Task 1: Total orders today and this month

@@ -6,13 +6,13 @@ export const rejectForbiddenUserFields = async (req: Request, res: Response, nex
     let hasForbiddenField = false
 
     Object.entries(req.body).forEach(([key, value]) => {
-        if(config.geoTravelSettings.forbiddenUserFields.includes(key)) {
+        if(config.nadabakeSettings.forbiddenUserFields.includes(key)) {
             hasForbiddenField = true
         }
     });
 
     if (hasForbiddenField) {
-        return response.forbidden(res, {message : `fields: ${config.geoTravelSettings.forbiddenUserFields.join(', ')} are forbidden`})
+        return response.forbidden(res, {message : `fields: ${config.nadabakeSettings.forbiddenUserFields.join(', ')} are forbidden for update`})
     }
 
     return next()

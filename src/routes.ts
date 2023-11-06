@@ -3,29 +3,66 @@ import {
     Request,
     Response 
 } from 'express';
-import { pullDataHandler, pushDataHandler } from './controller/store-data.controller';
+import { pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler } from './controller/store-data.controller';
+import { requiresUser, validateRequest } from './middleware';
+import requiresAdministrator from './middleware/requiresAdministrator';
+import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
+import { adminUpdateUserHandler, changePasswordHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
+import { createStoreSchema, getStoreSchema } from './schema/store.schema';
+import { createStoreHandler, getStoreDetailsHandler } from './controller/store.controller';
+import { createUserSessionHandler, invalidateUserSessionHandler } from './controller/session.controller';
+import requiresPermissions from './middleware/requiresPermissions';
+import { rejectForbiddenUserFields } from './middleware/rejectForbiddenUserFields';
+import { statsHandler } from './controller/stats.controller';
 
 
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
     
     app.post('/store-data/push', 
-        // requiresUser,
-        // requiresAdministrator,
+        requiresUser,
+        requiresAdministrator,
         pushDataHandler
     )
 
-    app.get('/store-data/pull', 
-        // requiresUser,
-        // requiresAdministrator,
+    app.get('/store-data/pull/:storeId/:documentType', 
+        requiresUser,
+        requiresAdministrator,
         pullDataHandler
     )
 
-//     app.post('/auth/signup', 
-//         checkUserType,
-//         validateRequest(createUserSchema), 
-//         createUserHandler
-//     )
+    app.get('/store-data/pull/:storeId/:documentType/:itemId', 
+        requiresUser,
+        requiresAdministrator,
+        pullSingleDataItemHandler
+    )
+
+    app.put('/store-data/update/:storeId/:documentType/:itemId', 
+        requiresUser,
+        requiresAdministrator,
+        updateDataItemHandler
+    )
+
+    app.post('/auth/create-user', 
+        // checkUserType,
+        validateRequest(createUserSchema), 
+        createUserHandler
+    )
+
+    app.post('/store', 
+        // requiresUser,
+        // requiresAdministrator,
+        validateRequest(createStoreSchema), 
+        createStoreHandler
+    )
+
+    app.get('/store/:storeId', 
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_store']),
+        validateRequest(getStoreSchema), 
+        getStoreDetailsHandler
+    )
 
 //     // Confirm email
 //     app.get('/auth/confirm-email/:confirmationCode', 
@@ -55,11 +92,11 @@ export default function(app: Express) {
 //         acceptInvitationHandler
 //     )
 
-//     // Login
-//     app.post('/auth/sessions', 
-//         validateRequest(createUserSessionSchema), 
-//         createUserSessionHandler
-//     )
+    // Login
+    app.post('/auth/sessions', 
+        validateRequest(createUserSessionSchema), 
+        createUserSessionHandler
+    )
 
 //     // Get user sessions
 //     app.get('/auth/sessions', 
@@ -67,11 +104,11 @@ export default function(app: Express) {
 //         getUserSessionsHandler
 //     )
 
-//     // logout
-//     app.delete('/auth/sessions', 
-//         requiresUser, 
-//         invalidateUserSessionHandler
-//     )
+    // logout
+    app.delete('/auth/sessions', 
+        requiresUser, 
+        invalidateUserSessionHandler
+    )
 
 //     // Get user sessions
 //     app.get('/user/sessions', 
@@ -80,63 +117,73 @@ export default function(app: Express) {
 //     )
 
 //     // Get user profile
-//     app.get('/user/profile', 
-//         requiresUser, 
-//         getUserProfileHandler
-//     )
+    app.get('/user/profile', 
+        requiresUser, 
+        getUserProfileHandler
+    )
 
-//     // Update user profile
-//     app.put('/user/profile', 
-//         requiresUser, 
-//         rejectForbiddenUserFields, 
-//         updateUserHandler
-//     )
+    // Update user profile
+    app.put('/user/profile', 
+        requiresUser, 
+        rejectForbiddenUserFields, 
+        updateUserHandler
+    )
 
-//     // Update user profile
-//     app.put('/user/profile/:userId', 
-//         requiresUser, 
-//         requiresAdministrator, 
-//         validateRequest(getUserDetailsSchema),
-//         adminUpdateUserHandler
-//     )
+    // Update user profile
+    app.put('/user/profile/:userId', 
+        requiresUser, 
+        requiresAdministrator, 
+        requiresPermissions(['can_manage_users']),
+        validateRequest(getUserDetailsSchema),
+        adminUpdateUserHandler
+    )
 
-//     // Get all users 
-//     app.get('/users/all', 
-//         requiresUser, 
-//         requiresAdministrator,
-//         getAllUsersHandler
-//     )
+//  Get all users 
+    app.get('/users/all', 
+        requiresUser, 
+        requiresAdministrator,
+        requiresPermissions(['can_manage_users']),
+        getAllUsersHandler
+    )
 
-//     // Delete user account
-//     app.get('/users/profile/:userId', 
-//         requiresUser, 
-//         requiresAdministrator,
-//         validateRequest(getUserDetailsSchema),
-//         getUserDetailsHandler
-//     )
+//  Get user account details by admin
+    app.get('/users/profile/:userId', 
+        requiresUser, 
+        requiresAdministrator,
+        requiresPermissions(['can_manage_users']),
+        validateRequest(getUserDetailsSchema),
+        getUserDetailsHandler
+    )
 
-//     // Delete user account
-//     app.delete('/users/delete/:userId', 
-//         requiresUser, 
-//         requiresAdministrator,
-//         deleteUserHandler
-//     )
+//     Delete user account
+    app.delete('/users/delete/:userId', 
+        requiresUser, 
+        requiresAdministrator,
+        requiresPermissions(['can_manage_users']),
+        validateRequest(getUserDetailsSchema),
+        deleteUserHandler
+    )
 
 //     app.post('/auth/password-reset/request', 
 //         validateRequest(resetRequestSchema),
 //         requestPasswordResetHandler
-//         )
+//     )
 
 //     app.post('/auth/password-reset', 
 //         validateRequest(resetPasswordSchema),
 //         resetPasswordHandler
 //     )
 
-//     app.post('/auth/change-password', 
-//         requiresUser,
-//         validateRequest(changePasswordSchema),
-//         changePasswordHandler
-//     )
+    app.post('/user/change-password', 
+        requiresUser,
+        validateRequest(changePasswordSchema),
+        changePasswordHandler
+    )
+
+    app.post('/dashboard/stats', 
+        requiresUser,
+        statsHandler
+    )
 
 //     // FLIGHTS
 

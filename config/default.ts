@@ -42,8 +42,8 @@ export default {
         BASE_URL: process.env.BIZGEM_BASE_URL,
         BASE_WALLET: process.env.BIZGEM_BASE_WALLET,
     },
-    geoTravelSettings: {
-        forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'confirmationCode', 'approvedAsAffiliate', 'bvnValidated', 'affiliateMarkup', 'role'],
+    nadabakeSettings: {
+        forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'username', 'confirmationCode'],
         postReadRate: 255
     }
 }
