@@ -43,6 +43,12 @@ export default function(app: Express) {
         updateDataItemHandler
     )
 
+    app.put('/store-data/update/multiple/:storeId/:documentType/:itemId', 
+        requiresUser,
+        requiresAdministrator,
+        updateDataItemHandler
+    )
+
     app.post('/auth/create-user', 
         // checkUserType,
         validateRequest(createUserSchema), 
@@ -180,7 +186,7 @@ export default function(app: Express) {
         changePasswordHandler
     )
 
-    app.post('/dashboard/stats', 
+    app.get('/dashboard/stats', 
         requiresUser,
         statsHandler
     )

@@ -140,6 +140,41 @@ export const getTransactionsByChannel = (transactions: any[]) => {
   
     return transactionsByChannel;
 };
+
+export const listLowStockVariants = (inventory: any) => {
+    const lowStockVariants: any = [];
+
+    inventory.forEach((item: any) => {
+        if(item.document.type === 'sale') {
+            item.document.variants.forEach((variant: any) => {
+                if (variant.currentStock < variant.lowStockAlertCount) {
+                    const lowStockInfo = {
+                        id: item._id,
+                        itemName: item.name,
+                        variantName: variant.name,
+                        currentStock: variant.currentStock,
+                        saleUnit: variant.saleUnit,
+                    };
+                    lowStockVariants.push(lowStockInfo);
+                }
+            });
+        }
+        if(item.document.type === 'store') {
+            if (item.document.currentStock < item.document.lowStockAlertCount) {
+                const lowStockInfo = {
+                    id: item._id,
+                    itemName: item.document.name,
+                    variantName: '',
+                    currentStock: item.document.currentStock,
+                    saleUnit: item.document.stockUnit,
+                };
+                lowStockVariants.push(lowStockInfo);
+            }
+        }
+    });
+
+    return lowStockVariants;
+}
   
 export const calculateMetrics = (orders: any[]) => {
     let todayOrdersCount = 0;
