@@ -80,14 +80,14 @@ export const pushDataHandler = async (req: Request, res: Response) => {
         const body = req.body
         let updated = 0
         let created = 0
+        let createdData
         await Promise.all(body.data.map(async (item: any) => {
-            console.log('items in map => => ', item)
             // const existingItem = await findStoreData({localId: item.id})
             // if(existingItem && existingItem.document !== item.doc) {
             //     await findAndUpdateStoreData({_id: existingItem._id}, {document: item.doc}, {new: true})
             //     updated += 1
             // } else {
-            await createStoreData({
+            createdData = await createStoreData({
                 localId: item.id,
                 documentType: item.document,
                 createdBy: userId,
@@ -98,7 +98,7 @@ export const pushDataHandler = async (req: Request, res: Response) => {
             // }
         }))
 
-        return response.ok(res, {message: `store data pushed successfully. ${created} created, ${updated} updated`}) 
+        return response.ok(res, {message: `store data pushed successfully. ${created} created, ${updated} updated`, data: createdData}) 
     } catch (error: any) {
         return response.error(res, error)
     }
@@ -147,21 +147,43 @@ export const pullSingleDataItemHandler = async (req: Request, res: Response) => 
 
 export const updateDataItemHandler = async (req: Request, res: Response) => {
     try {
-        const docType = req.params.documentType
+        // const docType = req.params.documentType
         const storeId = req.params.storeId
         const itemId = req.params.itemId
-        const update = req.body
+        const update = req.body.document
         
-        const storeData = await findStoreData({store: storeId, documentType: docType, _id: itemId})
+        const storeData = await findStoreData({store: storeId, _id: itemId})
 
         if(!storeData) {
             return response.notFound(res, {message: 'item not found'})
         }
 
-        const updated = await findAndUpdateStoreData({_id: storeData._id}, update, {new: true})
+        const updated = await findAndUpdateStoreData({_id: storeData._id}, {document: update}, {new: true})
         return response.ok(res, {
-            message: 'store data updates successfully', 
+            message: 'store data updated successfully', 
             data: updated
+        }) 
+    } catch (error: any) {
+        return response.error(res, error)
+    }
+}
+
+export const deleteDataItemHandler = async (req: Request, res: Response) => {
+    try {
+        // const docType = req.params.documentType
+        const storeId = req.params.storeId
+        const itemId = req.params.itemId
+        const update = req.body.document
+        
+        const storeData = await findStoreData({store: storeId, _id: itemId})
+
+        if(!storeData) {
+            return response.notFound(res, {message: 'item not found'})
+        }
+
+        const updated = await findAndUpdateStoreData({_id: storeData._id}, {document: update}, {new: true})
+        return response.ok(res, {
+            message: 'store data deleted successfully', 
         }) 
     } catch (error: any) {
         return response.error(res, error)

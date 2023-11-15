@@ -30,8 +30,8 @@ export async function findAllUsers(
     const total = await User.find().countDocuments()
     const users = await User.find(query, {}, options).select('-password').populate(expand)
         .sort({ 'createdAt' : -1 })
-        .skip((perPage * page) - perPage)
-        .limit(perPage)
+        // .skip((perPage * page) - perPage)
+        // .limit(perPage)
 
     return {
         total,

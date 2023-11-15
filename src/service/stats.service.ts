@@ -200,11 +200,11 @@ export const calculateMetrics = (orders: any[]) => {
     };
   
     for (const order of orders) {
-        const { total, dateCreated, status, paymentStatus, orderItems } = order.document;
-        const orderDate = new Date(dateCreated);
+        const { total, createdAt, status, paymentStatus, orderItems } = order.document;
+        const orderDate = new Date(createdAt);
   
         // Task 1: Total orders today and this month
-        if (status === 'COMPLETED' && isDateInCurrentMonth(orderDate)) {
+        if (paymentStatus === 'PAID' && isDateInCurrentMonth(orderDate)) {
             thisMonthOrdersCount++;
             thisMonthOrdersValue += total;
   

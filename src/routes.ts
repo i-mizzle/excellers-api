@@ -37,13 +37,13 @@ export default function(app: Express) {
         pullSingleDataItemHandler
     )
 
-    app.put('/store-data/update/:storeId/:documentType/:itemId', 
+    app.put('/store-data/update/:storeId/:itemId', 
         requiresUser,
         requiresAdministrator,
         updateDataItemHandler
     )
 
-    app.put('/store-data/update/multiple/:storeId/:documentType/:itemId', 
+    app.put('/store-data/update/multiple/:storeId/:itemId', 
         requiresUser,
         requiresAdministrator,
         updateDataItemHandler

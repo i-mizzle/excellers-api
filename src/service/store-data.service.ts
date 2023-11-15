@@ -6,7 +6,7 @@ export async function createStoreData (input: DocumentDefinition<StoreDataDocume
 }
 
 export async function findMultipleStoreData(query: FilterQuery<StoreDataDocument>) {
-    return StoreData.find(query).lean();
+    return StoreData.find(query).lean().sort({ 'createdAt' : -1 });
 }
 
 export async function findStoreData(

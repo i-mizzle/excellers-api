@@ -7,7 +7,7 @@ import { findMultipleStoreData } from "../service/store-data.service";
 export const statsHandler = async (req: Request, res: Response) => {
     try {
         const orders = await findMultipleStoreData({documentType: 'order'})
-        const transactions = await findMultipleStoreData({documentType: 'transaction'})
+        const transactions = await findMultipleStoreData({documentType: 'payment'})
         const inventory = await findMultipleStoreData({documentType: 'item'})
         const transactionsSummary = getTransactionSummary(transactions)
         const transactionsByChannel = getTransactionsByChannel(transactions)
