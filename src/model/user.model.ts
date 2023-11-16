@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import config from 'config';
+import { StoreDocument } from './store.model';
 // import { ConfirmationCodeDocument } from './confirmation-code.model';
 // import { AffiliateMarkupDocument } from './affiliate-markup.model';
 // import { NairaWalletDocument } from './naira-wallet.model';
@@ -11,6 +12,7 @@ export interface UserDocument extends mongoose.Document {
     username: string;
     name: string;
     phone: string;
+    store: StoreDocument['_id']
     idNumber?:string,
     permissions: string[];
     password: string;
@@ -32,6 +34,9 @@ const UserSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true
+        },
+        store: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'Store'
         },
         idNumber: {
             type: String
