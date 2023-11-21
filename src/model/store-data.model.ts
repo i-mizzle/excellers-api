@@ -27,7 +27,7 @@ const StoreDataSchema = new mongoose.Schema(
         },
         store: {
             type: mongoose.Schema.Types.ObjectId, ref: 'Store',
-            required: true
+            // required: true
         },
         document: {
             type: Object

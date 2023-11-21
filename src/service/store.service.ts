@@ -1,5 +1,6 @@
 import { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
 import Store, { StoreDocument } from '../model/store.model';
+import { UserDocument } from "../model/user.model";
 
 // interface CreateTripInput {
 //     createdBy: UserDocument["_id"];
@@ -13,8 +14,16 @@ import Store, { StoreDocument } from '../model/store.model';
 //     endDate: StringDate
 // }
 
+interface StoreInput {
+    createdBy?: UserDocument['_id'];
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+}
+
 export const createStore = async (
-    input: StoreDocument) => {
+    input: StoreInput) => {
     try {
         const trip = await Store.create(input)
 

@@ -2,8 +2,22 @@ import { omit } from 'lodash';
 import { DocumentDefinition, FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 import User, { UserDocument } from '../model/user.model';
 import { generateCode } from '../utils/utils';
+import { StoreDocument } from '../model/store.model';
 
-export async function createUser(input: DocumentDefinition<UserDocument>) {
+interface UserInput {
+    email: string;
+    username: string;
+    name: string;
+    phone: string;
+    store?: StoreDocument['_id']
+    idNumber?:string,
+    permissions: string[];
+    password: string;
+    passwordChanged: boolean;
+    userType: string;
+}
+
+export async function createUser(input: DocumentDefinition<UserInput>) {
     try {
         // const confirmationToken = generateCode(18, false)
 
@@ -24,7 +38,7 @@ export async function findAllUsers(
     query: FilterQuery<UserDocument>,
     perPage: number,
     page: number,
-    expand: string,
+    expand?: string,
     options: QueryOptions = { lean: true }
 ) {
     const total = await User.find().countDocuments()

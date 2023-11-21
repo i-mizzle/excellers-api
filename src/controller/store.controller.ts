@@ -3,11 +3,20 @@ import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
 import { createStore, findAndUpdateStore, findStore } from "../service/store.service";
+import { findAndUpdateUser, findUser } from "../service/user.service";
 
 export const createStoreHandler = async (req: Request, res: Response) => {
     try {
         const input = req.body
         const store = await createStore(input)
+        console.log('created store: ', store)
+        const creator = await findUser({_id: store.createdBy})
+        console.log('store creator::: ', creator)
+
+        if(creator && (!creator.store || creator.store === '')) {
+            const storeId = store._id
+            await findAndUpdateUser({_id: creator._id}, {store: storeId}, {new: true})
+        }
 
         return response.created(res, store)
     } catch (error: any) {

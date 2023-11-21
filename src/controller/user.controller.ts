@@ -176,7 +176,7 @@ export async function getUserProfileHandler (req: Request, res: Response) {
             expand = expand.split(',')
         }
 
-        let user = await findUser({_id: userId})
+        let user = await findUser({_id: userId}, 'store')
 
         if(!user) {
             return response.notFound(res, {message: 'User not found'})

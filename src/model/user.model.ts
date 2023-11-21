@@ -12,7 +12,7 @@ export interface UserDocument extends mongoose.Document {
     username: string;
     name: string;
     phone: string;
-    store: StoreDocument['_id']
+    store?: StoreDocument['_id']
     idNumber?:string,
     permissions: string[];
     password: string;
@@ -36,7 +36,8 @@ const UserSchema = new mongoose.Schema(
             unique: true
         },
         store: {
-            type: mongoose.Schema.Types.ObjectId, ref: 'Store'
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Store'
         },
         idNumber: {
             type: String

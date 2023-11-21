@@ -4,19 +4,20 @@ import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 
 export interface StoreDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
+    createdBy?: UserDocument['_id'];
     name: string;
     address: string;
     city: string;
     state: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const StoreSchema = new mongoose.Schema(
     {
         createdBy: {
-            type: mongoose.Schema.Types.ObjectId, ref: 'User'
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
         },
         name: {
             type: String,
