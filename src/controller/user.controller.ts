@@ -424,24 +424,7 @@ export async function changePasswordHandler(req: Request, res: Response) {
 
 export async function bulkImportUsers(req: Request, res: Response) {
     try {
-        // const password= req.body.password
-        // const newPassword = req.body.newPassword
-        // const userId = get(req, 'user._id');
 
-        // const user = await findUser({_id: userId}) 
-
-        // if(!user) {
-        //     return response.notFound(res, 'user not found')
-        // }
-        // // const user = await findUser({_id: userId})
-        
-        // const validated = await validatePassword({username: user.username, password});
-        // if (!validated) {
-        //     return response.unAuthorized(res, { message: "invalid username or password" })
-        // }
-
-        // await changePassword(mongoose.Types.ObjectId((user._id)), newPassword)
-        // return response.ok(res, {message: 'Password updated successfully'})
         let created = 0
         await Promise.all(req.body.data.map(async (item: any) => {
             await createUser({
@@ -459,6 +442,22 @@ export async function bulkImportUsers(req: Request, res: Response) {
         }))
 
         return response.ok(res, {message: `${created} users created successfully.`}) 
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
+export async function bulkResetPasswords(req: Request, res: Response) {
+    try {
+        const users = await findAllUsers({}, 10000, 1)
+        let updated = 0
+        await Promise.all(users.data.map(async (item: any) => {
+            await findAndUpdateUser({_id: item._id}, {password: 'Abcd1234', passwordChanged: false}, {new: true})
+            updated += 1
+        }))
+
+        return response.ok(res, {message: `${updated} user passwords reset successfully.`}) 
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
