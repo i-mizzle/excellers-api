@@ -451,16 +451,16 @@ export async function bulkImportUsers(req: Request, res: Response) {
 export async function bulkResetPasswords(req: Request, res: Response) {
     try {
         const users = await findAllUsers({}, 10000, 1)
-        // const body = req.body
+        const body = req.body
         let updated = 0
         await Promise.all(users.data.map(async (item: any) => {
             // 
-            await changePassword(mongoose.Types.ObjectId((item._id)), 'Abcd1234')
+            await changePassword(mongoose.Types.ObjectId((item._id)), body.password)
             await findAndUpdateUser({_id: item._id}, {passwordChanged: false}, {new: true})
             updated += 1
         }))
 
-        return response.ok(res, {message: `${updated} user passwords reset successfully.`}) 
+        return response.ok(res, {message: `${updated} user passwords reset successfully. Use ${body.password} for first log in`}) 
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
