@@ -102,61 +102,61 @@ export const updateStoreIdsHandler = async (req: Request, res: Response) => {
         return response.error(res, error)
     }
 }
-// export const pushSanitizeDataHandler = async (req: Request, res: Response) => {
-//     try {
-//         const userId = get(req, 'user._id');
-//         const body = req.body
-//         let updated = 0
-//         let created = 0
-//         // let createdData
-//         await Promise.all(body.data.map(async (item: any) => {
-//             // const existingItem = await findStoreData({localId: item.id})
-//             // if(existingItem && existingItem.document !== item.doc) {
-//             //     await findAndUpdateStoreData({_id: existingItem._id}, {document: item.doc}, {new: true})
-//             //     updated += 1
-//             // } else {
-//             if(item.document.type === 'user') {
-//                 console.log('skipping a user')
-//                 // await createUser({
-//                 //     email: item.document.email,
-//                 //     username: item.document.username,
-//                 //     name: item.document.name,
-//                 //     phone: item.document.phone,
-//                 //     idNumber:item.document.idNumber,
-//                 //     permissions: item.document.permissions,
-//                 //     password: item.document.password,
-//                 //     passwordChanged: item.document.passwordChanged,
-//                 //     userType: 'ADMIN'
-//                 // })
-//             } else if (item.document.document === 'business') {
-//                 console.log('creating a store')
+export const pushSanitizeDataHandler = async (req: Request, res: Response) => {
+    try {
+        const userId = get(req, 'user._id');
+        const body = req.body
+        let updated = 0
+        let created = 0
+        // let createdData
+        await Promise.all(body.data.map(async (item: any) => {
+            // const existingItem = await findStoreData({localId: item.id})
+            // if(existingItem && existingItem.document !== item.doc) {
+            //     await findAndUpdateStoreData({_id: existingItem._id}, {document: item.doc}, {new: true})
+            //     updated += 1
+            // } else {
+            if(item.document.type === 'user') {
+                console.log('skipping a user')
+                // await createUser({
+                //     email: item.document.email,
+                //     username: item.document.username,
+                //     name: item.document.name,
+                //     phone: item.document.phone,
+                //     idNumber:item.document.idNumber,
+                //     permissions: item.document.permissions,
+                //     password: item.document.password,
+                //     passwordChanged: item.document.passwordChanged,
+                //     userType: 'ADMIN'
+                // })
+            } else if (item.document.document === 'business') {
+                console.log('creating a store')
 
-//                 await createStore({
-//                     name: item.document.name,
-//                     address: item.document.address,
-//                     city: item.document.location,
-//                     state: item.document.state
-//                 })
-//             } else {
-//                 console.log('creating other')
+                await createStore({
+                    name: item.document.name,
+                    address: item.document.address,
+                    city: item.document.location,
+                    state: item.document.state
+                })
+            } else {
+                console.log('creating other')
 
-//                 await createStoreData({
-//                     localId: item.localId,
-//                     documentType: item.document.document,
-//                     createdBy: userId,
-//                     store: body.store,
-//                     document: item.document
-//                 })
-//             }
-//             created += 1
-//             // }
-//         }))
+                await createStoreData({
+                    localId: item.localId,
+                    documentType: item.document.document,
+                    createdBy: userId,
+                    store: body.store,
+                    document: item.document
+                })
+            }
+            created += 1
+            // }
+        }))
 
-//         return response.ok(res, {message: `store data pushed successfully. ${created} created, ${updated} updated`}) 
-//     } catch (error: any) {
-//         return response.error(res, error)
-//     }
-// }
+        return response.ok(res, {message: `store data pushed successfully. ${created} created, ${updated} updated`}) 
+    } catch (error: any) {
+        return response.error(res, error)
+    }
+}
 
 export const pushDataHandler = async (req: Request, res: Response) => {
     try {

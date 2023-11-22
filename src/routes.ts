@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler, updateStoreIdsHandler } from './controller/store-data.controller';
+import { pullDataHandler, pullSingleDataItemHandler, pushDataHandler, pushSanitizeDataHandler, updateDataItemHandler, updateStoreIdsHandler } from './controller/store-data.controller';
 import { requiresUser, validateRequest } from './middleware';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
@@ -19,11 +19,11 @@ import { statsHandler } from './controller/stats.controller';
 export default function(app: Express) {
     app.get('/ping', (req: Request, res: Response) => res.sendStatus(200))
     
-    // app.post('/store-data/push-sanitize', 
-    //     // requiresUser,
-    //     // requiresAdministrator,
-    //     pushSanitizeDataHandler
-    // )
+    app.post('/store-data/push-sanitize', 
+        // requiresUser,
+        // requiresAdministrator,
+        pushSanitizeDataHandler
+    )
     
     app.get('/store-data/update-store-ids', 
         // requiresUser,
