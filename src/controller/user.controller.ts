@@ -455,7 +455,7 @@ export async function bulkResetPasswords(req: Request, res: Response) {
         let updated = 0
         await Promise.all(users.data.map(async (item: any) => {
             // 
-            await changePassword(mongoose.Types.ObjectId((item._id)), body.password)
+            await changePassword(item._id, body.password)
             await findAndUpdateUser({_id: item._id}, {passwordChanged: false}, {new: true})
             updated += 1
         }))
