@@ -82,7 +82,7 @@ export const updateStoreIdsHandler = async (req: Request, res: Response) => {
         let updated = 0
         // let createdData
         await Promise.all(allStoreData.map(async (item: any) => {
-            item.store = '65572a2f04bc9b08a0a5373e'
+            item.store = '65565f5f01f9fe28b8505d64'
             await findAndUpdateStoreData({_id: item._id}, item, {new: true})
             updated += 1
             // }
@@ -91,7 +91,7 @@ export const updateStoreIdsHandler = async (req: Request, res: Response) => {
         const allUsers = await findAllUsers({}, 5000, 1) 
 
         await Promise.all(allUsers.data.map(async (item: any) => {
-            item.store = '65572a2f04bc9b08a0a5373e'
+            item.store = '65565f5f01f9fe28b8505d64'
             await findAndUpdateUser({_id: item._id}, item, {new: true})
             updated += 1
             // }
@@ -141,7 +141,7 @@ export const pushSanitizeDataHandler = async (req: Request, res: Response) => {
                 console.log('creating other')
 
                 await createStoreData({
-                    localId: item.localId,
+                    // localId: item.localId,
                     documentType: item.document.document,
                     createdBy: userId,
                     store: body.store,

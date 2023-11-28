@@ -145,7 +145,7 @@ export const listLowStockVariants = (inventory: any) => {
     const lowStockVariants: any = [];
 
     inventory.forEach((item: any) => {
-        if(item.document.type === 'sale') {
+        if(item.document?.type === 'sale') {
             item.document.variants.forEach((variant: any) => {
                 if (variant.currentStock < variant.lowStockAlertCount) {
                     const lowStockInfo = {
@@ -159,7 +159,7 @@ export const listLowStockVariants = (inventory: any) => {
                 }
             });
         }
-        if(item.document.type === 'store') {
+        if(item.document?.type === 'store') {
             if (item.document.currentStock < item.document.lowStockAlertCount) {
                 const lowStockInfo = {
                     id: item._id,
