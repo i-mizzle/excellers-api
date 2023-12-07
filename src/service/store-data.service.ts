@@ -23,3 +23,9 @@ export async function findAndUpdateStoreData(
 ) {
     return StoreData.findOneAndUpdate(query, update, options)
 }
+
+export async function deleteStoreData(
+    query: FilterQuery<StoreDataDocument>
+) {
+    return StoreData.deleteOne(query)
+}

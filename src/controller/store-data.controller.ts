@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import * as response from '../responses'
 import { get } from "lodash";
-import { createStoreData, findAndUpdateStoreData, findMultipleStoreData, findStoreData } from "../service/store-data.service";
+import { createStoreData, deleteStoreData, findAndUpdateStoreData, findMultipleStoreData, findStoreData } from "../service/store-data.service";
 import { createStore } from "../service/store.service";
 import { createUser, findAllUsers, findAndUpdateUser } from "../service/user.service";
 
@@ -257,7 +257,6 @@ export const deleteDataItemHandler = async (req: Request, res: Response) => {
         // const docType = req.params.documentType
         const storeId = req.params.storeId
         const itemId = req.params.itemId
-        const update = req.body.document
         
         const storeData = await findStoreData({store: storeId, _id: itemId})
 
@@ -265,7 +264,8 @@ export const deleteDataItemHandler = async (req: Request, res: Response) => {
             return response.notFound(res, {message: 'item not found'})
         }
 
-        const updated = await findAndUpdateStoreData({_id: storeData._id}, {document: update}, {new: true})
+        await deleteStoreData({_id: storeData._id})
+
         return response.ok(res, {
             message: 'store data deleted successfully', 
         }) 
