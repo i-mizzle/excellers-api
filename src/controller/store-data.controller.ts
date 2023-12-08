@@ -4,7 +4,10 @@ import { get } from "lodash";
 import { createStoreData, deleteStoreData, findAndUpdateStoreData, findMultipleStoreData, findStoreData } from "../service/store-data.service";
 import { createStore } from "../service/store.service";
 import { createUser, findAllUsers, findAndUpdateUser } from "../service/user.service";
-
+import PDFDocument from 'pdfkit';
+import fs from 'fs';
+import * as Papa from 'papaparse';
+import { returnDocuments } from "../utils/utils";
 
 const parseFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, type } = query; 
@@ -299,3 +302,93 @@ export const updateMultipleDataItemHandler = async (req: Request, res: Response)
         return response.error(res, error)
     }
 }
+
+const orderItems = (order: any) => {
+    console.log(order)
+    let orderItemsString = ''
+
+    if(order?.orderItems && order?.orderItems?.length > 0) {
+        order?.orderItems?.forEach((item: any, itemIndex: number) => {
+            orderItemsString += `${item.quantity} unit(s) of ${item.itemName} at ${item.price}`
+            if(itemIndex < order.orderItems.length - 1){
+                orderItemsString += ', '
+            }
+        })
+    }
+    return orderItemsString
+}
+
+export const exportDataToPdfHandler = async (req: Request, res: Response) => {
+    try {
+        const docType = req.params.documentType
+        const storeId = req.params.storeId
+        
+        const storeData = await findMultipleStoreData({store: storeId, documentType: docType})
+        if(!storeData) {
+            return response.notFound(res, {message: 'item not found'})
+        }
+
+        const timeStamp = `${new Date().toDateString()} - ${new Date().toLocaleTimeString()}`
+        const fileName = `nadabake ${docType}s exported ${timeStamp}.pdf`
+        const pdfDoc = new PDFDocument();
+        pdfDoc.pipe(fs.createWriteStream(fileName));
+    
+        // Customize your PDF content based on your data
+        storeData.forEach((item: any) => {
+            pdfDoc.text(`Transaction reference: ${item.document.transactionReference}`);
+            pdfDoc.text(`Order: ${item.order.document.orderAlias}`);
+            pdfDoc.text(`Order items: ${item.order.document.orderAlias}`);
+            pdfDoc.text('------------------------');
+        });
+
+        // "transaction reference": item.transactionReference,
+        // order: item.order.document.orderAlias,
+        // "order items": orderItems(item.order.document),
+        // channel: item.channel,
+        // "received by": item.receivedBy.name,
+        // amount: item.amount,
+        // "time stamp": `${new Date(item?.dateCreated).toDateString()} - ${new Date(item?.dateCreated).toLocaleTimeString()}`
+
+        pdfDoc.end(); 
+        res.sendFile(fileName, { root: __dirname }); 
+    } catch (error) {
+        console.error(error);
+        return response.error(res, error)
+    }
+  }
+
+export const exportDataToCsvHandler = async (req: Request, res: Response) => {
+    try {
+        const docType = req.params.documentType
+        const storeId = req.params.storeId
+        
+        const storeData = await findMultipleStoreData({store: storeId, documentType: docType})
+        if(!storeData) {
+            return response.notFound(res, {message: 'item not found'})
+        }
+
+        let data: any = []
+
+        if(docType === 'payment') {
+            data = returnDocuments(storeData).map((item: any) => {
+                return {
+                    "transaction reference": item.transactionReference,
+                    order: item?.order?.document?.orderAlias || '',
+                    "order items": orderItems(item.order.document),
+                    channel: item.channel,
+                    "received by": item.receivedBy.name,
+                    amount: item.amount,
+                    "time stamp": `${new Date(item?.dateCreated).toDateString()} - ${new Date(item?.dateCreated).toLocaleTimeString()}`
+                }
+            });
+        }
+        const csvString = Papa.unparse(data, { header: true });
+
+        res.setHeader('Content-Disposition', 'attachment; filename=output.csv');
+        res.setHeader('Content-Type', 'text/csv');
+        res.status(200).send(csvString);
+      } catch (error) {
+        console.error(error);
+        return response.error(res, error)
+      }
+  }

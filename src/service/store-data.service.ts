@@ -5,8 +5,17 @@ export async function createStoreData (input: DocumentDefinition<StoreDataDocume
     return StoreData.create(input)
 }
 
-export async function findMultipleStoreData(query: FilterQuery<StoreDataDocument>) {
-    return StoreData.find(query).lean().sort({ 'createdAt' : -1 });
+export async function findMultipleStoreData(
+    query: FilterQuery<StoreDataDocument>,
+    perPage?: number,
+    page?: number
+) {
+    let data = StoreData.find(query).lean().sort({ 'createdAt' : -1 })
+    if(perPage && page) {
+        data = StoreData.find(query).lean().sort({ 'createdAt' : -1 }).skip((perPage * page) - perPage)
+    }
+    
+    return data
 }
 
 export async function findStoreData(

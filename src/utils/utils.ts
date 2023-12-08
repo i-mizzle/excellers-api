@@ -331,3 +331,17 @@ export const replaceEmailVariables = (input: string, variableValues: Record<stri
 
   return replacedString;
 }
+
+export const returnDocuments = (array: any[]) => {
+  return array.map(item => {
+      // console.log(item)
+      if(item.document) {
+          // console.log('no doc here')
+          let document = item.document
+          // if(item._id){
+          //     document._id = item._id
+          // }
+          return document
+      }
+  })
+}

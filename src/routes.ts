@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { deleteDataItemHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler, updateStoreIdsHandler } from './controller/store-data.controller';
+import { deleteDataItemHandler, exportDataToCsvHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler, updateStoreIdsHandler } from './controller/store-data.controller';
 import { requiresUser, validateRequest } from './middleware';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
@@ -74,6 +74,12 @@ export default function(app: Express) {
         requiresUser,
         requiresAdministrator,
         updateDataItemHandler
+    )
+
+    app.get('/store-data/export/csv/:storeId/:documentType', 
+        requiresUser,
+        requiresAdministrator,
+        exportDataToCsvHandler
     )
 
     app.post('/auth/create-user', 
