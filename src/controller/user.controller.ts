@@ -458,6 +458,7 @@ export async function resetUserPassword(req: Request, res: Response) {
         let updated = 0
 
         await changePassword(user._id, 'Abcd1234!')
+        
         await findAndUpdateUser({_id: user._id}, {passwordChanged: false}, {new: true})
 
         return response.ok(res, {message: `${updated} user password has been reset successfully. Use Abcd1234! for first log in`}) 
