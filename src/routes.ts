@@ -7,7 +7,7 @@ import { deleteDataItemHandler, pullDataHandler, pullSingleDataItemHandler, push
 import { requiresUser, validateRequest } from './middleware';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
-import { adminUpdateUserHandler, bulkImportUsers, bulkResetPasswords, changePasswordHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, updateUserHandler } from './controller/user.controller';
+import { adminUpdateUserHandler, bulkImportUsers, bulkResetPasswords, changePasswordHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, resetUserPassword, updateUserHandler } from './controller/user.controller';
 import { createStoreSchema, getStoreSchema } from './schema/store.schema';
 import { createStoreHandler, getStoreDetailsHandler } from './controller/store.controller';
 import { createUserSessionHandler, invalidateUserSessionHandler } from './controller/session.controller';
@@ -32,6 +32,12 @@ export default function(app: Express) {
         // requiresUser,
         // requiresAdministrator,
         updateStoreIdsHandler
+    )
+
+    app.post('/reset-password/:user', 
+        requiresUser,
+        requiresAdministrator,
+        resetUserPassword
     )
 
     app.post('/store-data/push', 

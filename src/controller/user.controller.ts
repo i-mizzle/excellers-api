@@ -448,6 +448,25 @@ export async function bulkImportUsers(req: Request, res: Response) {
     }
 }
 
+export async function resetUserPassword(req: Request, res: Response) {
+    try {
+        const user = await findUser({_id: req.params.user})
+        if(!user) {
+            return response.notFound(res, 'user not found')
+        }
+        const body = req.body
+        let updated = 0
+
+        await changePassword(user._id, 'Abcd1234!')
+        await findAndUpdateUser({_id: user._id}, {passwordChanged: false}, {new: true})
+
+        return response.ok(res, {message: `${updated} user password has been reset successfully. Use Abcd1234! for first log in`}) 
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
 export async function bulkResetPasswords(req: Request, res: Response) {
     try {
         const users = await findAllUsers({}, 10000, 1)
