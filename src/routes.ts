@@ -26,13 +26,13 @@ export default function(app: Express) {
     // )
 
     // app.post('/users/bulk-create', bulkImportUsers)
-    app.post('/users/reset-all-passwords', bulkResetPasswords)
+    // app.post('/users/reset-all-passwords', bulkResetPasswords)
     
-    app.get('/store-data/update-store-ids', 
-        // requiresUser,
-        // requiresAdministrator,
-        updateStoreIdsHandler
-    )
+    // app.get('/store-data/update-store-ids', 
+    //     // requiresUser,
+    //     // requiresAdministrator,
+    //     updateStoreIdsHandler
+    // )
 
     app.post('/reset-password/:user', 
         requiresUser,
