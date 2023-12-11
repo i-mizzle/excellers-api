@@ -9,9 +9,7 @@ export const createStoreHandler = async (req: Request, res: Response) => {
     try {
         const input = req.body
         const store = await createStore(input)
-        console.log('created store: ', store)
         const creator = await findUser({_id: store.createdBy})
-        console.log('store creator::: ', creator)
 
         if(creator && (!creator.store || creator.store === '')) {
             const storeId = store._id

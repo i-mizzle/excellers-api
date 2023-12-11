@@ -7,15 +7,25 @@ export async function createStoreData (input: DocumentDefinition<StoreDataDocume
 
 export async function findMultipleStoreData(
     query: FilterQuery<StoreDataDocument>,
+    page?: number,
     perPage?: number,
-    page?: number
 ) {
-    let data = StoreData.find(query).lean().sort({ 'createdAt' : -1 })
+    let data = null
+    const total = await StoreData.find(query).countDocuments()
     if(perPage && page) {
-        data = StoreData.find(query).lean().sort({ 'createdAt' : -1 }).skip((perPage * page) - perPage)
+        data = await StoreData.find(query).lean()
+            .sort({ 'createdAt' : -1 })
+            .skip((perPage * page) - perPage)
+            .limit(perPage)
+    } else {
+        data = await StoreData.find(query).lean().sort({ 'createdAt' : -1 })
     }
     
-    return data
+    return {
+        total,
+        data
+    }
+
 }
 
 export async function findStoreData(

@@ -1,83 +1,121 @@
 import mongoose from 'mongoose';
-// import bcrypt from 'bcrypt';
-// import config from 'config';
-import { UserDocument } from "./user.model";
+import { StoreDocument } from './store.model';
 
-export interface StoreDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
-    name: string;
-    address: string;
-    city: string;
-    state: string;
-    createdAt: Date;
-    updatedAt: Date;
+export interface StoreSettingDocument extends mongoose.Document {
+    store: StoreDocument['_id'];
+    taxes: {
+        enabled: boolean
+        includeTaxesInMenu: boolean
+        rate: number
+    }
+    receivingAccounts: {
+        enabled: boolean
+        accounts: {
+            bank: string
+            accountName: string
+            accountNumber: string
+            description: string
+        }[]
+    }
+    posDevices: {
+        enabled: boolean
+        devices: {
+            deviceName: string
+            provider: string
+            serialNumber: string
+        }[]
+    }
+    deliveryCharges: {
+        enabled: boolean
+        charges: {
+            location: string,
+            charge: number
+        }[]
+    }
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
-const StoreSchema = new mongoose.Schema(
+const StoreSettingSchema = new mongoose.Schema(
     {
-        createdBy: {
-            type: mongoose.Schema.Types.ObjectId, ref: 'User'
+        store: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'Store'
         },
-        name: {
-            type: String,
-            required: true
+        taxes: {
+            enabled: {
+                type: Boolean,
+                default: false
+            },
+            includeTaxesInMenu: {
+                type: Boolean,
+                default: false
+            },
+            rate: {
+                type: Number
+            },
         },
-        address: {
-            type: String,
-            required: true
+        receivingAccounts: {
+            enabled: {
+                type: Boolean,
+                default: false
+            },
+            accounts: [
+                {
+                    bank: {
+                        type: String
+                    },
+                    accountName: {
+                        type: String
+                    },
+                    accountNumber: {
+                        type: String
+                    },
+                    description: {
+                        type: String
+                    },
+                }
+            ]
         },
-        city: {
-            type: String,
-            required: true
+        posDevices: {
+            enabled: {
+                type: Boolean,
+                default: false
+            },
+            devices: [
+                {
+                    deviceName: {
+                        type: String
+                    },
+                    provider: {
+                        type: String
+                    },
+                    serialNumber: {
+                        type: String
+                    }
+                }
+            ]
         },
-        state: {
-            type: String,
-            required: true
-        }
+        deliveryCharges: {
+            enabled: {
+                type: Boolean,
+                default: false
+            },
+            charges: [
+                {
+                    location: {
+                        type: String
+                    },
+                    charge: {
+                        type: Number
+                    },
+                }
+            ]
+        },
     },
     { timestamps: true }
 );
 
-const Store = mongoose.model<StoreDocument>('Store', StoreSchema);
 
-export default Store;
+const StoreSetting = mongoose.model<StoreSettingDocument>('StoreSetting', StoreSettingSchema);
 
-// taxes: {
-//     enabled: false,
-//     description: 'Taxes that will be applied to all purchases',
-//     rate: 0,
-//     includeTaxesInMenu: true
-// },
-// receivingAccounts: {
-//     enabled: false,
-//     description: 'Registered accounts into which to allow transfers for payments',
-//     accounts: [
-//         {
-//             bank: "",
-//             accountNumber: "",
-//             accountName: "",
-//             description: ""
-//         }
-//     ]
-// },
-// posDevices: {
-//     enabled: false,
-//     description: 'Registered POS devices to be used in receiving payments via customer credit/debit cards',
-//     devices: [
-//         {
-//             deviceName: "",
-//             provider: "",
-//             serialNumber: ""
-//         }
-//     ]
-// },
-// deliveryCharges: {
-//     enabled: false,
-//     description: 'Delivery charges to various locations for your e-commerce platform',
-//     charges: [
-//         {
-//             location: "",
-//             charge: ""
-//         }
-//     ]
-// }
+export default StoreSetting;

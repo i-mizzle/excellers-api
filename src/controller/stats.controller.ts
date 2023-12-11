@@ -10,10 +10,10 @@ export const statsHandler = async (req: Request, res: Response) => {
         const orders = await findMultipleStoreData({documentType: 'order', store: storeId})
         const transactions = await findMultipleStoreData({documentType: 'payment', store: storeId})
         const inventory = await findMultipleStoreData({documentType: 'item', store: storeId})
-        const transactionsSummary = getTransactionSummary(transactions)
-        const transactionsByChannel = getTransactionsByChannel(transactions)
-        const metrics = calculateMetrics(orders)
-        const lowStockVariants = listLowStockVariants(inventory)
+        const transactionsSummary = getTransactionSummary(transactions.data)
+        const transactionsByChannel = getTransactionsByChannel(transactions.data)
+        const metrics = calculateMetrics(orders.data)
+        const lowStockVariants = listLowStockVariants(inventory.data)
 
         return response.ok(res, {metrics: {...metrics, ...{lowStock: lowStockVariants}}, transactionsSummary, transactionsByChannel, }) 
     } catch (error: any) {

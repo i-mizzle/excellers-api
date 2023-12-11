@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { deleteDataItemHandler, exportDataToCsvHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler, updateStoreIdsHandler } from './controller/store-data.controller';
+import { deleteDataItemHandler, exportDataToCsvHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler } from './controller/store-data.controller';
 import { requiresUser, validateRequest } from './middleware';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
@@ -14,6 +14,7 @@ import { createUserSessionHandler, invalidateUserSessionHandler } from './contro
 import requiresPermissions from './middleware/requiresPermissions';
 import { rejectForbiddenUserFields } from './middleware/rejectForbiddenUserFields';
 import { statsHandler } from './controller/stats.controller';
+import { createUpdateStoreSettingHandler, findStoreSettingHandler } from './controller/store-setting.controller';
 
 
 export default function(app: Express) {
@@ -101,6 +102,21 @@ export default function(app: Express) {
         requiresPermissions(['can_manage_store']),
         validateRequest(getStoreSchema), 
         getStoreDetailsHandler
+    )
+
+    app.post('/settings', 
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_store']),
+        createUpdateStoreSettingHandler
+    )
+
+    app.get('/settings/:storeId', 
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_store']),
+        validateRequest(getStoreSchema), 
+        findStoreSettingHandler
     )
 
 //     // Confirm email

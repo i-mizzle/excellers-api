@@ -7,104 +7,80 @@ import { createUser, findAllUsers, findAndUpdateUser } from "../service/user.ser
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import * as Papa from 'papaparse';
-import { returnDocuments } from "../utils/utils";
+import { getJsDate, returnDocuments } from "../utils/utils";
 
 const parseFilters = (query: any) => {
-    const { minDateCreated, maxDateCreated, type } = query; 
+    const { minDateCreated, maxDateCreated, type, name, amount, channel, status, transactionReference } = query; 
 
     const filters: any = {}; 
-
-    // if (type) {
-    //     filters.enquiryType = enquiryType
-    // } 
 
     if (type) {
         filters["document.type"] = type; 
     } 
     
-    // if (status) {
-    //     filters.status = status
-    // }
-
-    // if (maritalStatus) {
-    //     filters.maritalStatus = maritalStatus
-    // }
+    if (name) {
+        filters["document.name"] = { $regex: new RegExp(name, 'i') }; // 'i' for case-insensitive matching 
+    }
     
-    // if (name) {
-    //     filters.name = name; 
-    // }
+    if (amount) {
+        filters["document.amount"] = amount
+    }
     
-    // if (email) {
-    //     filters.email = email; 
-    // }
-        
-    // if (phone) {
-    //     filters.phone = phone; 
-    // }
-        
-    // if (invoice) {
-    //     filters.invoice = invoice; 
-    // }
-  
-    // if (nationality) {
-    //     filters.nationality = nationality 
-    // }
-  
-    // if (appointment) {
-    //     filters.appointment = appointment; 
-    // }
-  
-    // if (visaEnquiryCountry) {
-    //     filters.visaEnquiryCountry = visaEnquiryCountry; 
-    // }
-  
-    // if (travelHistory) {
-    //     filters.travelHistory = travelHistory; 
-    // }
+    if (channel) {
+        filters["document.channel"] = channel
+    }
+    
+    if (status) {
+        filters["document.status"] = status
+    }
+    
+    if (transactionReference) {
+        filters["document.transactionReference"] = { $regex: new RegExp(transactionReference, 'i') }; // 'i' for case-insensitive matching 
+    }
 
-    // if (minDateCreated && !maxDateCreated) {
-    //     filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
-    // }
+    if (minDateCreated && !maxDateCreated) {
+        filters.createdAt = { $gte: (getJsDate(minDateCreated)) }; 
+    }
 
-    // if (maxDateCreated && !minDateCreated) {
-    //     filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
-    // }
+    if (maxDateCreated && !minDateCreated) {
+        filters.createdAt = { $lte: getJsDate(maxDateCreated) }; 
+    }
 
-    // if (minDateCreated && maxDateCreated) {
-    //     filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
-    // }
+    if (minDateCreated && maxDateCreated) {
+        filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
+    }
   
     return filters
 
 }
 
 
-export const updateStoreIdsHandler = async (req: Request, res: Response) => {
-    try {
-        const allStoreData = await findMultipleStoreData({})
-        let updated = 0
-        // let createdData
-        await Promise.all(allStoreData.map(async (item: any) => {
-            item.store = '65565f5f01f9fe28b8505d64'
-            await findAndUpdateStoreData({_id: item._id}, item, {new: true})
-            updated += 1
-            // }
-        }))
+// export const updateStoreIdsHandler = async (req: Request, res: Response) => {
+//     try {
+//         const allStoreData = await findMultipleStoreData({})
+//         let updated = 0
+//         // let createdData
+//         await Promise.all(allStoreData.map(async (item: any) => {
+//             item.store = '65565f5f01f9fe28b8505d64'
+//             await findAndUpdateStoreData({_id: item._id}, item, {new: true})
+//             updated += 1
+//             // }
+//         }))
 
-        const allUsers = await findAllUsers({}, 5000, 1) 
+//         const allUsers = await findAllUsers({}, 5000, 1) 
 
-        await Promise.all(allUsers.data.map(async (item: any) => {
-            item.store = '65565f5f01f9fe28b8505d64'
-            await findAndUpdateUser({_id: item._id}, item, {new: true})
-            updated += 1
-            // }
-        }))
+//         await Promise.all(allUsers.data.map(async (item: any) => {
+//             item.store = '65565f5f01f9fe28b8505d64'
+//             await findAndUpdateUser({_id: item._id}, item, {new: true})
+//             updated += 1
+//             // }
+//         }))
 
-        return response.ok(res, {message: `${updated} store data updated`}) 
-    } catch (error: any) {
-        return response.error(res, error)
-    }
-}
+//         return response.ok(res, {message: `${updated} store data updated`}) 
+//     } catch (error: any) {
+//         return response.error(res, error)
+//     }
+// }
 export const pushSanitizeDataHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
@@ -198,11 +174,15 @@ export const pullDataHandler = async (req: Request, res: Response) => {
         // const userId = get(req, 'user._id');
         const docType = req.params.documentType
         const storeId = req.params.storeId
+        const perPage = +queryObject.perPage
+        const page = queryObject.page
 
-        const storeData = await findMultipleStoreData({...filters, ...{store: storeId, documentType: docType}})
+        const storeData = await findMultipleStoreData({...filters, ...{store: storeId, documentType: docType}}, page, perPage)
+
         return response.ok(res, {
             message: 'store data pulled successfully', 
-            data: storeData
+            total: storeData.total,
+            data: storeData.data
         }) 
     } catch (error: any) {
         return response.error(res, error)
@@ -334,7 +314,7 @@ export const exportDataToPdfHandler = async (req: Request, res: Response) => {
         pdfDoc.pipe(fs.createWriteStream(fileName));
     
         // Customize your PDF content based on your data
-        storeData.forEach((item: any) => {
+        storeData?.data?.forEach((item: any) => {
             pdfDoc.text(`Transaction reference: ${item.document.transactionReference}`);
             pdfDoc.text(`Order: ${item.order.document.orderAlias}`);
             pdfDoc.text(`Order items: ${item.order.document.orderAlias}`);
@@ -370,7 +350,7 @@ export const exportDataToCsvHandler = async (req: Request, res: Response) => {
         let data: any = []
 
         if(docType === 'payment') {
-            data = returnDocuments(storeData).map((item: any) => {
+            data = returnDocuments(storeData?.data).map((item: any) => {
                 return {
                     "transaction reference": item.transactionReference,
                     order: item?.order?.document?.orderAlias || '',
