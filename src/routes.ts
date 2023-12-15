@@ -114,7 +114,7 @@ export default function(app: Express) {
     app.get('/settings/:storeId', 
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_store']),
+        // requiresPermissions(['can_manage_store']),
         validateRequest(getStoreSchema), 
         findStoreSettingHandler
     )
