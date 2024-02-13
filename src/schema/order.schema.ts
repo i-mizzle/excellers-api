@@ -17,6 +17,14 @@ export const createOrderSchema = object({
             is: 'onsite', 
             then: string().required('an array of items is required for onsite orders')
         })),
+        deliveryAddress: object({
+            address: string().required('deliveryAddress.address is required'),
+            city: string().required('deliveryAddress.city is required'),
+            state: string().required('deliveryAddress.state is required')
+        }).when('source', {
+            is: 'online', 
+            then: string().required('deliveryAddress is required for online orders')
+        }),
     })
 });
 

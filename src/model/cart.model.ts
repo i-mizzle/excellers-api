@@ -3,7 +3,7 @@ import { OrderItem } from './order.model';
 
 export interface CartDocument extends mongoose.Document {
     clientId: string
-    items: OrderItem;
+    items: OrderItem[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -25,7 +25,9 @@ const CartSchema = new mongoose.Schema(
         ],
         checkoutStatus: {
             type: String,
-            enum: ['pending', 'checked_out']
+            enum: ['pending', 'checked_out'],
+            default: 'pending',
+            required: true
         }
     },
     { timestamps: true }

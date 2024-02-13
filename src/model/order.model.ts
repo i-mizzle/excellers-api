@@ -23,13 +23,20 @@ export interface OrderItem {
 }
 
 export interface OrderDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
+    createdBy?: UserDocument['_id'];
     alias: string,
+    source: string;
     items: OrderItem[];
-    description: string;
-    type: string;
-    createdAt: Date;
-    updatedAt: Date;
+    status: string;
+    total: number;
+    paymentStatus: string;
+    deliveryAddress?: {
+        address: string
+        city: string
+        state: string
+    }
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const OrderSchema = new mongoose.Schema(
@@ -77,7 +84,19 @@ const OrderSchema = new mongoose.Schema(
             enum: ['UNPAID', 'PART_PAID', 'PAID'],
             default: 'UNPAID',
             required: true
+        },
+        deliveryAddress: {
+            address: {
+                type: String,
+            },
+            city: {
+                type: String
+            },
+            state: {
+                type: String
+            }
         }
+
     },
     { timestamps: true }
 );
