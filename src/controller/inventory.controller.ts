@@ -6,6 +6,7 @@ import { findAndUpdateItem, findItem } from "../service/item.service";
 import { Recipe } from "../model/item-variant.model";
 import { createStockHistory, findStockHistory } from "../service/stock-history.service";
 import { getJsDate } from "../utils/utils";
+import { ItemDocument } from "../model/item.model";
 
 const parseInventoryFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, type, name } = query; 
@@ -40,18 +41,22 @@ export const updateItemInventoryHandler = async (req: Request, res: Response) =>
         const userId = get(req, 'user._id');
         const body = req.body;
         let item: any = null;
-
+        let variantParent: ItemDocument | null = null
         if ('variant' in body) {
             item = await findVariant({_id: body.variant});
-
+            variantParent = await findItem(({ variants: body.variant }))
+            const lowStockErrors: string[] = []
             // Check if all of its recipe items are available in the quantity needed
             await Promise.all(item.recipe.map(async (recipeItem: Recipe) => {
                 const itemInRecipe = await findItem({_id: recipeItem.item});
                 const changeAmount = body.quantity * recipeItem.measure;
                 if (!itemInRecipe || itemInRecipe.currentStock < changeAmount) {
-                    return response.conflict(res, {message:`low stock on input item: ${itemInRecipe?.currentStock} available, ${changeAmount} required`});
+                    lowStockErrors.push(`${itemInRecipe?.name} - ${itemInRecipe?.currentStock} available, ${changeAmount} required`)
                 }
             }));
+            if (lowStockErrors.length > 0) {
+                return response.conflict(res, {message:`low stock on input items: ${lowStockErrors.join(', ')}`});
+            }
         } else {
             item = await findItem({_id: body.item});
         }
@@ -79,7 +84,18 @@ export const updateItemInventoryHandler = async (req: Request, res: Response) =>
                     const recipeItemUpdate = {
                         currentStock: itemInRecipe.currentStock - changeAmount
                     };
+                    const recipeItemStockBeforeChange = itemInRecipe.currentStock
                     await findAndUpdateItem({_id: itemInRecipe._id}, recipeItemUpdate, {new: true});
+
+                    await createStockHistory({
+                        recordedBy: userId,
+                        item: itemInRecipe._id,
+                        stockBeforeChange: recipeItemStockBeforeChange,
+                        note: `stock deduction for production of ${body.quantity} units of ${item.name} ${variantParent?.name}`,
+                        type: 'decrease',
+                        quantity: changeAmount,
+                        store: body.store
+                    });
                 }
             }));
         }

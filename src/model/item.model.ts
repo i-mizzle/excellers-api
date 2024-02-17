@@ -51,6 +51,7 @@ export interface ItemDocument extends mongoose.Document {
     description: string
     lowStockAlertCount: number
     type: string
+    deleted?: boolean
     stockUnit?: string
     currentStock: number
     variants?: ItemVariantDocument[]
