@@ -9,56 +9,16 @@ import { findAndUpdateMenu, findMenus } from "../service/menu.service";
 import { MenuDocument, MenuItem } from "../model/menu.model";
 
 const parseItemFilters = (query: any) => {
-    const { minDateCreated, maxDateCreated, enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
+    const { minDateCreated, maxDateCreated, type, name } = query; 
 
     const filters: any = {}; 
 
-    if (enquiryType) {
-        filters.enquiryType = enquiryType
-    } 
-
-    if (paymentStatus) {
-        filters.paymentStatus = paymentStatus;
-    } 
-    
-    if (status) {
-        filters.status = status
+    if (type) {
+        filters.type = type
     }
 
-    if (maritalStatus) {
-        filters.maritalStatus = maritalStatus
-    }
-    
     if (name) {
-        filters.name = name; 
-    }
-    
-    if (email) {
-        filters.email = email; 
-    }
-        
-    if (phone) {
-        filters.phone = phone; 
-    }
-        
-    if (invoice) {
-        filters.invoice = invoice; 
-    }
-  
-    if (nationality) {
-        filters.nationality = nationality 
-    }
-  
-    if (appointment) {
-        filters.appointment = appointment; 
-    }
-  
-    if (visaEnquiryCountry) {
-        filters.visaEnquiryCountry = visaEnquiryCountry; 
-    }
-  
-    if (travelHistory) {
-        filters.travelHistory = travelHistory; 
+        filters.name = { $regex: name, $options: "i" }; 
     }
 
     if (minDateCreated && !maxDateCreated) {
@@ -79,19 +39,39 @@ const parseItemFilters = (query: any) => {
 export const createItemHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
-        let body = req.body
+        const body = req.body
 
-        const item = await createItem({...body, ...{createdBy: userId}})
+        const item = await createItem({
+            // ...body, ...{createdBy: userId}
+            createdBy: body.createdBy,
+            store: body.store,
+            sku: body.sku,
+            name: body.name,
+            category: body.category,
+            description: body.description,
+            lowStockAlertCount: body?.lowStockAlertCount,
+            type: body.type,
+            stockUnit: body?.stockUnit,
+            currentStock: 0,
+            coverImage: body.coverImage || null,
+        })
         const variants: ItemVariantDocument[] = []
         const update: ItemVariantDocument['_id'][] = []
+        let updatedItem = null
+        if(body.variants && body.variants !== ''){
+            await Promise.all(body.variants.map(
+                async (variant: ItemVariantDocument, variantIndex: number) => {
+                    const newVariant = await createVariant({...variant, ...{
+                        createdBy: body.createdBy
+                    }})
+                    variants.push(newVariant)
+                    update.push(newVariant._id)
+                }
+            ))
+            updatedItem = await findAndUpdateItem({_id: item._id}, {variants: update}, {new: true})
+        }
 
-        body.variants.forEach(async (variant: ItemVariantDocument, variantIdex: number) => {
-            const newVariant = await createVariant({...variant, })
-            variants.push(newVariant)
-            update.push(newVariant.id)
-        })
-
-        const updatedItem = await findAndUpdateItem({_id: item._id}, {variants: update}, {new: true})
+        
         return response.created(res, updatedItem)
         // return response.created(res, {...item, ...{variants: variants}})
     } catch (error:any) {
@@ -118,7 +98,7 @@ export const getItemsHandler = async (req: Request, res: Response) => {
             page,
             perPage: resPerPage,
             total: items.total,
-            enquiries: items.enquiries
+            items: items.items
         }
 
         return response.ok(res, responseObject)        
@@ -130,6 +110,7 @@ export const getItemsHandler = async (req: Request, res: Response) => {
 export const getItemHandler = async (req: Request, res: Response) => {
     try {
         const itemId = get(req, 'params.itemId');
+        const storeId = get(req, 'params.storeId');
         const queryObject: any = req.query;
         let expand = queryObject.expand || null
 
@@ -137,7 +118,7 @@ export const getItemHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const item = await findItem({ _id: itemId, deleted: false }, expand)
+        const item = await findItem({ _id: itemId, store: storeId, deleted: false }, expand)
 
         if(!item) {
             return response.notFound(res, {message: 'item not found'})

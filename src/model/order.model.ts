@@ -15,6 +15,7 @@
 import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 import { ItemVariantDocument } from './item-variant.model';
+import { StoreDocument } from './store.model';
 
 export interface OrderItem {
     item: ItemVariantDocument['_id']
@@ -24,6 +25,7 @@ export interface OrderItem {
 
 export interface OrderDocument extends mongoose.Document {
     createdBy?: UserDocument['_id'];
+    store: StoreDocument['_id']
     alias: string,
     source: string;
     items: OrderItem[];

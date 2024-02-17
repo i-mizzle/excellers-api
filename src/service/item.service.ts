@@ -13,11 +13,11 @@ export async function findItems(
     options: QueryOptions = { lean: true }
 ) {
     const total = await Item.find(query, {}, options).countDocuments()
-    let enquiries = null
+    let items = null
     if(perPage===0&&page===0){
-        enquiries = await Item.find(query, {}, options).populate(expand)
+        items = await Item.find(query, {}, options).populate(expand)
     } else {
-        enquiries = await Item.find(query, {}, options).populate(expand)
+        items = await Item.find(query, {}, options).populate(expand)
             .sort({ 'createdAt' : -1 })
             .skip((perPage * page) - perPage)
             .limit(perPage);
@@ -25,7 +25,7 @@ export async function findItems(
 
     return {
         total,
-        enquiries 
+        items 
     }
 }
 
@@ -34,7 +34,12 @@ export async function findItem(
     expand?: string,
     options: QueryOptions = { lean: true }
 ) {
-    return Item.findOne(query, {}, options).populate(expand)
+    return Item.findOne(query, {}, options).populate(expand).populate({
+        path: 'variants',
+        populate: {
+            path: 'recipe.item'
+        }
+    });
 }
 
 export async function findAndUpdateItem(

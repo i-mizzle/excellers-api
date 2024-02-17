@@ -91,7 +91,8 @@ export const updateItemInventoryHandler = async (req: Request, res: Response) =>
             stockBeforeChange: stockBeforeChange,
             note: body.note,
             type: body.type,
-            quantity: body.quantity
+            quantity: body.quantity,
+            store: body.store
         });
 
         return response.ok(res, {message: 'item updated successfully'});
@@ -113,7 +114,7 @@ export const getItemStockHistoryHandler = async (req: Request, res: Response) =>
             expand = expand.split(',')
         }
 
-        const items = await findStockHistory( {...filters, ...{ item: itemId }}, resPerPage, page, expand)
+        const items = await findStockHistory({...filters, ...{item: itemId}}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

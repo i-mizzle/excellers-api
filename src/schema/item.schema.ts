@@ -3,15 +3,19 @@ import { object, string, ref, number, array } from "yup";
 export const createItemSchema = object({
     body: object({
         createdBy: string().required('createdBy is required'),
-        sku: string().required('sku is required'),
+        // sku: string().when('type', {
+        //     is: 'sale', 
+        //     then: string().required('sku is required for sale items')
+        // }),
+        // sku: string().required('sku is required'),
         name: string().required('name is required'),
-        category:  string().when('type', {
-            is: 'sale', 
-            then: string().required('category is required for sale items')
-        }),
+        // category:  string().when('type', {
+        //     is: 'sale', 
+        //     then: string().required('category is required for sale items')
+        // }),
         description: string(),
         lowStockAlertCount: number().required('lowStockAlertCount is required'),
-        type: string().required('type is required as sale pr store'),
+        type: string().required('type is required as sale or store'),
         stockUnit: string().required('stockUnit is required'),
         coverImage: string().matches(
             /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,

@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 import { UserDocument } from "./user.model";
 import { OrderDocument } from "./order.model";
+import { StoreDocument } from "./store.model";
 
 export interface TransactionDocument extends mongoose.Document {
   user?: UserDocument["_id"];
   order: OrderDocument["_id"];
+  store: StoreDocument["_id"];
   transactionReference: string;
   amount: number;
   channel: string;
@@ -17,6 +19,10 @@ export interface TransactionDocument extends mongoose.Document {
 
 const TransactionSchema = new mongoose.Schema(
   {
+    store: {
+      type: mongoose.Schema.Types.ObjectId, ref: 'Store',
+      required: true
+    },
     transactionReference: { 
         type: String,
         unique: true,

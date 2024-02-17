@@ -120,7 +120,7 @@ export const getItemVariantsHandler = async (req: Request, res: Response) => {
             page,
             perPage: resPerPage,
             total: items.total,
-            enquiries: items.enquiries
+            enquiries: items.items
         }
 
         return response.ok(res, responseObject)        
@@ -154,11 +154,11 @@ export const getItemVariantsHandler = async (req: Request, res: Response) => {
 
 export const updateItemHandler = async (req: Request, res: Response) => {
     try {
-        const enquiryId = get(req, 'params.enquiryId');
+        const itemId = get(req, 'params.itemId');
         const userId = get(req, 'user._id');
         let update = req.body
 
-        const item = await findItem({_id: enquiryId})
+        const item = await findItem({_id: itemId})
         if(!item) {
             return response.notFound(res, {message: 'item not found'})
         }

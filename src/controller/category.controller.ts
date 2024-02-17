@@ -3,6 +3,7 @@ import * as response from '../responses'
 import { get } from "lodash";
 import { getJsDate } from "../utils/utils";
 import { createCategory, findAndUpdateCategory, findCategories, findCategory } from "../service/category.service";
+import { findItems } from "../service/item.service";
 
 const parseCategoryFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, type, name } = query; 
@@ -47,6 +48,7 @@ export const createCategoryHandler = async (req: Request, res: Response) => {
 
 export const getCategoriesHandler = async (req: Request, res: Response) => {
     try {
+        const storeId = get(req, 'params.storeId');
         const queryObject: any = req.query;
         const filters = parseCategoryFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; 
@@ -57,12 +59,17 @@ export const getCategoriesHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const items = await findCategories( {...filters, ...{ deleted: false }}, 0, 0, expand)
+        const categories = await findCategories( {...filters, ...{ deleted: false, store: storeId }}, 0, 0, expand)
         // return res.send(post)
 
+        const categoriesWithItemsCount: any = await Promise.all(categories.categories.map(async (category) => {
+            const items = await findItems({_id: category._id}, 0, 0, '')
+            return {...category, itemCount: items.total}
+        }))
+
         const responseObject = {
-            total: items.total,
-            categories: items.categories
+            total: categories.total,
+            categories: categoriesWithItemsCount
         }
 
         return response.ok(res, responseObject)        

@@ -40,27 +40,33 @@ import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 import { CategoryDocument } from './category.model';
 import { ItemVariantDocument } from './item-variant.model';
+import { StoreDocument } from './store.model';
 
 export interface ItemDocument extends mongoose.Document {
     createdBy: UserDocument['_id'];
+    store: StoreDocument['_id'];
     sku: string
     name: string
     category: CategoryDocument['_id'],
     description: string
     lowStockAlertCount: number
     type: string
-    stockUnit: string
+    stockUnit?: string
     currentStock: number
-    variants: ItemVariantDocument[]
+    variants?: ItemVariantDocument[]
     coverImage: string
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const ItemSchema = new mongoose.Schema(
     {
         createdBy: {
             type: mongoose.Schema.Types.ObjectId, ref: 'User',
+            required: true
+        },
+        store: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'Store',
             required: true
         },
         category: {
@@ -83,15 +89,20 @@ const ItemSchema = new mongoose.Schema(
             default: 'store'
         },
         stockUnit: {
-            type: String,
-            required: true
+            type: String
         },
         sku: {
             type: String,
-            required: true
+        },
+        deleted: {
+            type: Boolean,
+            default: false
         },
         variants: [
-            {type: mongoose.Schema.Types.ObjectId, ref: 'ItemVariant'}
+            {
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: 'ItemVariant'
+            }
         ],
         currentStock: {
             type: Number,
