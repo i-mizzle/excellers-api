@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as response from '../responses'
 import { get } from "lodash";
 import { getJsDate } from "../utils/utils";
-import { createOrder, deleteOrder, findAndUpdateOrder, findOrder, findOrders } from "../service/order.service";
+import { createOrder, deleteOrder, findAndUpdateOrder, findOrder, findOrders, orderTotal } from "../service/order.service";
 import { findUser } from "../service/user.service";
 import { findAndUpdateVariant, findVariant } from "../service/item-variant.service";
 import { createStockHistory, findAndUpdateStockHistory, findStockHistoryEntry } from "../service/stock-history.service";
@@ -75,11 +75,11 @@ const parseOrderFilters = (query: any) => {
     return filters
 }
 
-const orderTotal = (items: any) => {
-    const totalPrice = items.reduce((a: any, b: any) => a + (b.price * b.quantity || 0), 0)
-    const vat = totalPrice * 0.075
-    return {total: totalPrice, vat: vat}
-}
+// const orderTotal = (items: any) => {
+//     const totalPrice = items.reduce((a: any, b: any) => a + (b.price * b.quantity || 0), 0)
+//     const vat = totalPrice * 0.075
+//     return {total: totalPrice, vat: vat}
+// }
 
 export const createOrderHandler = async (req: Request, res: Response) => {
     try {

@@ -2,6 +2,12 @@ import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from 'mong
 import { UserDocument } from '../model/user.model';
 import Order, { OrderDocument } from '../model/order.model';
 
+export const orderTotal = (items: any) => {
+    const totalPrice = items.reduce((a: any, b: any) => a + (b.price * b.quantity || 0), 0)
+    const vat = totalPrice * 0.075
+    return {total: totalPrice, vat: vat}
+}
+
 export async function createOrder (input: DocumentDefinition<OrderDocument>) {
     return Order.create(input)
 }

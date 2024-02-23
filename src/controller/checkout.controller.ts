@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import * as response from '../responses'
 import { get } from "lodash";
 import { findAndUpdateCart, findCart } from "../service/cart.service";
-import { createOrder } from "../service/order.service";
+import { createOrder, orderTotal } from "../service/order.service";
 
 export const checkoutHandler = async (req: Request, res: Response) => {
     try {
@@ -27,10 +27,14 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             alias: `web-order-${cartId}`,
             source: 'online',
             items: cart.items,
-            total: body.total,
+            total: orderTotal(cart.items).total,
             deliveryAddress: body.deliveryAddress,
             status: 'COMPLETED',
-            paymentStatus: 'UNPAID'
+            paymentStatus: 'UNPAID',
+            sourceMenu: body.menu,
+            store: body.store,
+            vat: orderTotal(cart.items).vat
+
         }
 
         const order = await createOrder(orderPayload)
