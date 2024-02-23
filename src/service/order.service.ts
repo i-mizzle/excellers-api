@@ -45,3 +45,9 @@ export async function findAndUpdateOrder (
 ) {
     return Order.findOneAndUpdate(query, update, options)
 }
+
+export async function deleteOrder(
+    query: FilterQuery<OrderDocument>
+) {
+    return Order.deleteOne(query)
+}

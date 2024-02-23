@@ -24,6 +24,7 @@ export interface ItemVariantDocument extends mongoose.Document {
     sku: string;
     description: string;
     saleUnit: string;
+    currentStock: number;
     recipe: Recipe[]
     deleted: boolean
     createdAt: Date;

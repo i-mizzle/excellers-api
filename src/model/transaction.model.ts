@@ -4,12 +4,14 @@ import { OrderDocument } from "./order.model";
 import { StoreDocument } from "./store.model";
 
 export interface TransactionDocument extends mongoose.Document {
-  user?: UserDocument["_id"];
+  createdBy?: UserDocument["_id"];
   order: OrderDocument["_id"];
   store: StoreDocument["_id"];
   transactionReference: string;
+  receivingChannel?: any;
   amount: number;
   channel: string;
+  status?: string;
   processor: string;
   flutterwaveTransactionId?: string
   processorData?: object
@@ -51,9 +53,10 @@ const TransactionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ['pending', 'successful', 'failed'],
-      default: 'PENDING',
+      default: 'pending',
       required: true
     },
+    receivingChannel: {},
     channel: { 
         type: String,
         enum: ['cash', 'pos', 'transfer', 'web'],

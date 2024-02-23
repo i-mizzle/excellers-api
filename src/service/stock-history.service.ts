@@ -40,13 +40,13 @@ export async function findStockHistory(
     }
 }
 
-// export async function findMenu(
-//     query: FilterQuery<StockHistoryDocument>,
-//     expand?: string,
-//     options: QueryOptions = { lean: true }
-// ) {
-//     return Menu.findOne(query, {}, options).populate(expand)
-// }
+export async function findStockHistoryEntry(
+    query: FilterQuery<StockHistoryDocument>,
+    expand?: string,
+    options: QueryOptions = { lean: true }
+) {
+    return StockHistory.findOne(query, {}, options).populate(expand)
+}
 
 export async function findAndUpdateStockHistory(
     query: FilterQuery<StockHistoryDocument>,

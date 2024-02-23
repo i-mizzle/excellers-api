@@ -24,6 +24,10 @@ import { createItemSchema } from './schema/item.schema';
 import { createMenuHandler, deleteMenuHandler, getMenuHandler, getMenusHandler, updateMenuHandler } from './controller/menu.controller';
 import { createMenuSchema } from './schema/menu.schema';
 import { getItemStockHistoryHandler, updateItemInventoryHandler } from './controller/inventory.controller';
+import { createOrderSchema } from './schema/order.schema';
+import { addToOrderHandler, createOrderHandler, deleteOrderHandler, getOrderHandler, getOrdersHandler, removeFromOrderHandler, updateOrderHandler } from './controller/order.controller';
+import { createTransactionHandler, getAllTransactionsHandler } from './controller/transaction.controller';
+import { receivePaymentHandler } from './controller/payments.controller';
 
 
 export default function(app: Express) {
@@ -316,6 +320,67 @@ export default function(app: Express) {
         requiresPermissions(['can_manage_menus']),
         deleteMenuHandler
     )
+    
+    /**
+     * ORDERS
+     */
+
+    // create order
+    app.post('/orders',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        validateRequest(createOrderSchema),
+        createOrderHandler
+    )
+    
+    // fetch orders
+    app.get('/orders/:storeId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        getOrdersHandler
+    )
+
+    // fetch order details
+    app.get('/orders/:orderId/:storeId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        getOrderHandler
+    )
+
+    // add to order
+    app.patch('/order/:orderId/add-item',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        addToOrderHandler
+    )
+
+    // remove from order
+    app.patch('/order/:orderId/remove-item',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        removeFromOrderHandler
+    )
+
+    // update order
+    app.patch('/order/:orderId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        updateOrderHandler
+    )
+
+    // delete order
+    app.delete('/order/:orderId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        deleteOrderHandler
+    )
 
     /**
      * INVENTORY
@@ -335,6 +400,24 @@ export default function(app: Express) {
         requiresAdministrator,
         requiresPermissions(['can_manage_inventory']),
         updateItemInventoryHandler
+    )
+
+    /**
+     * TRANSACTIONS
+     */
+    app.post('/transactions',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
+        receivePaymentHandler
+    )
+
+    // update item stock
+    app.get('/transactions/:storeId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_inventory']),
+        getAllTransactionsHandler
     )
 
     // UPLOAD FILE

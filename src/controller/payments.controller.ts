@@ -6,7 +6,55 @@ import { createTransaction, findAndUpdateTransaction, findTransaction } from "..
 import { generateCode } from "../utils/utils";
 import config from 'config';
 import { findUser } from "../service/user.service";
+import { findAndUpdateOrder, findOrder } from "../service/order.service";
 
+
+export const receivePaymentHandler = async (req: Request, res: Response) => {
+    try {
+        const userId = get(req, 'user._id');
+        // const invoiceCode = req.body.invoiceCode
+
+        const user = await findUser({_id: userId})
+        if(!user){
+            return response.notFound(res, {message: 'user not found'})
+        }
+        let userType = ""
+        if(user) {
+            userType = user.userType
+        }
+
+        const order = await findOrder({_id: req.body.order})
+        if(!order) {
+            return response.notFound(res, {message: 'order not found'})
+        }
+
+        if(req.body.status === 'successful') {
+            await findAndUpdateOrder({_id: order._id}, {paymentStatus: 'PAID', status: 'COMPLETED'}, {new:true})
+        }
+
+        const transactionReference = generateCode(18, false)
+        // const transactionProcessor = req.body.paymentChannel === 'ONLINE' ? 'FLUTTERWAVE' : 'CASHIER'
+
+        // CREATE TRANSACTION FIRST
+        const newTransaction = await createTransaction({
+            transactionReference,
+            createdBy: userId,
+            order: req.body.order,
+            amount: req.body.amount || order.total, 
+            processor: 'cashier',
+            status: req.body.status,
+            channel: req.body.channel,
+            receivingChannel: req.body.receivingChannel,
+            store: user.store
+        })
+
+
+        return response.created(res, newTransaction)
+
+    } catch (error) {
+        return response.error(res, error)
+    }
+}
 
 export const initializePaymentHandler = async (req: Request, res: Response) => {
     try {
@@ -35,11 +83,12 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
         // CREATE TRANSACTION FIRST
         const newTransaction = await createTransaction({
             transactionReference,
-            user: userId,
+            createdBy: userId,
             order: '', //invoice._id,
             amount: 0, // order.amount,
             processor: transactionProcessor,
-            channel: req.body.paymentChannel
+            channel: req.body.paymentChannel,
+            store: req.body.store
         })
 
         const input = {
@@ -65,7 +114,7 @@ export const initializePaymentHandler = async (req: Request, res: Response) => {
         // }
 
         const purchaseObject = await initializePurchase(input)
-        return response.ok(res, purchaseObject.data)
+        return response.created(res, purchaseObject.data)
 
     } catch (error) {
         return response.error(res, error)

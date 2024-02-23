@@ -16,6 +16,7 @@ import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 import { ItemVariantDocument } from './item-variant.model';
 import { StoreDocument } from './store.model';
+import { MenuDocument } from './menu.model';
 
 export interface OrderItem {
     item: ItemVariantDocument['_id']
@@ -31,6 +32,8 @@ export interface OrderDocument extends mongoose.Document {
     items: OrderItem[];
     status: string;
     total: number;
+    vat: number;
+    sourceMenu: MenuDocument['_id']
     paymentStatus: string;
     deliveryAddress?: {
         address: string
@@ -52,13 +55,22 @@ const OrderSchema = new mongoose.Schema(
         },
         source: {
             type: String,
-            enum: ['online', 'onsite'],
-            default: 'onsite'
+            enum: ['ONLINE', 'ONSITE'],
+            default: 'ONSITE'
+        },
+        sourceMenu: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Menu',
+            required: true
         },
         items: [
             {
                 item: {
                     type: mongoose.Schema.Types.ObjectId, ref: 'ItemVariant',
+                    required: true
+                },
+                displayName: {
+                    type: String,
                     required: true
                 },
                 quantity: {
@@ -73,7 +85,12 @@ const OrderSchema = new mongoose.Schema(
         ],
         total: {
             type: Number,
-            required: true
+            required: true,
+            default: 0
+        },
+        vat: {
+            type: Number,
+            default: 0
         },
         status: {
             type: String,

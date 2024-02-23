@@ -48,14 +48,14 @@ export async function createTransactionHandler (req: Request, res: Response) {
         }
 
         let user = ''
-        const existingUser = await findUser({email: body.user.email}) 
+        // const existingUser = await findUser({email: body.user.email}) 
 
-        if(existingUser) {
-            user = existingUser._id
-        } else {
-            const newUser = await createUser(body.user) 
-            user = newUser._id
-        }
+        // if(existingUser) {
+        //     user = existingUser._id
+        // } else {
+        //     const newUser = await createUser(body.user) 
+        //     user = newUser._id
+        // }
 
         body.user = user
         body.createdBy = userId

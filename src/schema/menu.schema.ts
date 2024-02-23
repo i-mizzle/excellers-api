@@ -7,7 +7,7 @@ export const createMenuSchema = object({
         eCommerceMenu: boolean(),
         items: array(object({
             item: string().required('items.item is required'),
-            displayName: string(),
+            displayName: string().required('items.displayName is required'),
             price: number().required('item.price is required')
         })),
     })

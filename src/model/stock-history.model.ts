@@ -3,11 +3,14 @@ import { UserDocument } from "./user.model";
 import { ItemVariantDocument } from './item-variant.model';
 import { ItemDocument } from './item.model';
 import { StoreDocument } from './store.model';
+import { OrderDocument } from './order.model';
 
 export interface StockHistoryDocument extends mongoose.Document {
     recordedBy: UserDocument['_id'];
     store: StoreDocument['_id']
-    item: ItemDocument['_id'] | ItemVariantDocument['_id']
+    item?: ItemDocument['_id'] 
+    variant?: ItemVariantDocument['_id']
+    order?: OrderDocument['_id'];
     stockBeforeChange: number;
     note: string;
     type: string;
@@ -30,6 +33,9 @@ const StockHistorySchema = new mongoose.Schema(
         },
         item: {
             type: mongoose.Schema.Types.ObjectId, ref: 'Item',
+        },
+        order: {
+            type: mongoose.Schema.Types.ObjectId, ref: 'Order',
         },
         stockBeforeChange: {
             type: Number,
