@@ -55,7 +55,7 @@ export const getTransactionSummary = (transactions: any[]) => {
         const monthKey = transactionDate.toLocaleString('en-US', { month: 'short' });
     
         if (dayTransactions[dayKey]) {
-            dayTransactions[dayKey].amount += transaction.total;
+            dayTransactions[dayKey].amount += transaction.amount;
             if (!dayTransactions[dayKey].transactionsByChannel[transaction.channel]) {
                 dayTransactions[dayKey].transactionsByChannel[transaction.channel] = 0;
             }
@@ -198,9 +198,9 @@ export const calculateMetrics = (orders: any[]) => {
         currentWeekStart.setDate(today.getDate() - today.getDay());
         return date >= currentWeekStart && date <= today;
     };
-  
+
     for (const order of orders) {
-        const { total, createdAt, status, paymentStatus, orderItems } = order.document;
+        const { total, createdAt, status, paymentStatus, items } = order;
         const orderDate = new Date(createdAt);
   
         // Task 1: Total orders today and this month
@@ -208,24 +208,24 @@ export const calculateMetrics = (orders: any[]) => {
             thisMonthOrdersCount++;
             thisMonthOrdersValue += total;
   
-        if (isDateInCurrentWeek(orderDate)) {
+        if (paymentStatus === 'PAID' && isDateInCurrentWeek(orderDate)) {
             todayOrdersCount++;
             todayOrdersValue += total;
         }
   
             // Task 3: Track sold items and find the most sold item
-            for (const item of orderItems) {
-                const { itemName, quantity } = item;
-                if (soldItems[itemName]) {
-                    soldItems[itemName] += quantity;
-                    if (soldItems[itemName] > mostSoldItem.quantity) {
-                    mostSoldItem.name = itemName;
-                    mostSoldItem.quantity = soldItems[itemName];
+            for (const item of items) {
+                const { displayName, quantity } = item;
+                if (soldItems[displayName]) {
+                    soldItems[displayName] += quantity;
+                    if (soldItems[displayName] > mostSoldItem.quantity) {
+                    mostSoldItem.name = displayName;
+                    mostSoldItem.quantity = soldItems[displayName];
                     }
                 } else {
-                    soldItems[itemName] = quantity;
+                    soldItems[displayName] = quantity;
                     if (quantity > mostSoldItem.quantity) {
-                    mostSoldItem.name = itemName;
+                    mostSoldItem.name = displayName;
                     mostSoldItem.quantity = quantity;
                     }
                 }

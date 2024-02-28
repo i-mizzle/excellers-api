@@ -43,7 +43,7 @@ import { ItemVariantDocument } from './item-variant.model';
 import { StoreDocument } from './store.model';
 
 export interface ItemDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
+    createdBy?: UserDocument['_id'];
     store: StoreDocument['_id'];
     sku: string
     name: string
@@ -55,7 +55,7 @@ export interface ItemDocument extends mongoose.Document {
     stockUnit?: string
     currentStock: number
     variants?: ItemVariantDocument[]
-    coverImage: string
+    coverImage?: string
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -64,7 +64,6 @@ const ItemSchema = new mongoose.Schema(
     {
         createdBy: {
             type: mongoose.Schema.Types.ObjectId, ref: 'User',
-            required: true
         },
         store: {
             type: mongoose.Schema.Types.ObjectId, ref: 'Store',

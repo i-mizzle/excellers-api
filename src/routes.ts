@@ -3,7 +3,7 @@ import {
     Request,
     Response 
 } from 'express';
-import { deleteDataItemHandler, exportDataToCsvHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, updateDataItemHandler } from './controller/store-data.controller';
+import { deleteDataItemHandler, exportDataToCsvHandler, pullDataHandler, pullSingleDataItemHandler, pushDataHandler, transformCategoriesHandler, transformSaleItemsHandler, transformStoreItemsHandler, updateDataItemHandler } from './controller/store-data.controller';
 import { requiresUser, validateRequest } from './middleware';
 import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
@@ -351,7 +351,7 @@ export default function(app: Express) {
     )
 
     // add to order
-    app.patch('/order/:orderId/add-item',
+    app.patch('/orders/:orderId/add-item',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
@@ -359,7 +359,7 @@ export default function(app: Express) {
     )
 
     // remove from order
-    app.patch('/order/:orderId/remove-item',
+    app.patch('/orders/:orderId/remove-item',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
@@ -367,7 +367,7 @@ export default function(app: Express) {
     )
 
     // update order
-    app.patch('/order/:orderId',
+    app.patch('/orders/:orderId',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
@@ -375,7 +375,7 @@ export default function(app: Express) {
     )
 
     // delete order
-    app.delete('/order/:orderId',
+    app.delete('/orders/:orderId',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
@@ -433,6 +433,41 @@ export default function(app: Express) {
         upload.array("files", 10),
         newFilesHandler
     )
+
+    /**
+     * Data transformations
+     */
+
+    // transform categories
+    app.get('/data/transform/categories/:storeId',
+        requiresUser,
+        transformCategoriesHandler
+    )
+
+    // transform store items
+    app.get('/data/transform/store-items/:storeId',
+        requiresUser,
+        transformStoreItemsHandler
+    )
+
+    // transform store items
+    app.get('/data/transform/sale-items/:storeId',
+        requiresUser,
+        transformSaleItemsHandler
+    )
+
+    // transform store items
+    // app.post('/data/transform/menus',
+    //     requiresUser,
+    //     transformSaleItemsHandler
+    // )
+
+    // // transform store items
+    // app.post('/data/transform/transactions',
+    //     requiresUser,
+    //     transformSaleItemsHandler
+    // )
+
 }
 
 

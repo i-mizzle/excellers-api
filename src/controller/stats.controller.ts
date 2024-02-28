@@ -12,7 +12,7 @@ export const statsHandler = async (req: Request, res: Response) => {
         const storeId = req.params.storeId
         const orders = await findOrders({store: storeId}, 0, 0, '')
         const transactions = await findTransactions({store: storeId}, 0, 0, '')
-        const inventory = await findItems({store: storeId}, 0, 0, '')
+        const inventory = await findItems({store: storeId, deleted: false}, 0, 0, '')
         const transactionsSummary = getTransactionSummary(transactions.data)
         const transactionsByChannel = getTransactionsByChannel(transactions.data)
         const metrics = calculateMetrics(orders.orders)

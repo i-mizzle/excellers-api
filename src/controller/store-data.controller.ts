@@ -8,6 +8,10 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import * as Papa from 'papaparse';
 import { getJsDate, returnDocuments } from "../utils/utils";
+import { createCategory, findCategory } from "../service/category.service";
+import { createItem, findItem } from "../service/item.service";
+import { createVariant } from "../service/item-variant.service";
+import { ItemVariantDocument, Recipe } from "../model/item-variant.model";
 
 const parseFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, type, name, amount, channel, status, transactionReference } = query; 
@@ -367,8 +371,181 @@ export const exportDataToCsvHandler = async (req: Request, res: Response) => {
         res.setHeader('Content-Disposition', 'attachment; filename=output.csv');
         res.setHeader('Content-Type', 'text/csv');
         res.status(200).send(csvString);
-      } catch (error) {
+    } catch (error) {
         console.error(error);
         return response.error(res, error)
-      }
-  }
+    }
+}
+
+export const transformCategoriesHandler = async (req: Request, res: Response) => {
+    try {
+        const storeId = req.params.storeId
+        
+        const storeData = await findMultipleStoreData({
+            store: storeId,
+            documentType: 'item-category',
+            $or: [
+                { transformed: { $exists: false } }, // Does not have "transformed" key
+                { transformed: false } // "transformed" is equal to false
+            ]
+        })
+        
+        let transformed = 0
+
+        await Promise.all(storeData.data.map(async (item: any)=>{  
+            // create the category
+            await createCategory({
+                store: storeId,
+                name: item.document.name,
+                description: item.document.description,
+                type: item.document.type
+            })
+            // set a flag that shows it has been transformed
+            await findAndUpdateStoreData({_id: item._id}, {transformed: true}, {new: true})
+            transformed += 1
+        }))
+        
+        // res.status(200).send(csvString);
+        return response.ok(res, {
+            message: `successfully transformed ${transformed} categories`,
+        })
+    } catch (error) {
+        console.error(error);
+        return response.error(res, error)
+    }
+}
+
+export const transformStoreItemsHandler = async (req: Request, res: Response) => {
+    try {
+        const docType = req.params.documentType
+        const storeId = req.params.storeId
+        
+        const storeData = await findMultipleStoreData({
+            store: storeId,
+            documentType: 'item',
+            $or: [
+                { transformed: { $exists: false } }, // Does not have "transformed" key
+                { transformed: false } // "transformed" is equal to false
+            ]
+        })
+        
+        let transformed = 0
+
+        await Promise.all(storeData.data.map(async (item: any)=>{  
+            if(item.document.type === 'store') {
+                // get the category
+                let categoryId = null
+                const category = await findCategory({name: item.document.category.name, type: item.document.category.type})
+                if(category) {
+                    categoryId = category._id
+                }
+                // create the item
+                await createItem({
+                    store: storeId,
+                    sku: item.document.sku,
+                    name: item.document.name,
+                    category: categoryId,
+                    description: item.document.description,
+                    lowStockAlertCount: item.document.lowStockAlertCount,
+                    type: item.document.type,
+                    deleted: false,
+                    stockUnit: item.document.stockUnit,
+                    currentStock: item.document.currentStock,
+                })
+    
+                await findAndUpdateStoreData({_id: item._id}, {transformed: true}, {new: true})
+            }
+            // set a flag that shows it has been transformed
+            transformed += 1
+        }))
+        
+        // res.status(200).send(csvString);
+        return response.ok(res, {
+            message: `successfully transformed ${transformed} store items`,
+        })
+    } catch (error) {
+    console.error(error);
+    return response.error(res, error)
+    }
+}
+
+export const transformSaleItemsHandler = async (req: Request, res: Response) => {
+    try {
+        const docType = req.params.documentType
+        const storeId = req.params.storeId
+        
+        const storeData = await findMultipleStoreData({
+            store: storeId,
+            documentType: 'item',
+            $or: [
+                { transformed: { $exists: false } }, // Does not have "transformed" key
+                { transformed: false } // "transformed" is equal to false
+            ]
+        })
+        
+        let transformed = 0
+
+        await Promise.all(storeData.data.map(async (item: any)=>{  
+            if(item.document.type === 'sale') {
+                // get the category
+                let categoryId = null
+                const category = await findCategory({name: item.document.category.name, type: item.document.category.type})
+                if(category) {
+                    categoryId = category._id
+                }
+                // create the item
+                const newItem = await createItem({
+                    store: storeId,
+                    sku: item.document.sku,
+                    name: item.document.name,
+                    category: categoryId,
+                    description: item.document.description,
+                    lowStockAlertCount: item.document.lowStockAlertCount || 5,
+                    type: item.document.type,
+                    deleted: false,
+                    stockUnit: item.document.stockUnit,
+                    currentStock: item.document.currentStock,
+                })
+    
+                // create the item variants and update the item variants array with each created variant
+                // if (item.document.type === 'sale') {
+                const createdVariants = []
+                await Promise.all(item.document.variants.map(async (variant: any) => {
+                    const newVariantPayload: any = {
+                        item: newItem._id,
+                        name: variant.name,
+                        sku: variant.sku,
+                        description: variant.description,
+                        saleUnit: variant.saleUnit,
+                        lowStockAlertCount: variant.lowStockAlertCount || 5,
+                        currentStock: variant.currentStock,
+                    }
+                    const variantRecipeItems: any = []
+                    variant.input.forEach(async(inputItem: any) => {
+                        const recipeItem = await findItem({name: inputItem.name, type: 'store'})
+                        let recipeItemId = recipeItem ? recipeItem._id : ''
+                        newVariantPayload.recipe.push({
+                            item: recipeItemId,
+                            measure: inputItem.measure
+                        })
+                    })
+                    newVariantPayload.recipe = variantRecipeItems
+                    const newVariant = await createVariant(newVariantPayload)
+                    createdVariants.push(newVariant._id)
+                }))
+                // } 
+            }
+            // set a flag that shows it has been transformed
+            await findAndUpdateStoreData({_id: item._id}, {transformed: true}, {new: true})
+            transformed += 1
+        }))
+        
+        // res.status(200).send(csvString);
+        return response.ok(res, {
+            message: `successfully transformed ${transformed} items`,
+        })
+    } catch (error) {
+    console.error(error);
+    return response.error(res, error)
+    }
+}

@@ -9,9 +9,13 @@ import { findAndUpdateMenu, findMenus } from "../service/menu.service";
 import { MenuDocument, MenuItem } from "../model/menu.model";
 
 const parseItemFilters = (query: any) => {
-    const { minDateCreated, maxDateCreated, type, name } = query; 
+    const { minDateCreated, maxDateCreated, type, name, category } = query; 
 
     const filters: any = {}; 
+
+    if (category) {
+        filters.category = category
+    }
 
     if (type) {
         filters.type = type
@@ -81,6 +85,7 @@ export const createItemHandler = async (req: Request, res: Response) => {
 
 export const getItemsHandler = async (req: Request, res: Response) => {
     try {
+        const storeId = get(req, 'params.storeId');
         const queryObject: any = req.query;
         const filters = parseItemFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; 
@@ -91,7 +96,7 @@ export const getItemsHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const items = await findItems( {...filters, ...{ deleted: false }}, resPerPage, page, expand)
+        const items = await findItems( {...filters, ...{ deleted: false, store: storeId }}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

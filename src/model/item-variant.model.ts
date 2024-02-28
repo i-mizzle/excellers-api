@@ -18,7 +18,7 @@ export interface Recipe {
 }
 
 export interface ItemVariantDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
+    createdBy?: UserDocument['_id'];
     item: ItemDocument['_id'];
     name: string;
     sku: string;
@@ -27,15 +27,14 @@ export interface ItemVariantDocument extends mongoose.Document {
     currentStock: number;
     recipe: Recipe[]
     deleted: boolean
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const ItemVariantSchema = new mongoose.Schema(
     {
         createdBy: {
             type: mongoose.Schema.Types.ObjectId, ref: 'User',
-            required: true
         },
         item: {
             type: mongoose.Schema.Types.ObjectId, ref: 'Item'

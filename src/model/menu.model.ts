@@ -2,9 +2,13 @@ import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 import { ItemVariantDocument } from './item-variant.model';
 import { StoreDocument } from './store.model';
+import { ItemDocument } from './item.model';
+import { CategoryDocument } from './category.model';
 
 export interface MenuItem {
     item: ItemVariantDocument['_id']
+    parentItem: ItemDocument['_id']
+    parentItemCategory: CategoryDocument['_id']
     displayName: string
     price: number
 }
@@ -45,6 +49,14 @@ const MenuSchema = new mongoose.Schema(
             {
                 item: { 
                     type: mongoose.Schema.Types.ObjectId, ref: 'ItemVariant',
+                    required: true
+                },
+                parentItem: { 
+                    type: mongoose.Schema.Types.ObjectId, ref: 'Item',
+                    required: true
+                },
+                parentItemCategory: { 
+                    type: mongoose.Schema.Types.ObjectId, ref: 'Category',
                     required: true
                 },
                 displayName: {

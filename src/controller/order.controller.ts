@@ -295,7 +295,17 @@ export const deleteOrderHandler = async (req: Request, res: Response) => {
         }
 
         // check if order is not completed and not paid for
-        // if it is, loop through the items and add them back to the variant
+        if(order.status !== 'COMPLETED' && order.paymentStatus === 'UNPAID'){
+            // if it is, loop through the items and add them back to the variant
+            await Promise.all(order.items.map(async (item) =>{
+                const variant = await findVariant({_id: item.item})
+                if(!variant) {
+                    return response.notFound(res, {message: 'item not found'})
+                }
+                const newItemStock = variant.currentStock +- item.quantity
+                await findAndUpdateVariant({_id: item.item}, {currentStock: newItemStock}, {new: true})
+            }))
+        }
 
         // await findAndDeleteOrder({_id: order._id}, {deleted: true}, {new: true})
         await deleteOrder({_id: order._id})

@@ -3,13 +3,13 @@ import { UserDocument } from "./user.model";
 import { StoreDocument } from './store.model';
 
 export interface CategoryDocument extends mongoose.Document {
-    createdBy: UserDocument['_id'];
+    createdBy?: UserDocument['_id'];
     store: StoreDocument['_id']
     name: string;
     description: string;
     type: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const CategorySchema = new mongoose.Schema(

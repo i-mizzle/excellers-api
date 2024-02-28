@@ -63,6 +63,11 @@ const OrderSchema = new mongoose.Schema(
             ref: 'Menu',
             required: true
         },
+        store: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Store',
+            required: true
+        },
         items: [
             {
                 item: {
