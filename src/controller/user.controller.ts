@@ -371,6 +371,11 @@ export async function adminUpdateUserHandler (req: Request, res: Response) {
 
 export async function getAllUsersHandler (req: Request, res: Response) {
     try {
+        const user = get(req, 'user._id')
+        const currentUser = await findUser({_id: user})
+        if(!currentUser) {
+            return response.notFound(res, {message: 'user not found'})
+        }
         const queryObject: any = req.query;
         const resPerPage = +queryObject.perPage || 30; // results per page
         const page = +queryObject.page || 1; // Page 
@@ -382,7 +387,7 @@ export async function getAllUsersHandler (req: Request, res: Response) {
             expand = expand.split(',')
         }
         
-        const users = await findAllUsers(filters, resPerPage, page, expand);
+        const users = await findAllUsers({...filters, ...{store: currentUser.store} }, resPerPage, page, expand);
     
         const responseObject = {
             page,

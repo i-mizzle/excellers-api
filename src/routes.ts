@@ -19,7 +19,7 @@ import { upload } from './service/integrations/cloudinary.service';
 import { newFileHandler, newFilesHandler } from './controller/file.controller';
 import { createItemHandler, deleteItemHandler, getItemHandler, getItemsHandler } from './controller/item.controller';
 import { updateItemHandler } from './controller/item-variant.controller';
-import { createCategoryHandler, getCategoriesHandler } from './controller/category.controller';
+import { createCategoryHandler, deleteCategoryHandler, getCategoriesHandler } from './controller/category.controller';
 import { createItemSchema } from './schema/item.schema';
 import { createMenuHandler, deleteMenuHandler, getMenuHandler, getMenusHandler, updateMenuHandler } from './controller/menu.controller';
 import { createMenuSchema } from './schema/menu.schema';
@@ -235,7 +235,17 @@ export default function(app: Express) {
     )
     // get all categories
     app.get('/categories/:storeId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_items']),
         getCategoriesHandler
+    )
+    // get all categories
+    app.delete('/categories/:categoryId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_items']),
+        deleteCategoryHandler
     )
     // Items
     // create item
