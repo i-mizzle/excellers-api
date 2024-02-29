@@ -293,7 +293,6 @@ export default function(app: Express) {
     app.get('/menus/:storeId',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_menus']),
         getMenusHandler
     )
 
@@ -301,7 +300,6 @@ export default function(app: Express) {
     app.get('/menus/:menuId/:storeId',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_menus']),
         getMenuHandler
     )
 
