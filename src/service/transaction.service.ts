@@ -65,15 +65,19 @@ export async function findTransactions(
     query: FilterQuery<TransactionDocument>,
     perPage: number,
     page: number,
-    expand: string,
+    expand: any,
     options: QueryOptions = { lean: true }
 ) {
     const total = await Transaction.find(query, {}, options).countDocuments()
-    const transactions = await Transaction.find(query, {}, options).populate(expand)
+    let transactions = null
+    if(perPage===0&&page===0){
+        transactions = await Transaction.find(query, {}, options).populate(expand)
+    } else {
+    transactions = await Transaction.find(query, {}, options).populate(expand)
         .sort({ 'createdAt' : -1 })
         .skip((perPage * page) - perPage)
         .limit(perPage);
-
+    }
     return {
         total,
         data: transactions

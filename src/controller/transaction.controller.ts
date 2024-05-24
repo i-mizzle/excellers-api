@@ -5,9 +5,11 @@ import { createTransaction, findAndUpdateTransaction, findTransaction, findTrans
 // import { generateCode } from "../utils/utils";
 import { createUser, findUser } from "../service/user.service";
 import { getJsDate } from "../utils/utils";
+import * as Papa from 'papaparse';
+import { orderItems } from "../service/order.service";
 
 const parseTransactionFilters = (query: any) => {
-    const { status, order, minAmount, maxAmount, minDate, maxDate, channel } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
+    const { order, minAmount, maxAmount, minDate, maxDate, channel } = query; // assuming the query params are named 'name', 'price', 'startDate', and 'endDate'
 
     const filters: any = {}; // create an empty object to hold the filters
 
@@ -201,6 +203,78 @@ export async function adminGetTransactionsByUserHandler (req: Request, res: Resp
         return response.error(res, error)
     }
 }
+
+export const exportTransactionsToCsvHandler = async (req: Request, res: Response) => {
+    try {
+        const user: any = get(req, 'user')
+        const queryObject: any = req.query;
+        const filters = parseTransactionFilters(queryObject)
+        const resPerPage = +queryObject.perPage || 25; // results per page
+        const page = +queryObject.page || 1; // Page 
+
+        let expand = ['order','createdBy']
+        // if(expand && expand.includes(',')) {
+        //     expand = expand.split(',')
+        // }
+        
+        let transactionsQuery: any = {user: user?._id}
+
+        if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
+            transactionsQuery = {}
+        }
+        
+        const transactions = await findTransactions({...transactionsQuery, ...filters}, 0, 0, expand);
+
+        let data: any = []
+
+        data = transactions.data.map((item: any) => {
+            console.log('an item ---> ', item)
+            let receivingChannel = ''
+            if(item.channel === 'transfer') {
+                receivingChannel = `${item.receivingChannel.bank} - ${item.receivingChannel.accountNumber}`
+            }
+            if(item.channel === 'pos'){
+                receivingChannel = `${item.receivingChannel.deviceName}`
+            }
+            const itemBody = {
+                "transaction reference": item.transactionReference,
+                order: item?.order?.alias,
+                "items purchased": orderItems(item.order),
+                channel: item.channel,
+                "receiving channel": receivingChannel,
+                "received by": item.createdBy?.name,
+                amount: item.amount,
+                "time stamp": `${new Date(item?.createdAt).toDateString()} - ${new Date(item?.createdAt).toLocaleTimeString()}`
+            }
+            
+            return itemBody
+        });
+
+        const csvString = Papa.unparse(data, { header: true });
+
+        res.setHeader('Content-Disposition', 'attachment; filename=output.csv');
+        res.setHeader('Content-Type', 'text/csv');
+        res.status(200).send(csvString);
+    } catch (error) {
+        console.error(error);
+        return response.error(res, error)
+    }
+}
+
+// const orderItems = (order: any) => {
+//     console.log(order)
+//     let orderItemsString = ''
+
+//     if(order?.items && order?.items?.length > 0) {
+//         order?.items?.forEach((item: any, itemIndex: number) => {
+//             orderItemsString += `${item.quantity} unit(s) of ${item.displayName} at ${item.price}`
+//             if(itemIndex < order.items.length - 1){
+//                 orderItemsString += ', '
+//             }
+//         })
+//     }
+//     return orderItemsString
+// }
 
 // export async function getTransactionsByPaymentItemHandler (req: Request, res: Response) {
 //     try {

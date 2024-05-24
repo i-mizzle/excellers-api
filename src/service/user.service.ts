@@ -41,7 +41,7 @@ export async function findAllUsers(
     expand?: string,
     options: QueryOptions = { lean: true }
 ) {
-    const total = await User.find().countDocuments()
+    const total = await User.find(query).countDocuments()
     const users = await User.find(query, {}, options).select('-password').populate(expand)
         .sort({ 'createdAt' : -1 })
         // .skip((perPage * page) - perPage)

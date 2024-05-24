@@ -1,13 +1,3 @@
-// const itemVariant = {
-//     sku: '',
-//     name: '',
-//     description: '',
-//     saleUnit: '',
-//     lowStockAlertCount: '',m
-//     input: [itemInput],
-//     currentStock: 0,
-// }
-
 import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 import { ItemDocument } from './item.model';
@@ -27,6 +17,7 @@ export interface ItemVariantDocument extends mongoose.Document {
     currentStock: number;
     recipe: Recipe[]
     deleted: boolean
+    hasInHouseRecipe: boolean
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -66,15 +57,19 @@ const ItemVariantSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        hasInHouseRecipe: {
+            type: Boolean,
+            default: false
+        },
         recipe: [
             {
                 item: {
                     type: mongoose.Schema.Types.ObjectId, ref: 'Item',
-                    required: true
+                    // required: true
                 },
                 measure: {
                     type: Number,
-                    required: true
+                    // required: true
                 }
             }
         ]

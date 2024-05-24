@@ -31,6 +31,11 @@ export interface OrderDocument extends mongoose.Document {
     source: string;
     items: OrderItem[];
     status: string;
+    statusHistory?: {
+        status?: string,
+        timeStamp?: Date
+        note?: string
+    }[]
     total: number;
     vat: number;
     sourceMenu: MenuDocument['_id']
@@ -99,10 +104,25 @@ const OrderSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+            enum: ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'PREPARING_ORDER', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'],
             default: 'IN_PROGRESS',
             required: true
         },
+        statusHistory: [
+            {
+                status: {
+                    type: String,
+                    enum: ['IN_PROGRESS', 'COMPLETED', 'PREPARING_ORDER', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'],
+                    default: 'IN_PROGRESS',
+                },
+                note: {
+                    type: String,
+                },
+                timeStamp: {
+                    type: Date,
+                }
+            }
+        ],
         paymentStatus: {
             type: String,
             enum: ['UNPAID', 'PART_PAID', 'PAID'],

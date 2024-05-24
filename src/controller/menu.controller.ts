@@ -5,6 +5,7 @@ import { addMinutesToDate, generateCode, getJsDate } from "../utils/utils";
 import { ItemVariantDocument } from "../model/item-variant.model";
 import { createMenu, findAndUpdateMenu, findMenu, findMenus } from "../service/menu.service";
 import { findUser } from "../service/user.service";
+import { MenuDocument } from "../model/menu.model";
 
 const parseMenuFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
@@ -77,7 +78,25 @@ const parseMenuFilters = (query: any) => {
 export const createMenuHandler = async (req: Request, res: Response) => {
     try {
         const userId = get(req, 'user._id');
-        let body = req.body
+
+        const user = await findUser({_id: userId})
+        if(!user){
+            return response.notFound(res, 'user not found')
+        }
+
+        const body = req.body
+
+        if(body.eCommerceMenu && body.eCommerceMenu === true){
+            // find all menus and set 'eCommerceMenu = false'
+            const menus = await findMenus({deleted: false, store: user.store, eCommerceMenu: true}, 0, 0, '')
+            if(menus.menus.length > 0){
+                await Promise.all(menus.menus.map(async (menu: MenuDocument) => {
+                    if(menu.eCommerceMenu === true){
+                        await findAndUpdateMenu({_id: menu._id}, {eCommerceMenu: false}, {new: true})
+                    }
+                }));
+            }
+        }
 
         const menu = await createMenu({...body, ...{createdBy: userId}})
         
@@ -91,7 +110,12 @@ export const createMenuHandler = async (req: Request, res: Response) => {
 export const getMenusHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
-        const storeId = get(req, 'params.storeId');
+        // const storeId = get(req, 'params.storeId');
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId}) 
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
 
         const filters = parseMenuFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; 
@@ -102,7 +126,7 @@ export const getMenusHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const items = await findMenus( {...filters, ...{ store:storeId, deleted: false }}, resPerPage, page, expand)
+        const items = await findMenus( {...filters, ...{ store: user.store, deleted: false }}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {
@@ -121,7 +145,12 @@ export const getMenusHandler = async (req: Request, res: Response) => {
 export const getMenuHandler = async (req: Request, res: Response) => {
     try {
         const menuId = get(req, 'params.menuId');
-        const storeId = get(req, 'params.storeId');
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId}) 
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
+
         const queryObject: any = req.query;
         let expand = queryObject.expand || null
 
@@ -129,7 +158,7 @@ export const getMenuHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const menu = await findMenu({ _id: menuId, store: storeId, deleted: false }, expand)
+        const menu = await findMenu({ _id: menuId, store: user.store, deleted: false }, expand)
 
         if(!menu) {
             return response.notFound(res, {message: 'menu not found'})
@@ -156,6 +185,17 @@ export const updateMenuHandler = async (req: Request, res: Response) => {
         const menu = await findMenu({_id: menuId, deleted: false, store: user.store})
         if(!menu) {
             return response.notFound(res, {message: 'menu not found for this store'})
+        }
+
+        if(update.eCommerceMenu && update.eCommerceMenu === true){
+            const menus = await findMenus({deleted: false, store: user.store, eCommerceMenu: true}, 0, 0, '')
+            if(menus.menus.length > 0){
+                await Promise.all(menus.menus.map(async (menu: MenuDocument) => {
+                    if(menu.eCommerceMenu === true){
+                        await findAndUpdateMenu({_id: menu._id}, {eCommerceMenu: false}, {new: true})
+                    }
+                }));
+            }
         }
 
         await findAndUpdateMenu({_id: menu._id}, update, {new: true})

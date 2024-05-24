@@ -25,8 +25,8 @@ import { createMenuHandler, deleteMenuHandler, getMenuHandler, getMenusHandler, 
 import { createMenuSchema } from './schema/menu.schema';
 import { getItemStockHistoryHandler, updateItemInventoryHandler } from './controller/inventory.controller';
 import { createOrderSchema } from './schema/order.schema';
-import { addToOrderHandler, createOrderHandler, deleteOrderHandler, getOrderHandler, getOrdersHandler, removeFromOrderHandler, updateOrderHandler } from './controller/order.controller';
-import { createTransactionHandler, getAllTransactionsHandler } from './controller/transaction.controller';
+import { addToOrderHandler, createOrderHandler, deleteOrderHandler, getOrderHandler, getOrdersByStoreHandler, getOrdersHandler, removeFromOrderHandler, updateOrderHandler } from './controller/order.controller';
+import { createTransactionHandler, exportTransactionsToCsvHandler, getAllTransactionsHandler } from './controller/transaction.controller';
 import { receivePaymentHandler } from './controller/payments.controller';
 
 
@@ -300,14 +300,14 @@ export default function(app: Express) {
     )
     
     // fetch menus
-    app.get('/menus/:storeId',
+    app.get('/menus',
         requiresUser,
         requiresAdministrator,
         getMenusHandler
     )
 
     // fetch menu details
-    app.get('/menus/:menuId/:storeId',
+    app.get('/menus/:menuId',
         requiresUser,
         requiresAdministrator,
         getMenuHandler
@@ -347,11 +347,19 @@ export default function(app: Express) {
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
+        getOrdersByStoreHandler
+    )
+    
+    // fetch orders
+    app.get('/orders',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_orders']),
         getOrdersHandler
     )
 
     // fetch order details
-    app.get('/orders/:orderId/:storeId',
+    app.get('/orders/:orderId',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
@@ -416,15 +424,21 @@ export default function(app: Express) {
     app.post('/transactions',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_orders']),
+        requiresPermissions(['can_manage_transactions']),
         receivePaymentHandler
     )
 
-    // update item stock
+    app.get('/transactions/:storeId/export/csv',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_transactions']),
+        exportTransactionsToCsvHandler
+    )
+
     app.get('/transactions/:storeId',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_inventory']),
+        requiresPermissions(['can_manage_transactions']),
         getAllTransactionsHandler
     )
 

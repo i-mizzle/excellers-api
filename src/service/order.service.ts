@@ -57,3 +57,18 @@ export async function deleteOrder(
 ) {
     return Order.deleteOne(query)
 }
+
+export const orderItems = (order: any) => {
+    console.log(order)
+    let orderItemsString = ''
+
+    if(order?.items && order?.items?.length > 0) {
+        order?.items?.forEach((item: any, itemIndex: number) => {
+            orderItemsString += `${item.quantity} unit(s) of ${item.displayName} at ${item.price}`
+            if(itemIndex < order.items.length - 1){
+                orderItemsString += ', '
+            }
+        })
+    }
+    return orderItemsString
+}

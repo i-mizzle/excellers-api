@@ -47,13 +47,15 @@ export const updateItemInventoryHandler = async (req: Request, res: Response) =>
             variantParent = await findItem(({ variants: body.variant }))
             const lowStockErrors: string[] = []
             // Check if all of its recipe items are available in the quantity needed
-            await Promise.all(item.recipe.map(async (recipeItem: Recipe) => {
-                const itemInRecipe = await findItem({_id: recipeItem.item});
-                const changeAmount = body.quantity * recipeItem.measure;
-                if (!itemInRecipe || itemInRecipe.currentStock < changeAmount) {
-                    lowStockErrors.push(`${itemInRecipe?.name} - ${itemInRecipe?.currentStock} available, ${changeAmount} required`)
-                }
-            }));
+            if(item.hasInHouseRecipe){
+                await Promise.all(item.recipe.map(async (recipeItem: Recipe) => {
+                    const itemInRecipe = await findItem({_id: recipeItem.item});
+                    const changeAmount = body.quantity * recipeItem.measure;
+                    if (!itemInRecipe || itemInRecipe.currentStock < changeAmount) {
+                        lowStockErrors.push(`${itemInRecipe?.name} - ${itemInRecipe?.currentStock} available, ${changeAmount} required`)
+                    }
+                }));
+            }
             if (lowStockErrors.length > 0) {
                 return response.conflict(res, {message:`low stock on input items: ${lowStockErrors.join(', ')}`});
             }
@@ -76,28 +78,30 @@ export const updateItemInventoryHandler = async (req: Request, res: Response) =>
             await findAndUpdateVariant({_id: item._id}, updateObject, {new: true});
 
             // Update the recipe items accordingly
-            await Promise.all(item.recipe.map(async (recipeItem: Recipe) => {
-                const itemInRecipe = await findItem({_id: recipeItem.item});
-                const changeAmount = body.quantity * recipeItem.measure;
+            if(item.hasInHouseRecipe){
+                await Promise.all(item.recipe.map(async (recipeItem: Recipe) => {
+                    const itemInRecipe = await findItem({_id: recipeItem.item});
+                    const changeAmount = body.quantity * recipeItem.measure;
 
-                if (itemInRecipe) {
-                    const recipeItemUpdate = {
-                        currentStock: itemInRecipe.currentStock - changeAmount
-                    };
-                    const recipeItemStockBeforeChange = itemInRecipe.currentStock
-                    await findAndUpdateItem({_id: itemInRecipe._id}, recipeItemUpdate, {new: true});
+                    if (itemInRecipe) {
+                        const recipeItemUpdate = {
+                            currentStock: itemInRecipe.currentStock - changeAmount
+                        };
+                        const recipeItemStockBeforeChange = itemInRecipe.currentStock
+                        await findAndUpdateItem({_id: itemInRecipe._id}, recipeItemUpdate, {new: true});
 
-                    await createStockHistory({
-                        recordedBy: userId,
-                        item: itemInRecipe._id,
-                        stockBeforeChange: recipeItemStockBeforeChange,
-                        note: `stock deduction for production of ${body.quantity} units of ${item.name} ${variantParent?.name}`,
-                        type: 'decrease',
-                        quantity: changeAmount,
-                        store: body.store
-                    });
-                }
-            }));
+                        await createStockHistory({
+                            recordedBy: userId,
+                            item: itemInRecipe._id,
+                            stockBeforeChange: recipeItemStockBeforeChange,
+                            note: `stock deduction for production of ${body.quantity} units of ${item.name} ${variantParent?.name}`,
+                            type: 'decrease',
+                            quantity: changeAmount,
+                            store: body.store
+                        });
+                    }
+                }));
+            }
         }
 
         // Create stock history

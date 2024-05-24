@@ -2,26 +2,11 @@ import { Request, Response } from "express";
 import * as response from '../responses'
 import { get } from "lodash";
 import { getJsDate } from "../utils/utils";
-import { createOrder, deleteOrder, findAndUpdateOrder, findOrder, findOrders, orderTotal } from "../service/order.service";
+import { createOrder, deleteOrder, findAndUpdateOrder, findOrder, findOrders, orderItems, orderTotal } from "../service/order.service";
 import { findUser } from "../service/user.service";
 import { findAndUpdateVariant, findVariant } from "../service/item-variant.service";
 import { createStockHistory, findAndUpdateStockHistory, findStockHistoryEntry } from "../service/stock-history.service";
-
-// createdBy?: UserDocument['_id'];
-//     store: StoreDocument['_id']
-//     alias: string,
-//     source: string;
-//     items: OrderItem[];
-//     status: string;
-//     total: number;
-//     paymentStatus: string;
-//     deliveryAddress?: {
-//         address: string
-//         city: string
-//         state: string
-//     }
-//     createdAt?: Date;
-//     updatedAt?: Date;
+import * as Papa from 'papaparse';
 
 const parseOrderFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, alias, status, store, source, minTotal, maxTotal, paymentStatus } = query; 
@@ -86,12 +71,69 @@ export const createOrderHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const body = req.body
 
+        const inventoryErrors: string[] = []
+
+        // check first if all inventory items have enough stock
+        await Promise.all(body.items.map(async (item: any) =>{
+            const checkResult = await checkItemInventory(item.item, item.quantity)
+            if(checkResult.error === true) {
+                inventoryErrors.push(checkResult.data)
+            }
+        }))
+
+        if(inventoryErrors.length > 0 ){
+            return response.badRequest(res, {data: inventoryErrors.join(', ')})
+        }
+
+        // Deduct all inventory items
+        await Promise.all(body.items.map(async (item: any) =>{
+            await deductItemInventory(item.item, item.quantity)
+        }))
+
+
+
         const total = orderTotal(body.items)
         const order = await createOrder({...body, ...{createdBy: userId, total: total.total, vat: total.vat}})
-        
         return response.created(res, order)
     } catch (error:any) {
         return response.error(res, error)
+    }
+}
+
+const checkItemInventory = async (itemId: any, quantity: number) => {
+
+    const item = await findVariant({_id: itemId})
+    if(!item) {
+        return {
+            error: true,
+            errorType: 'notFound',
+            data: `item not found`
+        }
+    }
+
+    if(quantity > item.currentStock){
+        return {
+            error: true,
+            errorType: 'conflict',
+            data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
+        }
+        // response.notFound(res, {message: 'required quantity exceeds stock'})
+    } else {
+        return{
+            error: false,
+            errorType: '',
+            data: `sufficient stock for ${item.name}`
+        }
+    }
+}
+
+const deductItemInventory = async (itemId: any, quantity: number) => {
+
+    const item = await findVariant({_id: itemId})
+    if(item) {
+        const previousStock = item.currentStock
+        const newItemStock = previousStock - quantity
+        await findAndUpdateVariant({_id: item._id}, {currentStock: newItemStock}, {new: true})
     }
 }
 
@@ -214,19 +256,26 @@ export const removeFromOrderHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getOrdersHandler = async (req: Request, res: Response) => {
+export const getOrdersByStoreHandler = async (req: Request, res: Response) => {
     try {
         const queryObject: any = req.query;
+        const storeId = req.params.storeId
         const filters = parseOrderFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; 
         const page = +queryObject.page || 1; 
         let expand = queryObject.expand || null
 
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
+
         if(expand && expand.includes(',')) {
             expand = expand.split(',')
         }
 
-        const orders = await findOrders(filters, resPerPage, page, expand)
+        const orders = await findOrders({...filters, ...{store: storeId}}, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {
@@ -242,17 +291,115 @@ export const getOrdersHandler = async (req: Request, res: Response) => {
     }
 }
 
-export const getOrderHandler = async (req: Request, res: Response) => {
+export const getOrdersHandler = async (req: Request, res: Response) => {
     try {
-        const orderId = get(req, 'params.orderId');
         const queryObject: any = req.query;
+        const filters = parseOrderFilters(queryObject)
+        const resPerPage = +queryObject.perPage || 25; 
+        const page = +queryObject.page || 1; 
         let expand = queryObject.expand || null
+
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
 
         if(expand && expand.includes(',')) {
             expand = expand.split(',')
         }
 
-        const order = await findOrder({ _id: orderId, deleted: false }, expand)
+        let ordersQuery = {
+            ...filters, ...{store: user.store}
+        }
+
+        if(user.userType === 'SUPER_ADMINISTRATOR') {
+            ordersQuery = {...filters}
+        }
+
+        const orders = await findOrders(ordersQuery, resPerPage, page, expand)
+        // return res.send(post)
+
+        const responseObject = {
+            page,
+            perPage: resPerPage,
+            total: orders.total,
+            orders: orders.orders
+        }
+
+        return response.ok(res, responseObject)        
+    } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
+export const exportOrdersToCsvHandler = async (req: Request, res: Response) => {
+    try {
+        const queryObject: any = req.query;
+        const filters = parseOrderFilters(queryObject)
+        const resPerPage = +queryObject.perPage || 25; 
+        const page = +queryObject.page || 1; 
+        let expand = queryObject.expand || null
+
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const orders = await findOrders({...filters, ...{store: user.store}}, 0, 0, expand)
+
+        let data: any = []
+
+        data = orders.orders.map((item: any) => {
+            console.log('an order ---> ', item)
+            const itemBody = {
+                "source menu": item.sourceMenu.name,
+                "order alias": item?.alias,
+                "items purchased": orderItems(item.order),
+                "status": item.status,
+                "processed by": item.createdBy?.name,
+                total: item.total,
+                vat: item.vat,
+                "payment status": item.paymentStatus,
+                "time stamp": `${new Date(item?.createdAt).toDateString()} - ${new Date(item?.createdAt).toLocaleTimeString()}`
+            }
+            
+            return itemBody
+        });
+
+        const csvString = Papa.unparse(data, { header: true });
+
+        res.setHeader('Content-Disposition', 'attachment; filename=output.csv');
+        res.setHeader('Content-Type', 'text/csv');
+        res.status(200).send(csvString);
+    } catch (error) {
+        console.error(error);
+        return response.error(res, error)
+    }
+}
+
+export const getOrderHandler = async (req: Request, res: Response) => {
+    try {
+        const orderId = get(req, 'params.orderId');
+        const queryObject: any = req.query;
+
+        const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
+
+        let expand = queryObject.expand || null
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const order = await findOrder({ _id: orderId, store: user.store }, expand)
 
         if(!order) {
             return response.notFound(res, {message: 'order not found'})
@@ -269,9 +416,13 @@ export const updateOrderHandler = async (req: Request, res: Response) => {
     try {
         const orderId = get(req, 'params.orderId');
         const userId = get(req, 'user._id');
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
         let update = req.body
 
-        const item = await findOrder({_id: orderId})
+        const item = await findOrder({_id: orderId, store: user.store})
         if(!item) {
             return response.notFound(res, {message: 'order not found'})
         }
