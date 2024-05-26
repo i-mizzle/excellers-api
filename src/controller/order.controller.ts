@@ -90,8 +90,6 @@ export const createOrderHandler = async (req: Request, res: Response) => {
             await deductItemInventory(item.item, item.quantity)
         }))
 
-
-
         const total = orderTotal(body.items)
         const order = await createOrder({...body, ...{createdBy: userId, total: total.total, vat: total.vat}})
         return response.created(res, order)
@@ -453,7 +451,7 @@ export const deleteOrderHandler = async (req: Request, res: Response) => {
                 if(!variant) {
                     return response.notFound(res, {message: 'item not found'})
                 }
-                const newItemStock = variant.currentStock +- item.quantity
+                const newItemStock = variant.currentStock + item.quantity
                 await findAndUpdateVariant({_id: item.item}, {currentStock: newItemStock}, {new: true})
             }))
         }
