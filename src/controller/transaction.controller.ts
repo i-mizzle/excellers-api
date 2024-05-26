@@ -140,6 +140,7 @@ export async function getTransactionHandler (req: Request, res: Response) {
 export async function getAllTransactionsHandler (req: Request, res: Response) {
     try {
         const user: any = get(req, 'user')
+        const storeId = req.params.storeId
         const queryObject: any = req.query;
         const filters = parseTransactionFilters(queryObject)
         const resPerPage = +queryObject.perPage || 25; // results per page
@@ -151,7 +152,7 @@ export async function getAllTransactionsHandler (req: Request, res: Response) {
             expand = expand.split(',')
         }
         
-        let transactionsQuery: any = {user: user?._id}
+        let transactionsQuery: any = {store: storeId}
 
         if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
             transactionsQuery = {}
