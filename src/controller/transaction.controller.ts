@@ -154,9 +154,9 @@ export async function getAllTransactionsHandler (req: Request, res: Response) {
         
         let transactionsQuery: any = {store: storeId}
 
-        if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
-            transactionsQuery = {}
-        }
+        // if(user?.userType === 'ADMIN' || user?.userType === 'SUPER_ADMINISTRATOR' ) {
+        //     transactionsQuery = {}
+        // }
         
         const transactions = await findTransactions({...transactionsQuery, ...filters}, resPerPage, page, expand);
 
@@ -231,11 +231,11 @@ export const exportTransactionsToCsvHandler = async (req: Request, res: Response
         data = transactions.data.map((item: any) => {
             console.log('an item ---> ', item)
             let receivingChannel = ''
-            if(item.channel === 'transfer') {
-                receivingChannel = `${item.receivingChannel.bank} - ${item.receivingChannel.accountNumber}`
+            if(item.channel === 'transfer' && item.receivingChannel) {
+                receivingChannel = `${item.receivingChannel?.bank} - ${item.receivingChannel?.accountNumber}`
             }
-            if(item.channel === 'pos'){
-                receivingChannel = `${item.receivingChannel.deviceName}`
+            if(item.channel === 'pos' && item.receivingChannel){
+                receivingChannel = `${item.receivingChannel?.deviceName}`
             }
             const itemBody = {
                 "transaction reference": item.transactionReference,
