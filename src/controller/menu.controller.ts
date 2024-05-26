@@ -142,6 +142,30 @@ export const getMenusHandler = async (req: Request, res: Response) => {
     }
 }
 
+export const getEcommerceMenuHandler = async (req: Request, res: Response) => {
+    try {
+        const storeId = get(req, 'params.storeId');
+
+        const queryObject: any = req.query;
+        let expand = queryObject.expand || null
+
+        if(expand && expand.includes(',')) {
+            expand = expand.split(',')
+        }
+
+        const menu = await findMenu({ store: storeId, eCommerceMenu: true, deleted: false }, expand)
+
+        if(!menu) {
+            return response.notFound(res, {message: 'menu not found'})
+        }
+
+        return response.ok(res, menu)
+        
+    } catch (error:any) {
+        return response.error(res, error)
+    }
+}
+
 export const getMenuHandler = async (req: Request, res: Response) => {
     try {
         const menuId = get(req, 'params.menuId');
@@ -219,6 +243,10 @@ export const deleteMenuHandler = async (req: Request, res: Response) => {
         const menu = await findMenu({_id: menuId, deleted: false, store: user.store})
         if(!menu) {
             return response.notFound(res, {message: 'menu not found for this store'})
+        }
+
+        if(menu.eCommerceMenu === true) {
+            return response.conflict(res, {message: `this menu is currently set as your store's e-commerce menu set another e-commerce menu before deleting it.`})
         }
 
         await findAndUpdateMenu({_id: menu._id}, {deleted: true}, {new: true})

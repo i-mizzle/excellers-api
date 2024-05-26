@@ -21,7 +21,7 @@ import { createItemHandler, deleteItemHandler, getItemHandler, getItemsHandler }
 import { updateItemHandler } from './controller/item-variant.controller';
 import { createCategoryHandler, deleteCategoryHandler, getCategoriesHandler } from './controller/category.controller';
 import { createItemSchema } from './schema/item.schema';
-import { createMenuHandler, deleteMenuHandler, getMenuHandler, getMenusHandler, updateMenuHandler } from './controller/menu.controller';
+import { createMenuHandler, deleteMenuHandler, getEcommerceMenuHandler, getMenuHandler, getMenusHandler, updateMenuHandler } from './controller/menu.controller';
 import { createMenuSchema } from './schema/menu.schema';
 import { getItemStockHistoryHandler, updateItemInventoryHandler } from './controller/inventory.controller';
 import { createOrderSchema } from './schema/order.schema';
@@ -235,9 +235,9 @@ export default function(app: Express) {
     )
     // get all categories
     app.get('/categories/:storeId',
-        requiresUser,
-        requiresAdministrator,
-        requiresPermissions(['can_manage_items']),
+        // requiresUser,
+        // requiresAdministrator,
+        // requiresPermissions(['can_manage_items']),
         getCategoriesHandler
     )
     // get all categories
@@ -297,6 +297,11 @@ export default function(app: Express) {
         requiresPermissions(['can_manage_menus']),
         validateRequest(createMenuSchema),
         createMenuHandler
+    )
+    
+    // fetch store ecommerce menu
+    app.get('/menus/e-commerce/:storeId',
+        getEcommerceMenuHandler
     )
     
     // fetch menus
@@ -359,7 +364,7 @@ export default function(app: Express) {
     )
 
     // fetch order details
-    app.get('/orders/:orderId',
+    app.get('/orders/details/:orderId',
         requiresUser,
         requiresAdministrator,
         requiresPermissions(['can_manage_orders']),
