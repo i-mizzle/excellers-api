@@ -9,7 +9,7 @@ import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
 import { adminUpdateUserHandler, bulkImportUsers, bulkResetPasswords, changePasswordHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, resetUserPassword, updateUserHandler } from './controller/user.controller';
 import { createStoreSchema, getStoreSchema } from './schema/store.schema';
-import { createStoreHandler, getStoreDetailsHandler } from './controller/store.controller';
+import { createStoreHandler, getStoreDetailsHandler, getStoresHandler } from './controller/store.controller';
 import { createUserSessionHandler, invalidateUserSessionHandler } from './controller/session.controller';
 import requiresPermissions from './middleware/requiresPermissions';
 import { rejectForbiddenUserFields } from './middleware/rejectForbiddenUserFields';
@@ -107,6 +107,13 @@ export default function(app: Express) {
         // requiresAdministrator,
         validateRequest(createStoreSchema), 
         createStoreHandler
+    )
+
+    app.get('/stores', 
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_store']),
+        getStoresHandler
     )
 
     app.get('/store/:storeId', 
@@ -222,6 +229,7 @@ export default function(app: Express) {
 
     app.get('/dashboard/stats/:storeId', 
         requiresUser,
+        requiresPermissions(['can_manage_reports']),
         statsHandler
     )
 
@@ -351,7 +359,7 @@ export default function(app: Express) {
     app.get('/orders/:storeId',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_orders']),
+        requiresPermissions(['can_manage_reports']),
         getOrdersByStoreHandler
     )
     

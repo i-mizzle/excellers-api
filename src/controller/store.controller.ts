@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
-import { createStore, findAndUpdateStore, findStore } from "../service/store.service";
+import { createStore, findAndUpdateStore, findStore, findStores } from "../service/store.service";
 import { findAndUpdateUser, findUser } from "../service/user.service";
 
 export const createStoreHandler = async (req: Request, res: Response) => {
@@ -33,6 +33,30 @@ export const getStoreDetailsHandler = async (req: Request, res: Response) => {
         }
 
         return response.ok(res, store)
+    } catch (error: any) {
+        log.error(error)
+        return response.error(res, error)
+    }
+}
+
+export const getStoresHandler = async (req: Request, res: Response) => {
+    try {
+        const queryObject: any = req.query;
+        // const filters = parseOrderFilters(queryObject)
+        const resPerPage = +queryObject.perPage || 25; 
+        const page = +queryObject.page || 1; 
+        let expand = queryObject.expand || null
+
+        const stores = await findStores({}, resPerPage, page, expand)
+
+        const responseObject = {
+            page,
+            perPage: resPerPage,
+            total: stores.total,
+            stores: stores.stores
+        }
+
+        return response.ok(res, responseObject)
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
