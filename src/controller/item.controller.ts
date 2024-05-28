@@ -9,7 +9,7 @@ import { findAndUpdateMenu, findMenus } from "../service/menu.service";
 import { MenuDocument, MenuItem } from "../model/menu.model";
 
 const parseItemFilters = (query: any) => {
-    const { minDateCreated, maxDateCreated, type, name, category } = query; 
+    const { minDateCreated, maxDateCreated, type, name, category, barcode } = query; 
 
     const filters: any = {}; 
 
@@ -36,6 +36,11 @@ const parseItemFilters = (query: any) => {
     if (minDateCreated && maxDateCreated) {
         filters.date = { $gte: getJsDate(minDateCreated), $lte: getJsDate(maxDateCreated) };
     }
+
+    if (barcode) {
+        // const addonIds = addons.split(","); // assuming that the category ids are passed as a comma-separated string
+        filters.barcodes = { $in: [barcode] }; 
+    }
   
     return filters
 }
@@ -45,7 +50,7 @@ export const createItemHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const body = req.body
 
-        const item = await createItem({
+        const itemPayload = {
             // ...body, ...{createdBy: userId}
             createdBy: body.createdBy,
             store: body.store,
@@ -58,21 +63,34 @@ export const createItemHandler = async (req: Request, res: Response) => {
             stockUnit: body?.stockUnit,
             currentStock: 0,
             coverImage: body.coverImage || null,
-        })
+        }
+
+        const item = await createItem(itemPayload)
+
         const variants: ItemVariantDocument[] = []
         const update: ItemVariantDocument['_id'][] = []
         let updatedItem = null
         if(body.variants && body.variants !== ''){
+            let barcodes: string[] = []
+            if(body.barcode && body.barcode !== ''){
+                barcodes.push(body.barcode)
+            }
             await Promise.all(body.variants.map(
                 async (variant: ItemVariantDocument, variantIndex: number) => {
                     const newVariant = await createVariant({...variant, ...{
                         createdBy: body.createdBy
                     }})
+                    if(variant.barcode && variant.barcode !== '') {
+                        barcodes.push(variant.barcode)
+                    }
                     variants.push(newVariant)
                     update.push(newVariant._id)
                 }
             ))
-            updatedItem = await findAndUpdateItem({_id: item._id}, {variants: update}, {new: true})
+            updatedItem = await findAndUpdateItem({_id: item._id}, {
+                variants: update, 
+                barcodes: barcodes
+            }, {new: true})
         }
 
         

@@ -51,6 +51,7 @@ export interface ItemDocument extends mongoose.Document {
     description: string
     lowStockAlertCount: number
     type: string
+    barcodes?: string[],
     deleted?: boolean
     stockUnit?: string
     currentStock: number
@@ -94,6 +95,7 @@ const ItemSchema = new mongoose.Schema(
         sku: {
             type: String,
         },
+        barcodes: [],
         deleted: {
             type: Boolean,
             default: false

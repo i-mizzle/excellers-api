@@ -11,6 +11,7 @@ export interface ItemVariantDocument extends mongoose.Document {
     createdBy?: UserDocument['_id'];
     item: ItemDocument['_id'];
     name: string;
+    barcode?: string
     sku: string;
     description: string;
     saleUnit: string;
@@ -33,6 +34,9 @@ const ItemVariantSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true
+        },
+        barcode: {
+            type: String
         },
         sku: {
             type: String,

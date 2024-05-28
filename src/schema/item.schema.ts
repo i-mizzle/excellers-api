@@ -23,6 +23,7 @@ export const createItemSchema = object({
         // state: string().required('phone number (phone) is required'),  
         variants: array( object({
             name: string().required('variant name is required'),
+            barcode: string(),
             sku: string().required('variant sku is required'),
             description: string(),
             saleUnit: string().required('variant saleUnit is required'),
