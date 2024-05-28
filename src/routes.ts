@@ -28,6 +28,8 @@ import { createOrderSchema } from './schema/order.schema';
 import { addToOrderHandler, createOrderHandler, deleteOrderHandler, getOrderHandler, getOrdersByStoreHandler, getOrdersHandler, removeFromOrderHandler, updateOrderHandler } from './controller/order.controller';
 import { createTransactionHandler, exportTransactionsToCsvHandler, getAllTransactionsHandler } from './controller/transaction.controller';
 import { receivePaymentHandler } from './controller/payments.controller';
+import { createEnquirySchema } from './schema/enquiry.schema';
+import { createEnquiryHandler, getEnquiriesHandler } from './controller/enquiry.controller';
 
 
 export default function(app: Express) {
@@ -297,6 +299,21 @@ export default function(app: Express) {
         deleteItemHandler
     )
 
+    // Enquiry
+    // create enquiry
+    app.post('/enquiries',
+        validateRequest(createEnquirySchema),
+        createEnquiryHandler
+    )
+
+    // fetch menus
+    app.get('/enquiries',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_enquiries']),
+        getEnquiriesHandler
+    )
+    
     // Menus
     // create menu
     app.post('/menus',
