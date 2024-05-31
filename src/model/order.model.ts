@@ -40,10 +40,19 @@ export interface OrderDocument extends mongoose.Document {
     vat: number;
     sourceMenu: MenuDocument['_id']
     paymentStatus: string;
+    orderBy?: {
+        name: string
+        email: string
+        phone: string
+    }
+    paymentMethod?: string
+    deliveryType?: string
+    PickupOutlet?: string
     deliveryAddress?: {
         address: string
         city: string
         state: string
+        description: string
     }
     createdAt?: Date;
     updatedAt?: Date;
@@ -129,6 +138,29 @@ const OrderSchema = new mongoose.Schema(
             default: 'UNPAID',
             required: true
         },
+        orderBy: {
+            name: {
+                type: String,
+            },
+            email: {
+                type: String
+            },
+            phone: {
+                type: String
+            }
+        },
+        paymentMethod: {
+            type: String,
+            enum: ['CASH_ON_DELIVERY', 'POS_ON_DELIVERY', 'CASH'],
+        },
+        deliveryType: {
+            type: String,
+            enum: ['DOORSTEP', 'PICKUP'],
+        },
+        pickupOutlet: {
+            type: String
+            // enum: ['DOORSTEP', 'PICKUP'],
+        },
         deliveryAddress: {
             address: {
                 type: String,
@@ -138,7 +170,10 @@ const OrderSchema = new mongoose.Schema(
             },
             state: {
                 type: String
-            }
+            },
+            description: {
+                type: String
+            },
         }
 
     },

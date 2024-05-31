@@ -5,6 +5,8 @@ export const createStoreSchema = object({
         createdBy: string().required('createdBy is required'),
         name: string().required('name is required'),
         address: string().required('address is required'),
+        phone: string().required('address is required'),
+        email: string().required('contact email is required'),
         city: string().required('city is required'),
         state: string().required('phone number (phone) is required'),           
     })

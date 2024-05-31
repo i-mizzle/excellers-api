@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as response from '../responses'
-import { get } from "lodash";
+import { AnyKindOfDictionary, get } from "lodash";
 import { findAndUpdateCart, findCart } from "../service/cart.service";
 import { createOrder, orderTotal } from "../service/order.service";
 
@@ -23,18 +23,26 @@ export const checkoutHandler = async (req: Request, res: Response) => {
         await findAndUpdateCart({_id: cartId}, cartUpdate, {new: true})
 
         // create order pulling cart items and total price and set payment status to pending
-        const orderPayload = {
+        const orderPayload: any = {
             alias: `web-order-${cartId}`,
-            source: 'online',
+            source: 'ONLINE',
             items: cart.items,
             total: orderTotal(cart.items).total,
-            deliveryAddress: body.deliveryAddress,
             status: 'COMPLETED',
             paymentStatus: 'UNPAID',
-            sourceMenu: body.menu,
+            sourceMenu: body.sourceMenu,
             store: body.store,
+            orderBy: body.orderBy,
+            deliveryType: body.deliveryType,
             vat: orderTotal(cart.items).vat
+        }
 
+        if(body.deliveryType === 'DOORSTEP') {
+            orderPayload.deliveryAddress = body.deliveryAddress
+        }
+
+        if(body.deliveryType === 'PICKUP') {
+            orderPayload.pickupOutlet = body.pickupOutlet
         }
 
         const order = await createOrder(orderPayload)

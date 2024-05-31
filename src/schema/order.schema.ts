@@ -26,9 +26,18 @@ export const createOrderSchema = object({
             // .required('deliveryAddress.city is required'),
             state: string()
             // .required('deliveryAddress.state is required')
-        }).when('source', {
+        }).when('deliveryType', {
+            is: 'DOORSTEP', 
+            then: object().required('delivery address is required for online doorstep deliveries')
+        }),
+        deliveryType: string(),
+        pickupOutlet: string().when('deliveryType', {
+            is: 'PICKUP', 
+            then: object().required('pickupOutlet is required for pickup orders')
+        }),
+        paymentMethod: string().when('source', {
             is: 'ONLINE', 
-            then: object().required('deliveryAddress is required for online orders')
+            then: object().required('paymentMethod is required for online orders')
         }),
     })
 });

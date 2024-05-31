@@ -31,7 +31,7 @@ export async function findCarts(
 
 export async function findCart(
     query: FilterQuery<CartDocument>,
-    expand?: string,
+    expand?: any,
     options: QueryOptions = { lean: true }
 ) {
     return Cart.findOne(query, {}, options).populate(expand)

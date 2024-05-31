@@ -30,6 +30,9 @@ import { createTransactionHandler, exportTransactionsToCsvHandler, getAllTransac
 import { receivePaymentHandler } from './controller/payments.controller';
 import { createEnquirySchema } from './schema/enquiry.schema';
 import { createEnquiryHandler, getEnquiriesHandler } from './controller/enquiry.controller';
+import { deductFromCartHandler, getCartsHandler, getClientCartHandler, sendToCartHandler } from './controller/cart.controller';
+import { checkoutCartSchema, deductFromCartSchema, sendToCartSchema } from './schema/cart.schema';
+import { checkoutHandler } from './controller/checkout.controller';
 
 
 export default function(app: Express) {
@@ -134,9 +137,9 @@ export default function(app: Express) {
     )
 
     app.get('/settings/:storeId', 
-        requiresUser,
-        requiresAdministrator,
-        // requiresPermissions(['can_manage_store']),
+        // requiresUser,
+        // requiresAdministrator,
+        // // requiresPermissions(['can_manage_store']),
         validateRequest(getStoreSchema), 
         findStoreSettingHandler
     )
@@ -313,7 +316,40 @@ export default function(app: Express) {
         requiresPermissions(['can_manage_enquiries']),
         getEnquiriesHandler
     )
+
+    // SHOPPING CARTS
     
+    // fetch store shopping carts
+    app.get('/shopping-carts/:storeId',
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_shopping_carts']),
+        getCartsHandler
+    )
+    
+    // fetch store shopping carts
+    app.get('/shopping-carts/:storeId/:clientId',
+        getClientCartHandler
+    )
+    
+    // send item to shopping cart
+    app.post('/shopping-carts/add/:storeId',
+        validateRequest(sendToCartSchema),
+        sendToCartHandler
+    )
+    
+    // send item to shopping cart
+    app.post('/shopping-carts/deduct/:storeId',
+        validateRequest(deductFromCartSchema),
+        deductFromCartHandler
+    )
+
+    // checkout shopping carts
+    app.post('/shopping-carts/:cartId/checkout',
+        validateRequest(checkoutCartSchema),
+        checkoutHandler
+    )
+
     // Menus
     // create menu
     app.post('/menus',

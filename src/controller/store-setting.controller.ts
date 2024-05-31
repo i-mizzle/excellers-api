@@ -3,6 +3,7 @@ import { get, omit } from "lodash";
 import * as response from "../responses/index";
 import log from "../logger";
 import { createStoreSetting, findAndUpdateStoreSetting, findStoreSetting } from "../service/store-setting.service";
+import { findStore } from "../service/store.service";
 
 
 export const createUpdateStoreSettingHandler = async (req: Request, res: Response) => {
@@ -27,13 +28,18 @@ export const createUpdateStoreSettingHandler = async (req: Request, res: Respons
 export const findStoreSettingHandler = async (req: Request, res: Response) => {
     try {
         const storeId = req.params.storeId;
+        const store = await findStore({_id: storeId})
+
+        if(!store){
+            return response.notFound(res, {message: 'store not found'})
+        }
         const storeSetting = await findStoreSetting({store: storeId})
 
         if(!storeSetting) {
-            return response.notFound(res, {message: 'Store setting not found'})
+            return response.notFound(res, {message: 'store setting not found'})
         }
 
-        return response.ok(res, storeSetting)
+        return response.ok(res, {...storeSetting, ...{storeDetails: store}})
     } catch (error: any) {
         log.error(error)
         return response.error(res, error)
