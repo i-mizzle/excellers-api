@@ -28,7 +28,7 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             source: 'ONLINE',
             items: cart.items,
             total: orderTotal(cart.items).total,
-            status: 'COMPLETED',
+            status: 'PENDING',
             paymentStatus: 'UNPAID',
             sourceMenu: body.sourceMenu,
             store: body.store,
