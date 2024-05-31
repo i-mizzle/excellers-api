@@ -43,7 +43,8 @@ export const sendToCartHandler = async (req: Request, res: Response) => {
         const existingCart = await findCart({
             clientId: body.clientId, 
             store: storeId, 
-            deleted: false
+            deleted: false,
+            checkoutStatus: 'pending'
         })
         let cart = null
         if(!existingCart) {
