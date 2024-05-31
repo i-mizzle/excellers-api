@@ -158,8 +158,8 @@ const OrderSchema = new mongoose.Schema(
             enum: ['DOORSTEP', 'PICKUP'],
         },
         pickupOutlet: {
-            type: String
-            // enum: ['DOORSTEP', 'PICKUP'],
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Store',
         },
         deliveryAddress: {
             address: {
