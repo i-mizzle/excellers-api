@@ -4,7 +4,7 @@ import { get } from "lodash";
 import { getJsDate } from "../utils/utils";
 import { createOrder, deleteOrder, findAndUpdateOrder, findOrder, findOrders, orderItems, orderTotal } from "../service/order.service";
 import { findUser } from "../service/user.service";
-import { findAndUpdateVariant, findVariant } from "../service/item-variant.service";
+import { checkItemInventory, deductItemInventory, findAndUpdateVariant, findVariant } from "../service/item-variant.service";
 import { createStockHistory, findAndUpdateStockHistory, findStockHistoryEntry } from "../service/stock-history.service";
 import * as Papa from 'papaparse';
 
@@ -95,43 +95,6 @@ export const createOrderHandler = async (req: Request, res: Response) => {
         return response.created(res, order)
     } catch (error:any) {
         return response.error(res, error)
-    }
-}
-
-const checkItemInventory = async (itemId: any, quantity: number) => {
-
-    const item = await findVariant({_id: itemId})
-    if(!item) {
-        return {
-            error: true,
-            errorType: 'notFound',
-            data: `item not found`
-        }
-    }
-
-    if(quantity > item.currentStock){
-        return {
-            error: true,
-            errorType: 'conflict',
-            data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
-        }
-        // response.notFound(res, {message: 'required quantity exceeds stock'})
-    } else {
-        return{
-            error: false,
-            errorType: '',
-            data: `sufficient stock for ${item.name}`
-        }
-    }
-}
-
-const deductItemInventory = async (itemId: any, quantity: number) => {
-
-    const item = await findVariant({_id: itemId})
-    if(item) {
-        const previousStock = item.currentStock
-        const newItemStock = previousStock - quantity
-        await findAndUpdateVariant({_id: item._id}, {currentStock: newItemStock}, {new: true})
     }
 }
 

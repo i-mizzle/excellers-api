@@ -55,3 +55,40 @@ export async function findAndUpdateVariant(
 ) {
     return ItemVariant.findOneAndUpdate(query, update, options)
 }
+
+export const checkItemInventory = async (itemId: any, quantity: number) => {
+
+    const item = await findVariant({_id: itemId})
+    if(!item) {
+        return {
+            error: true,
+            errorType: 'notFound',
+            data: `item not found`
+        }
+    }
+
+    if(quantity > item.currentStock){
+        return {
+            error: true,
+            errorType: 'conflict',
+            data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
+        }
+        // response.notFound(res, {message: 'required quantity exceeds stock'})
+    } else {
+        return{
+            error: false,
+            errorType: '',
+            data: `sufficient stock for ${item.name}`
+        }
+    }
+}
+
+export const deductItemInventory = async (itemId: any, quantity: number) => {
+
+    const item = await findVariant({_id: itemId})
+    if(item) {
+        const previousStock = item.currentStock
+        const newItemStock = previousStock - quantity
+        await findAndUpdateVariant({_id: item._id}, {currentStock: newItemStock}, {new: true})
+    }
+}

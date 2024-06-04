@@ -3,6 +3,7 @@ import * as response from '../responses'
 import { AnyKindOfDictionary, get } from "lodash";
 import { findAndUpdateCart, findCart } from "../service/cart.service";
 import { createOrder, orderTotal } from "../service/order.service";
+import { checkItemInventory, deductItemInventory } from "../service/item-variant.service";
 
 export const checkoutHandler = async (req: Request, res: Response) => {
     try {
@@ -18,6 +19,25 @@ export const checkoutHandler = async (req: Request, res: Response) => {
         const cartUpdate = {
             checkoutStatus: 'checked_out'
         }
+
+        const inventoryErrors: string[] = []
+
+        // check first if all inventory items have enough stock
+        await Promise.all(cart.items.map(async (item: any) =>{
+            const checkResult = await checkItemInventory(item.item, item.quantity)
+            if(checkResult.error === true) {
+                inventoryErrors.push(checkResult.data)
+            }
+        }))
+
+        if(inventoryErrors.length > 0 ){
+            return response.badRequest(res, {data: inventoryErrors.join(', ')})
+        }
+
+        // Deduct all inventory items
+        await Promise.all(cart.items.map(async (item: any) =>{
+            await deductItemInventory(item.item, item.quantity)
+        }))
 
         // update cart checkout status
         await findAndUpdateCart({_id: cartId}, cartUpdate, {new: true})
