@@ -62,7 +62,7 @@ export const deductFromCartSchema = object({
 export const checkoutCartSchema = object({
     body: object({
         deliveryType: string().required('delivery type is required'),
-        paymentType: string().required('payment type is required'),
+        paymentMethod: string().required('payment method is required'),
         sourceMenu: string().required('source menu is required'),
         store: string().required('store is required'),
         orderBy: object({
