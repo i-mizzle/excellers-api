@@ -313,7 +313,7 @@ export const exportDataToPdfHandler = async (req: Request, res: Response) => {
         }
 
         const timeStamp = `${new Date().toDateString()} - ${new Date().toLocaleTimeString()}`
-        const fileName = `nadabake ${docType}s exported ${timeStamp}.pdf`
+        const fileName = `excellers ${docType}s exported ${timeStamp}.pdf`
         const pdfDoc = new PDFDocument();
         pdfDoc.pipe(fs.createWriteStream(fileName));
     
