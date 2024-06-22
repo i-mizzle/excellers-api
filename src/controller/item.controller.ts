@@ -106,8 +106,8 @@ export const getItemsHandler = async (req: Request, res: Response) => {
         const storeId = get(req, 'params.storeId');
         const queryObject: any = req.query;
         const filters = parseItemFilters(queryObject)
-        const resPerPage = +queryObject.perPage || 25; 
-        const page = +queryObject.page || 1; 
+        const resPerPage = +queryObject.perPage || 0; 
+        const page = +queryObject.page || 0; 
         let expand = queryObject.expand || null
 
         if(expand && expand.includes(',')) {
