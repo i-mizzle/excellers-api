@@ -42,7 +42,7 @@ export default {
         BASE_URL: process.env.BIZGEM_BASE_URL,
         BASE_WALLET: process.env.BIZGEM_BASE_WALLET,
     },
-    nadabakeSettings: {
+    excellersSettings: {
         forbiddenUserFields: ['emailConfirmed', 'userType', 'email', 'username', 'confirmationCode'],
         postReadRate: 255
     }

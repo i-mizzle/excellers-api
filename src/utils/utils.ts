@@ -345,3 +345,26 @@ export const returnDocuments = (array: any[]) => {
       }
   })
 }
+
+export const replaceDocumentVariables = (input: string, variableValues: Record<string, string>): string => {
+  const regex = /\[\[\s*([\w\s]+)\s*\]\]/g;
+
+  const replacedString = input.replace(regex, (match, variableName) => {
+    if (variableValues.hasOwnProperty(variableName)) {
+      return variableValues[variableName];
+    }
+    return match; // Keep unchanged if value not found in the map
+  });
+
+  return replacedString;
+}
+
+
+export const unSlugify = (string: string) => {
+  if(!string || string === '') {
+      return
+  }
+  return string.replace(/[_-]/g, " "); 
+  // return string.replace(/[^0-9_-]/g, ' ')
+}
+

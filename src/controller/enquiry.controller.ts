@@ -4,12 +4,28 @@ import { get } from "lodash";
 import { MenuDocument } from "../model/menu.model";
 import { findUser } from "../service/user.service";
 import { createEnquiry, findAndUpdateEnquiry, findEnquiries, findEnquiry } from "../service/enquiry.service";
+import { sendEnquiryNotification } from "../service/mailer.service";
+import { findStore } from "../service/store.service";
 
 export const createEnquiryHandler = async (req: Request, res: Response) => {
     try {
+        const storeId = req.params.storeId
         const body = req.body
 
+        const store = await findStore({_id: storeId})
+        if(!store) {
+            return response.notFound(res, {message: 'store not found'})
+        }
+
         const enquiry = await createEnquiry(body)
+
+        await sendEnquiryNotification({
+            mailTo: store.email,
+            name: body.name,
+            email: body.email,
+            phone: body.phone,
+            enquiry: body.enquiry
+        })
         
         return response.created(res, enquiry)
         // return response.created(res, {...item, ...{variants: variants}})
@@ -36,7 +52,7 @@ export const getEnquiriesHandler = async (req: Request, res: Response) => {
             expand = expand.split(',')
         }
 
-        const enquiries = await findEnquiries( { deleted: false }, resPerPage, page, expand)
+        const enquiries = await findEnquiries( { deleted: false, store: user.store }, resPerPage, page, expand)
         // return res.send(post)
 
         const responseObject = {

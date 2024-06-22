@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { UserDocument } from "./user.model";
 
 export interface StoreDocument extends mongoose.Document {
+    email: string;
     createdBy?: UserDocument['_id'];
     name: string;
     address: string;

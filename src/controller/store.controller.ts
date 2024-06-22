@@ -63,7 +63,7 @@ export const getStoresHandler = async (req: Request, res: Response) => {
     }
 }
 
-export async function updateUserHandler (req: Request, res: Response) {
+export async function updateStoreHandler (req: Request, res: Response) {
     try {
         const storeId = req.params.storeId;
         const store = await findStore({_id: storeId})

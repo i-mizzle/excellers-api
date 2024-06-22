@@ -65,6 +65,7 @@ export const checkoutCartSchema = object({
         paymentMethod: string().required('payment method is required'),
         sourceMenu: string().required('source menu is required'),
         store: string().required('store is required'),
+        total: number().required('total is required'),
         orderBy: object({
             name: string().required('name (orderBy.name) is required'),
             email: string().required('email (orderBy.email) is required'),

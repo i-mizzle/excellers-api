@@ -9,7 +9,7 @@ import requiresAdministrator from './middleware/requiresAdministrator';
 import { changePasswordSchema, createUserSchema, createUserSessionSchema, getUserDetailsSchema } from './schema/user.schema';
 import { adminUpdateUserHandler, bulkImportUsers, bulkResetPasswords, changePasswordHandler, createUserHandler, deleteUserHandler, getAllUsersHandler, getUserDetailsHandler, getUserProfileHandler, resetUserPassword, updateUserHandler } from './controller/user.controller';
 import { createStoreSchema, getStoreSchema } from './schema/store.schema';
-import { createStoreHandler, getStoreDetailsHandler, getStoresHandler } from './controller/store.controller';
+import { createStoreHandler, getStoreDetailsHandler, getStoresHandler, updateStoreHandler } from './controller/store.controller';
 import { createUserSessionHandler, invalidateUserSessionHandler } from './controller/session.controller';
 import requiresPermissions from './middleware/requiresPermissions';
 import { rejectForbiddenUserFields } from './middleware/rejectForbiddenUserFields';
@@ -127,6 +127,14 @@ export default function(app: Express) {
         requiresPermissions(['can_manage_store']),
         validateRequest(getStoreSchema), 
         getStoreDetailsHandler
+    )
+
+    app.patch('/store/:storeId', 
+        requiresUser,
+        requiresAdministrator,
+        requiresPermissions(['can_manage_store']),
+        validateRequest(getStoreSchema), 
+        updateStoreHandler
     )
 
     app.post('/settings', 
@@ -304,7 +312,7 @@ export default function(app: Express) {
 
     // Enquiry
     // create enquiry
-    app.post('/enquiries',
+    app.post('/enquiries/:storeId',
         validateRequest(createEnquirySchema),
         createEnquiryHandler
     )

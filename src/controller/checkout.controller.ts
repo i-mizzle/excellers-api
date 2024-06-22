@@ -4,12 +4,20 @@ import { AnyKindOfDictionary, get } from "lodash";
 import { findAndUpdateCart, findCart } from "../service/cart.service";
 import { createOrder, orderTotal } from "../service/order.service";
 import { checkItemInventory, deductItemInventory } from "../service/item-variant.service";
+import { findStore } from "../service/store.service";
+import { sendOrderNotification, sendOrderNotificationToUser } from "../service/mailer.service";
 
 export const checkoutHandler = async (req: Request, res: Response) => {
     try {
         // const userId = get(req, 'user._id');
         const cartId = get(req, 'params.cartId');
         const body = req.body;
+
+        // get store 
+        const store = await findStore({_id: body.store})
+        if(!store) {
+            return response.notFound(res, {message: `store not found`})
+        }
 
         // get cart 
         const cart = await findCart({_id: cartId})
@@ -47,13 +55,15 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             alias: `web-order-${cartId}`,
             source: 'ONLINE',
             items: cart.items,
-            total: orderTotal(cart.items).total,
+            total: body.total,
             status: 'PENDING',
             paymentStatus: 'UNPAID',
             sourceMenu: body.sourceMenu,
             store: body.store,
             orderBy: body.orderBy,
             deliveryType: body.deliveryType,
+            deliveryAddress: body.deliveryAddress,
+            paymentMethod: body.paymentMethod,
             vat: orderTotal(cart.items).vat
         }
 
@@ -66,9 +76,34 @@ export const checkoutHandler = async (req: Request, res: Response) => {
         }
 
         const order = await createOrder(orderPayload)
-        // do these in another step... user will pass the order to the generate payment url
-        // initialize payment
-        // return payment link
+
+        let deliveryAddress
+
+        if(body.deliveryAddress) {
+            deliveryAddress = body.deliveryAddress?.address + ', (' + body.deliveryAddress?.description ? body.deliveryAddress?.description : '' + '), ' + body.deliveryAddress?.city
+        }
+
+        // notify the store about the new order
+        await sendOrderNotificationToUser({
+            mailTo: body.orderBy.email,
+            items: cart.items,
+            deliveryType: body.deliveryType,
+            paymentMethod: body.paymentMethod,
+            deliveryAddress: deliveryAddress,
+            orderBy: body.orderBy,
+            total: `${(orderTotal(cart.items).total + orderTotal(cart.items).vat).toLocaleString()}`
+        })
+        
+        // notify the store about the new order
+        await sendOrderNotification({
+            mailTo: store.email,
+            items: cart.items,
+            deliveryType: body.deliveryType,
+            paymentMethod: body.paymentMethod,
+            deliveryAddress: deliveryAddress,
+            orderBy: body.orderBy,
+            total: `${(orderTotal(cart.items).total + orderTotal(cart.items).vat).toLocaleString()}`
+        })
 
         return response.created(res, {message: 'checked out successfully, order created', order: order});
     } catch (error) {

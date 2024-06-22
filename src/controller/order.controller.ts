@@ -7,6 +7,7 @@ import { findUser } from "../service/user.service";
 import { checkItemInventory, deductItemInventory, findAndUpdateVariant, findVariant } from "../service/item-variant.service";
 import { createStockHistory, findAndUpdateStockHistory, findStockHistoryEntry } from "../service/stock-history.service";
 import * as Papa from 'papaparse';
+import { sendOrderStatusUpdateNotification } from "../service/mailer.service";
 
 const parseOrderFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, alias, status, store, source, minTotal, maxTotal, paymentStatus } = query; 
@@ -383,12 +384,31 @@ export const updateOrderHandler = async (req: Request, res: Response) => {
         }
         let update = req.body
 
-        const item = await findOrder({_id: orderId, store: user.store})
-        if(!item) {
+        const order = await findOrder({_id: orderId, store: user.store})
+        if(!order) {
             return response.notFound(res, {message: 'order not found'})
         }
 
-        await findAndUpdateOrder({_id: item._id}, update, {new: true})
+        await findAndUpdateOrder({_id: order._id}, update, {new: true})
+
+        let deliveryAddress
+
+        if(order.deliveryAddress) {
+            deliveryAddress = order.deliveryAddress?.address + ', (' + order.deliveryAddress?.description ? order.deliveryAddress?.description : '' + '), ' + order.deliveryAddress?.city
+        }
+
+        if(order.source === 'ONLINE') {
+            await sendOrderStatusUpdateNotification({
+                mailTo: order.orderBy!.email,
+                items: order.items,
+                deliveryType: order.deliveryType || '',
+                paymentMethod: order.paymentMethod || '',
+                deliveryAddress: deliveryAddress,
+                orderBy: order.orderBy!,
+                total: order.total.toLocaleString(),
+                newStatus: update.status
+            })
+        }
 
         return response.ok(res, {message: 'order updated successfully'})
         
