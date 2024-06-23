@@ -67,18 +67,26 @@ export const checkItemInventory = async (itemId: any, quantity: number) => {
         }
     }
 
-    if(quantity > item.currentStock){
-        return {
-            error: true,
-            errorType: 'conflict',
-            data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
-        }
-        // response.notFound(res, {message: 'required quantity exceeds stock'})
-    } else {
+    // if(quantity > item.currentStock){
+    //     return {
+    //         error: true,
+    //         errorType: 'conflict',
+    //         data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
+    //     }
+    //     // response.notFound(res, {message: 'required quantity exceeds stock'})
+    // }  
+    
+    if(quantity <= item.currentStock || item.noStock) {
         return{
             error: false,
             errorType: '',
             data: `sufficient stock for ${item.name}`
+        }
+    } else {
+        return {
+            error: true,
+            errorType: 'conflict',
+            data: `required quantity for ${item.name} (${quantity}) exceeds current stock ${item.currentStock}`
         }
     }
 }

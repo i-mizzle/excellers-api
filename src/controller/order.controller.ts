@@ -83,7 +83,7 @@ export const createOrderHandler = async (req: Request, res: Response) => {
         }))
 
         if(inventoryErrors.length > 0 ){
-            return response.badRequest(res, {data: inventoryErrors.join(', ')})
+            return response.badRequest(res, {message: inventoryErrors.join(', ')})
         }
 
         // Deduct all inventory items
