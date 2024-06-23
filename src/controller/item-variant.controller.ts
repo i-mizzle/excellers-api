@@ -9,12 +9,16 @@ import { findAndUpdateMenu, findMenus } from "../service/menu.service";
 import { MenuDocument } from "../model/menu.model";
 
 const parseItemFilters = (query: any) => {
-    const { minDateCreated, maxDateCreated, enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
+    const { minDateCreated, noStock, maxDateCreated, enquiryType, status, maritalStatus, name, email, phone, nationality, invoice, appointment, visaEnquiryCountry, travelHistory, paymentStatus } = query; 
 
     const filters: any = {}; 
 
     if (enquiryType) {
         filters.enquiryType = enquiryType
+    } 
+
+    if (noStock) {
+        filters.noStock = noStock
     } 
 
     if (paymentStatus) {
