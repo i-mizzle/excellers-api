@@ -2,9 +2,14 @@ import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from 'mong
 import { UserDocument } from '../model/user.model';
 import Order, { OrderDocument } from '../model/order.model';
 
-export const orderTotal = (items: any) => {
+export const orderTotal = (items: any, storeSettings: any) => {
     const totalPrice = items.reduce((a: any, b: any) => a + (b.price * b.quantity || 0), 0)
-    const vat = totalPrice * 0.075
+    let vat = 0
+
+    if(storeSettings?.taxes && storeSettings?.taxes?.enabled === true){
+        vat = totalPrice * (storeSettings?.taxes?.rate/100)
+    }
+
     return {total: totalPrice, vat: vat}
 }
 

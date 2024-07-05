@@ -8,6 +8,7 @@ import { checkItemInventory, deductItemInventory, findAndUpdateVariant, findVari
 import { createStockHistory, findAndUpdateStockHistory, findStockHistoryEntry } from "../service/stock-history.service";
 import * as Papa from 'papaparse';
 import { sendOrderStatusUpdateNotification } from "../service/mailer.service";
+import { findStoreSetting } from "../service/store-setting.service";
 
 const parseOrderFilters = (query: any) => {
     const { minDateCreated, maxDateCreated, alias, status, store, source, minTotal, maxTotal, paymentStatus } = query; 
@@ -72,6 +73,13 @@ export const createOrderHandler = async (req: Request, res: Response) => {
         const userId = get(req, 'user._id');
         const body = req.body
 
+        const user = await findUser({_id: userId})
+        if(!user) {
+            return response.notFound(res, {message: 'user not found'})
+        }
+
+        const storeSettings = await findStoreSetting({_id: user.store})
+
         const inventoryErrors: string[] = []
 
         // check first if all inventory items have enough stock
@@ -91,7 +99,7 @@ export const createOrderHandler = async (req: Request, res: Response) => {
             await deductItemInventory(item.item, item.quantity)
         }))
 
-        const total = orderTotal(body.items)
+        const total = orderTotal(body.items, storeSettings)
         const order = await createOrder({...body, ...{createdBy: userId, total: total.total, vat: total.vat}})
         return response.created(res, order)
     } catch (error:any) {

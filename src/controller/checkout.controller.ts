@@ -6,6 +6,7 @@ import { createOrder, orderTotal } from "../service/order.service";
 import { checkItemInventory, deductItemInventory } from "../service/item-variant.service";
 import { findStore } from "../service/store.service";
 import { sendOrderNotification, sendOrderNotificationToUser } from "../service/mailer.service";
+import { findStoreSetting } from "../service/store-setting.service";
 
 export const checkoutHandler = async (req: Request, res: Response) => {
     try {
@@ -18,6 +19,8 @@ export const checkoutHandler = async (req: Request, res: Response) => {
         if(!store) {
             return response.notFound(res, {message: `store not found`})
         }
+
+        const storeSettings = await findStoreSetting({_id: body.store})
 
         // get cart 
         const cart = await findCart({_id: cartId})
@@ -64,7 +67,7 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             deliveryType: body.deliveryType,
             deliveryAddress: body.deliveryAddress,
             paymentMethod: body.paymentMethod,
-            vat: orderTotal(cart.items).vat
+            vat: orderTotal(cart.items, storeSettings).vat
         }
 
         if(body.deliveryType === 'DOORSTEP') {
@@ -91,7 +94,7 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             paymentMethod: body.paymentMethod,
             deliveryAddress: deliveryAddress,
             orderBy: body.orderBy,
-            total: `${(orderTotal(cart.items).total + orderTotal(cart.items).vat).toLocaleString()}`
+            total: `${(orderTotal(cart.items, storeSettings).total + orderTotal(cart.items, storeSettings).vat).toLocaleString()}`
         })
         
         // notify the store about the new order
@@ -102,7 +105,7 @@ export const checkoutHandler = async (req: Request, res: Response) => {
             paymentMethod: body.paymentMethod,
             deliveryAddress: deliveryAddress,
             orderBy: body.orderBy,
-            total: `${(orderTotal(cart.items).total + orderTotal(cart.items).vat).toLocaleString()}`
+            total: `${(orderTotal(cart.items, storeSettings).total + orderTotal(cart.items, storeSettings).vat).toLocaleString()}`
         })
 
         return response.created(res, {message: 'checked out successfully, order created', order: order});
