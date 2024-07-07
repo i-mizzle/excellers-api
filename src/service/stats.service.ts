@@ -194,11 +194,31 @@ export const calculateMetrics = (orders: any[]) => {
         return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
     };
   
+    // const isDateInCurrentWeek = (date: Date) => {
+    //     const today = new Date();
+    //     const currentWeekStart = new Date(today);
+    //     currentWeekStart.setDate(today.getDate() - today.getDay());
+    //     return date >= currentWeekStart && date <= today;
+    // };
+
     const isDateInCurrentWeek = (date: Date) => {
         const today = new Date();
-        const currentWeekStart = new Date(today);
-        currentWeekStart.setDate(today.getDate() - today.getDay());
-        return date >= currentWeekStart && date <= today;
+        
+        // Normalize today's date to remove the time component
+        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        // Calculate the start of the current week (Sunday)
+        const currentWeekStart = new Date(todayDateOnly);
+        currentWeekStart.setDate(todayDateOnly.getDate() - todayDateOnly.getDay());
+    
+        // Calculate the end of the current week (Saturday)
+        const currentWeekEnd = new Date(currentWeekStart);
+        currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+    
+        // Normalize the input date to remove the time component
+        const inputDateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
+        return inputDateOnly >= currentWeekStart && inputDateOnly <= currentWeekEnd;
     };
 
     for (const order of orders) {
