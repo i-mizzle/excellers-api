@@ -258,6 +258,8 @@ export const calculateMetrics = (orders: any[]) => {
     return {
         todayOrdersCount,
         todayOrdersValue,
+        thisWeekOrdersCount,
+        thisWeekOrdersValue,
         thisMonthOrdersCount,
         thisMonthOrdersValue,
         soldItems,
