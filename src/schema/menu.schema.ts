@@ -8,7 +8,8 @@ export const createMenuSchema = object({
         items: array(object({
             item: string().required('items.item is required'),
             displayName: string().required('items.displayName is required'),
-            price: number().required('item.price is required')
+            fixedPricing: boolean().required('items.fixedPricing is required as a boolean'),
+            price: number()
         })),
     })
 });
