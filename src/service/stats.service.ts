@@ -179,6 +179,8 @@ export const listLowStockVariants = (inventory: any) => {
 export const calculateMetrics = (orders: any[]) => {
     let todayOrdersCount = 0;
     let todayOrdersValue = 0;
+    let thisWeekOrdersCount = 0;
+    let thisWeekOrdersValue = 0;
     let thisMonthOrdersCount = 0;
     let thisMonthOrdersValue = 0;
     let soldItems: { [key: string]: number } = {};
@@ -201,7 +203,13 @@ export const calculateMetrics = (orders: any[]) => {
 
     for (const order of orders) {
         const { total, createdAt, status, paymentStatus, items } = order;
+        const today = new Date()
         const orderDate = new Date(createdAt);
+
+        if(paymentStatus === 'PAID' && today.setHours(0, 0, 0, 0) === orderDate.setHours(0, 0, 0, 0)) {
+            todayOrdersValue++
+            todayOrdersValue += total
+        }
   
         // Task 1: Total orders today and this month
         if (paymentStatus === 'PAID' && isDateInCurrentMonth(orderDate)) {
@@ -209,8 +217,8 @@ export const calculateMetrics = (orders: any[]) => {
             thisMonthOrdersValue += total;
   
         if (paymentStatus === 'PAID' && isDateInCurrentWeek(orderDate)) {
-            todayOrdersCount++;
-            todayOrdersValue += total;
+            thisWeekOrdersCount++;
+            thisWeekOrdersValue += total;
         }
   
             // Task 3: Track sold items and find the most sold item
