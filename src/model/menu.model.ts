@@ -62,9 +62,12 @@ const MenuSchema = new mongoose.Schema(
                 displayName: {
                     type: String,
                 },
+                fixedPricing: {
+                    type: Boolean,
+                    default: true
+                },
                 price: {
                     type: Number,
-                    required: true
                 }
             }
         ],
