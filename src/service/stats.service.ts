@@ -189,11 +189,6 @@ export const calculateMetrics = (orders: any[]) => {
     let currentYearOrdersValue = 0;
     const mostSoldItem = { name: '', quantity: 0 }; // Initialize mostSoldItem
   
-    const isToday = (date: Date) => {
-        const today = new Date();
-        return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear() && date.getDate;
-    };
-  
     const isDateInCurrentMonth = (date: Date) => {
         const today = new Date();
         return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
@@ -211,8 +206,8 @@ export const calculateMetrics = (orders: any[]) => {
         const today = new Date()
         const orderDate = new Date(createdAt);
 
-        if(paymentStatus === 'PAID' && isToday(createdAt)) {
-            todayOrdersValue++
+        if(paymentStatus === 'PAID' && today.setHours(0, 0, 0, 0) === orderDate.setHours(0, 0, 0, 0)) {
+            todayOrdersCount++
             todayOrdersValue += total
         }
   
