@@ -47,7 +47,7 @@ export const exportCollections = async () => {
         }
 
         await sendBackupsEmail({
-            firstName: 'Team',
+            firstName: 'Immanuel',
             mailTo: 'immanuel.o.onum@gmail.com',
             exportDir
         });

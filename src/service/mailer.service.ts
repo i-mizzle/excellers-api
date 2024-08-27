@@ -214,9 +214,9 @@ export const sendBackupsEmail = async (mailParams: BackupMailParams) => {
     const date = new Date().toISOString().slice(0, 10);
 
     const data = {
-        from: 'Vaatia College Platforms <no-reply@vaatiacollege.com>',
+        from: 'Excellers Inventory <no-reply@excellers.com.ng>',
         to: mailParams.mailTo,
-        subject: `VCM database dumps for ${config.get('environment')} - ${date}`,
+        subject: `Excellers database dumps for ${config.get('environment')} - ${date}`,
         text: `Please find the exported MongoDB collections attached for ${config.get('environment')} environment.`,
         attachment: files.map(file => fs.createReadStream(file.path))  // Attach file streams
     };
