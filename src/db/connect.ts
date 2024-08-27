@@ -6,11 +6,11 @@ async function connect() {
     const dbUri = config.get('dbUri') as string;
 
     try {
-        await mongoose
-            .connect(dbUri, {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
-            });
+        await mongoose.connect(dbUri, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        mongoose.set('useFindAndModify', false);
         log.info('database connected');
     } catch (error) {
         log.error('db error', error);
@@ -18,4 +18,7 @@ async function connect() {
     }
 }
 
-export default connect;
+
+export { connect, mongoose };
+
+// export default connect;

@@ -2,7 +2,8 @@
 const mailgun = require("mailgun-js");
 const inlineCSS = require('inline-css');
 // const config = require("config");
-
+import fs from 'fs';
+import path from 'path';
 import config from 'config';
 
 import { OrderNotificationTemplate } from '../static/email-templates/order-notification-template';
@@ -56,6 +57,11 @@ export interface EnquiryEmailParams extends MailParams {
     email: string
     phone: string
     enquiry: string
+}
+
+interface BackupMailParams extends MailParams {
+    firstName: string
+    exportDir: string
 }
 
 
@@ -198,6 +204,31 @@ export async function sendEnquiryNotification (mailParams: EnquiryEmailParams) {
         }
     }
 }
+
+
+export const sendBackupsEmail = async (mailParams: BackupMailParams) => {
+    const files = fs.readdirSync(mailParams.exportDir).map(file => ({
+        filename: file,
+        path: path.join(mailParams.exportDir, file)
+    }));
+    const date = new Date().toISOString().slice(0, 10);
+
+    const data = {
+        from: 'Vaatia College Platforms <no-reply@vaatiacollege.com>',
+        to: mailParams.mailTo,
+        subject: `VCM database dumps for ${config.get('environment')} - ${date}`,
+        text: `Please find the exported MongoDB collections attached for ${config.get('environment')} environment.`,
+        attachment: files.map(file => fs.createReadStream(file.path))  // Attach file streams
+    };
+
+    mg.messages().send(data, (error: any, body: any) => {
+        if (error) {
+            console.error('Error sending email:', error);
+        } else {
+            console.log('Email sent:', body);
+        }
+    });
+};
 
 
 
