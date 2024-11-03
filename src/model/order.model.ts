@@ -17,6 +17,7 @@ import { UserDocument } from "./user.model";
 import { ItemVariantDocument } from './item-variant.model';
 import { StoreDocument } from './store.model';
 import { MenuDocument } from './menu.model';
+import { PromotionDocument } from './promotion.model';
 
 export interface OrderItem {
     item: ItemVariantDocument['_id']
@@ -54,6 +55,7 @@ export interface OrderDocument extends mongoose.Document {
         state: string
         description: string
     }
+    promotion?: PromotionDocument['_id']
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -160,6 +162,10 @@ const OrderSchema = new mongoose.Schema(
         pickupOutlet: {
             type: mongoose.Schema.Types.ObjectId, 
             ref: 'Store',
+        },
+        promotion: {
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'Promotion',
         },
         deliveryAddress: {
             address: {

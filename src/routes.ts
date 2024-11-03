@@ -202,7 +202,6 @@ export default function(app: Express) {
     app.get('/users/all', 
         requiresUser, 
         requiresAdministrator,
-        requiresPermissions(['can_manage_users']),
         getAllUsersHandler
     )
 
@@ -282,7 +281,7 @@ export default function(app: Express) {
     app.get('/items/:storeId',
         requiresUser,
         requiresAdministrator,
-        requiresPermissions(['can_manage_items']),
+        // requiresPermissions(['can_manage_items']),
         getItemsHandler
     )
 
